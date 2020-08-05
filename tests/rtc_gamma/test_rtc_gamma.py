@@ -1,20 +1,25 @@
 import time
 
 
-def job_succeeded(resp, hyp3_session):
-    job = resp.json()
-    requests_time = job['request_time']
+def jobs_succeeded(post_response, hyp3_session):
+    pr = post_response.json()
+    requests_time = pr['jobs'][0]['request_time']
     params = {
         'start': requests_time,
         'end': requests_time,
+        'name': pr['jobs'][0]['name']
     }
-    update = hyp3_session.get(resp.url, params=params)
+    update = hyp3_session.get(post_response.url, json=params)
     update.raise_for_status()
 
-    status = update.json()['status_code']
-    if status == 'FAILED':
+    status = set()
+    for job in update.json()['jobs']:
+        status.add(job['status_code'])
+
+    if 'FAILED' in status:
         raise Exception('Job failed')
-    return status == 'SUCCEEDED'
+
+    return {'SUCCEEDED'}.issuperset(status)
 
 
 
@@ -34,9 +39,9 @@ def test_golden(golden_jobs, hyp3_session):
     develop_succeeded = False
     while (ii := ii + 1) < 60:
         if not main_succeeded:
-            main_succeeded = job_succeeded(main_response, hyp3_session)
+            main_succeeded = jobs_succeeded(main_response, hyp3_session)
         if not develop_succeeded:
-            develop_succeeded = job_succeeded(develop_response, hyp3_session)
+            develop_succeeded = jobs_succeeded(develop_response, hyp3_session)
 
         if main_succeeded and develop_succeeded:
             break
