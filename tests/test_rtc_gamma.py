@@ -3,8 +3,9 @@ import time
 
 
 def test_golden(helpers, hyp3_session):
+    post_body = helpers.create_jobs_post(os.path.join(os.path.dirname(__file__), 'data', 'rtc_gamma_golden.json'))
+
     # FIXME: url once customization released to master
-    post_body = helpers.create_jobs_post(os.path.join(os.path.dirname(__file__), 'golden.json'))
     main_response = hyp3_session.post(url='https://hyp3-test-api.asf.alaska.edu/jobs', json=post_body)
     main_response.raise_for_status()
 
