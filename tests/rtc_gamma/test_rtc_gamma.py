@@ -12,10 +12,7 @@ def jobs_succeeded(post_response, hyp3_session):
     update = hyp3_session.get(post_response.url, json=params)
     update.raise_for_status()
 
-    status = set()
-    for job in update.json()['jobs']:
-        status.add(job['status_code'])
-
+    status = {job['status_code'] for job in update.json()['jobs']}
     if 'FAILED' in status:
         raise Exception('Job failed')
 
