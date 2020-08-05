@@ -17,19 +17,30 @@ def job_succeeded(resp, hyp3_session):
     return status == 'SUCCEEDED'
 
 
-def check_if_finished(main_response, develop_response, hyp3_session):
-    return job_succeeded(main_response, hyp3_session) and job_succeeded(develop_response, hyp3_session)
-
 
 def test_golden(golden_jobs, hyp3_session):
-    main_response = hyp3_session.post(url='https://hyp3-api.asf.alaska.edu/jobs', json=golden_jobs)
+    # FIXME: url once customization released to master
+    main_response = hyp3_session.post(url='https://hyp3-test-api.asf.alaska.edu/jobs', json=golden_jobs)
     main_response.raise_for_status()
+
+    # FIXME: Remove once customization released to master
+    time.sleep(1)
 
     develop_response = hyp3_session.post(url='https://hyp3-test-api.asf.alaska.edu/jobs', json=golden_jobs)
     develop_response.raise_for_status()
 
     ii = 0
-    while (ii := ii + 1) < 60 and not check_if_finished(main_response, develop_response, hyp3_session):
+    main_succeeded = False
+    develop_succeeded = False
+    while (ii := ii + 1) < 60:
+        if not main_succeeded:
+            main_succeeded = job_succeeded(main_response, hyp3_session)
+        if not develop_succeeded:
+            develop_succeeded = job_succeeded(develop_response, hyp3_session)
+
+        if main_succeeded and develop_succeeded:
+            break
+
         time.sleep(60)
 
     # TODO: download products from main
