@@ -1,9 +1,9 @@
-import os
 import time
+from pathlib import Path
 
 
 def test_golden(helpers, hyp3_session):
-    post_body = helpers.create_jobs_post(os.path.join(os.path.dirname(__file__), 'data', 'rtc_gamma_golden.json'))
+    post_body = helpers.get_jobs_payload(Path(__file__).resolve().parent / 'data' / 'rtc_gamma_golden.json')
 
     # FIXME: url once customization released to master
     main_response = hyp3_session.post(url='https://hyp3-test-api.asf.alaska.edu/jobs', json=post_body)

@@ -13,7 +13,7 @@ _AUTH_URL = 'https://urs.earthdata.nasa.gov/oauth/authorize?response_type=code' 
 
 class HelperFunctions:
     @staticmethod
-    def create_jobs_post(template):
+    def get_jobs_payload(template):
         with open(template) as f:
             body = f.read()
 
