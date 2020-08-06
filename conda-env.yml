@@ -1,0 +1,10 @@
+name: hyp3-testing
+channels:
+  - conda-forge
+  - nodefaults
+dependencies:
+  - python=3.8
+  - pip
+  - jinja2
+  - pytest
+  - requests
