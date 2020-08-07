@@ -31,7 +31,7 @@ class HelperFunctions:
             'end': requests_time,
             'name': pr['jobs'][0]['name']
         }
-        update = hyp3_session.get(post_response.url, json=params)
+        update = hyp3_session.get(post_response.url, params=params)
         update.raise_for_status()
         return update
 
@@ -45,13 +45,15 @@ class HelperFunctions:
 
     @staticmethod
     def get_download_urls(update):
+        file_blocks = [file for job in update.json()['jobs'] for file in job['files']]
+        file_urls = {file['url'] for file in file_blocks}
+        return file_urls
 
-
-        return urls
 
 @pytest.fixture()
 def helpers():
     return HelperFunctions
+
 
 @pytest.fixture()
 def hyp3_session():

@@ -6,6 +6,7 @@ dependencies:
   - python=3.8
   - pip
   - gdal
+  - hyp3lib>=1.4
   - jinja2
   - pytest
   - requests
