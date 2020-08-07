@@ -13,7 +13,7 @@ _AUTH_URL = 'https://urs.earthdata.nasa.gov/oauth/authorize?response_type=code' 
 
 class HelperFunctions:
     @staticmethod
-    def get_jobs_payload(template):
+    def get_submission_payload(template):
         with open(template) as f:
             body = f.read()
 
@@ -23,7 +23,7 @@ class HelperFunctions:
         return json.loads(jobs)
 
     @staticmethod
-    def jobs_succeeded(post_response, hyp3_session):
+    def get_jobs_update(post_response, hyp3_session):
         pr = post_response.json()
         requests_time = pr['jobs'][0]['request_time']
         params = {
@@ -33,13 +33,21 @@ class HelperFunctions:
         }
         update = hyp3_session.get(post_response.url, json=params)
         update.raise_for_status()
+        return update
 
+    @staticmethod
+    def jobs_succeeded(update):
         status = {job['status_code'] for job in update.json()['jobs']}
         if 'FAILED' in status:
             raise Exception('Job failed')
 
         return {'SUCCEEDED'}.issuperset(status)
 
+    @staticmethod
+    def get_download_urls(update):
+
+
+        return urls
 
 @pytest.fixture()
 def helpers():
