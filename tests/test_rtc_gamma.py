@@ -1,4 +1,6 @@
+import subprocess
 import time
+from glob import glob
 from pathlib import Path
 from zipfile import ZipFile
 
@@ -31,16 +33,42 @@ def test_golden(tmp_path, helpers, hyp3_session):
 
     main_dir = tmp_path / 'main'
     main_dir.mkdir()
+    main_products = set()
     for url in helpers.get_download_urls(main_update):
         zip_file = download_file(url, directory=str(main_dir))
         with ZipFile(zip_file) as zip_:
             zip_.extractall(path=main_dir)
+        main_products.add(Path(zip_file).stem)
 
     develop_dir = tmp_path / 'develop'
     develop_dir.mkdir()
+    develop_products = set()
     for url in helpers.get_download_urls(develop_update):
         zip_file = download_file(url, directory=str(develop_dir))
         with ZipFile(zip_file) as zip_:
             zip_.extractall(path=develop_dir)
+        develop_products.add(Path(zip_file).stem)
 
-    # TODO: compare each product
+    # TODO: log asserts instead and continue with set unions to do most possible comparisons
+    # produced the same set of products names for both
+    assert main_products == develop_products
+
+    for product in develop_products:
+        main_files = {Path(f).name for f in glob((main_dir / product / '*'))}
+        develop_files = {Path(f).name for f in glob((develop_dir / product / '*'))}
+
+        # produced the same set of files in both products
+        assert main_files == develop_files
+
+        for file in develop_files:
+            # TODO: compare *kmz
+            # TODO: compare *png
+            # TODO: compare *shp *shx *prj *dbf
+            # TODO: compare *xml
+            # TODO: compare log
+            # TODO: compare README.txt
+            if file.endswith('.tif'):
+                # TODO subprocess gdal comapre
+                pass
+            else:
+                print(f'Comparisons not implemented for this file type: {file}')
