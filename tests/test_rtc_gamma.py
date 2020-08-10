@@ -58,16 +58,31 @@ def test_golden(tmp_path, helpers, hyp3_session):
         # produced the same set of files in both products
         assert main_files == develop_files
 
-        for dm, df in zip(main_files, develop_files):
-            # TODO: compare *kmz
-            # TODO: compare *png
-            # TODO: compare *shp *shx *prj *dbf
-            # TODO: compare *xml
-            # ~~TODO: compare log~~
-            # TODO: compare README.txt
-            if df.endswith('.tif'):
-                subprocess.check_output(
-                    f'gdalcompare.py {dm.replace("HASH", main_hash)} {df.replace("HASH", develop_hash)}'
-                )
+        for file_ in main_files & develop_files:
+            # TODO: compare *kmz contents
+            # TODO: compare *png contents
+            # TODO: compare *shp *shx *prj *dbf contents
+            # TODO: compare *xml contents
+            # ~~TODO: compare log contents~~
+            # TODO: compare README.txt contents
+            if file_.endswith('.tif'):
+                main_file = main_dir / "_".join([product_base, main_hash]) / file_.replace("HASH", main_hash)
+                develop_file = develop_dir / "_".join([product_base, develop_hash]) / file_.replace("HASH", develop_hash)
+
+                cmd = f'gdalcompare.py {main_file} {develop_file}'
+                ret = 0
+                try:
+                    stdout = subprocess.check_output(cmd, shell=True, text=True)
+                except subprocess.CalledProcessError as e:
+                    stdout = e.output
+                    ret = e.returncode
+
+                # ret == 0 --> bit-for-bit
+                # ret == 1 --> only binary level differences
+                # ret > 1 -->  "visible data" is not identical
+                # See: https://gdal.org/programs/gdalcompare.html
+                print(f'{cmd}\n{stdout}')
+                assert ret <= 1
+
             else:
-                print(f'Comparisons not implemented for this file type: {dm}')
+                print(f'Content comparisons not implemented for this file type: {file_}')
