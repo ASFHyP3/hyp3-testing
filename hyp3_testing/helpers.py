@@ -14,13 +14,15 @@ from hyp3_testing import AUTH_URL
 
 
 def hyp3_session(username: str = None, password: str = None):
-    if username is None:
-        username = os.environ.get('HYP3_USERNAME')
-    if password is None:
-        password = os.environ.get('HYP3_PASSWORD')
+    username = os.environ.get('HYP3_USERNAME') if username is None else username
+    password = os.environ.get('HYP3_PASSWORD') if password is None else password
+    if username is None or password is None:
+        auth = None
+    else:
+        auth = (username, password)
 
     session = requests.Session()
-    resp = session.get(AUTH_URL, auth=(username, password))
+    resp = session.get(AUTH_URL, auth=auth)
     resp.raise_for_status()
 
     return session
