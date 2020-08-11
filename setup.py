@@ -41,6 +41,7 @@ setup(
         'develop': [
             'pytest',
             'pytest-cov',
+            'pytest-dependency',
             'responses',
         ]
     },

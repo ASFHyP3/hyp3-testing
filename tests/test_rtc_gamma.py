@@ -1,7 +1,10 @@
+import json
 import subprocess
 import time
 from glob import glob
 from pathlib import Path
+
+import pytest
 
 from hyp3_testing import API_URL, API_TEST_URL
 from hyp3_testing import helpers
@@ -13,16 +16,43 @@ from hyp3_testing import helpers
 #          or use main_response.json, develop_response.json if they exist?
 
 
-def test_golden(tmp_path):
+@pytest.mark.dependency()
+def test_golden_submission(comparison_dirs):
     hyp3_session = helpers.hyp3_session()
 
-    submission_payload = helpers.get_submission_payload(Path(__file__).resolve().parent / 'data' / 'rtc_gamma_golden.json')
+    submission_payload = helpers.get_submission_payload(
+        Path(__file__).resolve().parent / 'data' / 'rtc_gamma_golden.json')
 
     main_response = hyp3_session.post(url=API_URL, json=submission_payload)
     main_response.raise_for_status()
 
     develop_response = hyp3_session.post(url=API_TEST_URL, json=submission_payload)
     develop_response.raise_for_status()
+
+    main_dir, develop_dir = comparison_dirs
+    with open(main_dir / 'main_response.json', 'w') as f:
+        json.dump(main_response.json(), f)
+
+    with open(develop_dir / 'develop_response.json', 'w') as f:
+        json.dump(develop_response.json(), f)
+
+    print(f'Job name: {submission_payload["jobs"][0]["name"]}')
+    print(f'Main request time: {main_response.json()["jobs"][0]["request_time"]}')
+    print(f'Develop request time: {develop_response.json()["jobs"][0]["request_time"]}')
+
+
+@pytest.mark.dependency(depends=['test_golden_submission'])
+def test_golden_wait_and_download(comparison_dirs):
+    main_dir, develop_dir = comparison_dirs
+    hyp3_session = helpers.hyp3_session()
+
+    assert (main_dir / 'main_response.json').exists()
+    assert (develop_dir / 'develop_response.json').exists()
+
+    with open(main_dir / 'main_response.json') as f:
+        main_response = json.load(f)
+    with open(develop_dir / 'develop_response.json') as f:
+        develop_response = json.load(f)
 
     ii = 0
     main_succeeded = False
@@ -31,26 +61,32 @@ def test_golden(tmp_path):
     develop_update = None
     while (ii := ii + 1) < 90:  # golden 10m RTC jobs take ~1 hr
         if not main_succeeded:
-            main_update = helpers.get_jobs_update(main_response, hyp3_session)
+            main_update = helpers.get_jobs_update(
+                main_response['jobs'][0]['name'], API_URL, hyp3_session,
+                request_time=main_response['jobs'][0]['request_time']
+            )
             main_succeeded = helpers.jobs_succeeded(main_update)
         if not develop_succeeded:
-            develop_update = helpers.get_jobs_update(develop_response, hyp3_session)
+            develop_update = helpers.get_jobs_update(
+                develop_response['jobs'][0]['name'], API_TEST_URL, hyp3_session,
+                request_time=develop_response['jobs'][0]['request_time']
+            )
             develop_succeeded = helpers.jobs_succeeded(develop_update)
 
         if main_succeeded and develop_succeeded:
             break
         time.sleep(60)
 
-    main_dir = tmp_path / 'main'
-    main_dir.mkdir()
-    main_products = helpers.download_products(main_update, main_dir)
+    helpers.download_products(main_update, main_dir)
+    helpers.download_products(develop_update, develop_dir)
 
-    develop_dir = tmp_path / 'develop'
-    develop_dir.mkdir()
-    develop_products = helpers.download_products(develop_update, develop_dir)
 
-    # TODO: log asserts instead and continue with set unions to do most possible comparisons
-    #   OR: all of the above as a session scoped fixture...
+@pytest.mark.dependency(depends=['test_golden_wait_and_download'])
+def test_golden_product_files(comparison_dirs):
+    main_dir, develop_dir = comparison_dirs
+    main_products = helpers.find_products(main_dir, pattern='*.zip')
+    develop_products = helpers.find_products(develop_dir, pattern='*.zip')
+
     assert sorted(main_products) == sorted(develop_products)
 
     for product_base, main_hash in main_products.items():
@@ -62,25 +98,37 @@ def test_golden(tmp_path):
 
         assert main_files == develop_files
 
-        for file_ in main_files & develop_files:
-            if file_.endswith('.tif'):
-                main_file = main_dir / "_".join([product_base, main_hash]) / file_.replace("HASH", main_hash)
-                develop_file = develop_dir / "_".join([product_base, develop_hash]) / file_.replace("HASH", develop_hash)
 
-                ret = 0
-                cmd = f'gdalcompare.py {main_file} {develop_file}'
-                try:
-                    stdout = subprocess.check_output(cmd, shell=True, text=True)
-                except subprocess.CalledProcessError as e:
-                    stdout = e.output
-                    ret = e.returncode
-                print(f'{cmd}\n{stdout}')
+@pytest.mark.dependency(depends=['test_golden_wait_and_download'])
+def test_golden_tifs(comparison_dirs):
+    main_dir, develop_dir = comparison_dirs
+    main_products = helpers.find_products(main_dir, pattern='*.zip')
+    develop_products = helpers.find_products(develop_dir, pattern='*.zip')
 
-                # ret == 0 --> bit-for-bit
-                # ret == 1 --> only binary level differences
-                # ret > 1 -->  "visible data" is not identical
-                # See: https://gdal.org/programs/gdalcompare.html
-                assert ret <= 1
+    products = set(main_products.keys()) & set(develop_products.keys())
 
-            else:
-                print(f'Content comparisons not implemented for this file type: {file_}')
+    for product_base in products:
+        main_hash = main_products[product_base]
+        develop_hash = develop_products[product_base]
+
+        comparison_files = helpers.find_files_in_products(
+            main_dir / '_'.join([product_base, main_hash]),
+            develop_dir / '_'.join([product_base, develop_hash]),
+            pattern='*.tif'
+        )
+
+        for main_file, develop_file in comparison_files:
+            ret = 0
+            cmd = f'gdalcompare.py {main_file} {develop_file}'
+            try:
+                stdout = subprocess.check_output(cmd, shell=True, text=True)
+            except subprocess.CalledProcessError as e:
+                stdout = e.output
+                ret = e.returncode
+            print(f'{cmd}\n{stdout}')
+
+            # ret == 0 --> bit-for-bit
+            # ret == 1 --> only binary level differences
+            # ret > 1 -->  "visible data" is not identical
+            # See: https://gdal.org/programs/gdalcompare.html
+            assert ret <= 1
