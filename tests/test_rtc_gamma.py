@@ -65,20 +65,20 @@ def test_golden_wait_and_download(comparison_dirs):
                 main_response['jobs'][0]['name'], API_URL, hyp3_session,
                 request_time=main_response['jobs'][0]['request_time']
             )
-            main_succeeded = helpers.jobs_succeeded(main_update)
+            main_succeeded = helpers.jobs_succeeded(main_update.json()['jobs'])
         if not develop_succeeded:
             develop_update = helpers.get_jobs_update(
                 develop_response['jobs'][0]['name'], API_TEST_URL, hyp3_session,
                 request_time=develop_response['jobs'][0]['request_time']
             )
-            develop_succeeded = helpers.jobs_succeeded(develop_update)
+            develop_succeeded = helpers.jobs_succeeded(develop_update.json()['jobs'])
 
         if main_succeeded and develop_succeeded:
             break
         time.sleep(60)
 
-    helpers.download_products(main_update, main_dir)
-    helpers.download_products(develop_update, develop_dir)
+    helpers.download_products(main_update.json()['jobs'], main_dir)
+    helpers.download_products(develop_update.json()['jobs'], develop_dir)
 
 
 @pytest.mark.dependency(depends=['test_golden_wait_and_download'])

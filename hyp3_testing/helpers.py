@@ -48,22 +48,22 @@ def get_jobs_update(name, url, session, request_time=None):
     return update
 
 
-def jobs_succeeded(update):
-    status = {job['status_code'] for job in update.json()['jobs']}
+def jobs_succeeded(jobs):
+    status = {job['status_code'] for job in jobs}
     if 'FAILED' in status:
         raise Exception('Job failed')
 
     return {'SUCCEEDED'}.issuperset(status)
 
 
-def get_download_urls(update):
-    file_blocks = [file for job in update.json()['jobs'] for file in job['files']]
+def get_download_urls(jobs):
+    file_blocks = [file for job in jobs for file in job['files']]
     file_urls = {file['url'] for file in file_blocks}
     return file_urls
 
 
-def download_products(update, directory):
-    urls = get_download_urls(update)
+def download_products(jobs, directory):
+    urls = get_download_urls(jobs)
     for url in urls:
         zip_file = download_file(url, directory=str(directory))
         with ZipFile(zip_file) as zip_:
