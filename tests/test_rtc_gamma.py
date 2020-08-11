@@ -30,7 +30,7 @@ def test_golden_submission(comparison_dirs):
         response.raise_for_status()
         print(f'{dir_.name} request time: {response.json()["jobs"][0]["request_time"]}')
 
-        with open(dir_, f'{dir_.name}_response.json', 'w') as f:
+        with open(dir_ / f'{dir_.name}_response.json', 'w') as f:
             json.dump(response.json(), f)
 
 
