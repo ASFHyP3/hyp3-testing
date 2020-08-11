@@ -26,8 +26,10 @@ def test_golden(tmp_path):
     develop_response.raise_for_status()
 
     ii = 0
-    main_succeeded = develop_succeeded = False
-    main_update = develop_update = None
+    main_succeeded = False
+    develop_succeeded = False
+    main_update = None
+    develop_update = None
     while (ii := ii + 1) < 90:  # golden 10m RTC jobs take ~1 hr
         if not main_succeeded:
             main_update = helpers.get_jobs_update(main_response, hyp3_session)
