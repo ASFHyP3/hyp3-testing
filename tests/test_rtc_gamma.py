@@ -66,19 +66,19 @@ def test_golden(tmp_path):
                 main_file = main_dir / "_".join([product_base, main_hash]) / file_.replace("HASH", main_hash)
                 develop_file = develop_dir / "_".join([product_base, develop_hash]) / file_.replace("HASH", develop_hash)
 
-                cmd = f'gdalcompare.py {main_file} {develop_file}'
                 ret = 0
+                cmd = f'gdalcompare.py {main_file} {develop_file}'
                 try:
                     stdout = subprocess.check_output(cmd, shell=True, text=True)
                 except subprocess.CalledProcessError as e:
                     stdout = e.output
                     ret = e.returncode
+                print(f'{cmd}\n{stdout}')
 
                 # ret == 0 --> bit-for-bit
                 # ret == 1 --> only binary level differences
                 # ret > 1 -->  "visible data" is not identical
                 # See: https://gdal.org/programs/gdalcompare.html
-                print(f'{cmd}\n{stdout}')
                 assert ret <= 1
 
             else:
