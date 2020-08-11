@@ -22,8 +22,8 @@ def hyp3_session(username: str = None, password: str = None):
         auth = (username, password)
 
     session = requests.Session()
-    resp = session.get(AUTH_URL, auth=auth)
-    resp.raise_for_status()
+    response = session.get(AUTH_URL, auth=auth)
+    response.raise_for_status()
 
     return session
 
@@ -53,12 +53,12 @@ def jobs_succeeded(jobs):
     if 'FAILED' in status:
         raise Exception('Job failed')
 
-    return {'SUCCEEDED'}.issuperset(status)
+    return {'SUCCEEDED'} == status
 
 
 def get_download_urls(jobs):
-    file_blocks = [file for job in jobs for file in job['files']]
-    file_urls = {file['url'] for file in file_blocks}
+    file_blocks = [file for job in jobs for file in job.get('files', [])]
+    file_urls = [file['url'] for file in file_blocks]
     return file_urls
 
 

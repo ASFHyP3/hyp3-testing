@@ -12,8 +12,7 @@
         "include_dem": "true",
         "include_inc_map": "true"
       },
-      "job_type": "RTC_GAMMA",
-      "description": "S1A_IW_20150621T120220_SVP_RTC10_G_saufed_"
+      "job_type": "RTC_GAMMA"
     },
     {
       "name": "{{ name }}",
@@ -27,8 +26,7 @@
         "include_dem": "false",
         "include_inc_map": "false"
       },
-      "job_type": "RTC_GAMMA",
-      "description": "S1A_IW_20141227T173304_SHP_RTC30_G_gpuned_"
+      "job_type": "RTC_GAMMA"
     },
     {
       "name": "{{ name }}",
@@ -42,8 +40,7 @@
         "include_dem": "false",
         "include_inc_map": "false"
       },
-      "job_type": "RTC_GAMMA",
-      "description": "S1A_IW_20170525T025145_DVP_RTC10_G_gpuned_"
+      "job_type": "RTC_GAMMA"
     },
     {
       "name": "{{ name }}",
@@ -57,8 +54,7 @@
         "include_dem": "true",
         "include_inc_map": "true"
       },
-      "job_type": "RTC_GAMMA",
-      "description": "S1B_IW_20180522T071932_DHP_RTC30_G_saufem_"
+      "job_type": "RTC_GAMMA"
     },
     {
       "name": "{{ name }}",
@@ -72,8 +68,7 @@
         "include_dem": "false",
         "include_inc_map": "true"
       },
-      "job_type": "RTC_GAMMA",
-      "description": "S1A_IW_20170823T011304_DVP_RTC30_G_spuned_"
+      "job_type": "RTC_GAMMA"
     },
     {
       "name": "{{ name }}",
@@ -87,8 +82,7 @@
         "include_dem": "true",
         "include_inc_map": "false"
       },
-      "job_type": "RTC_GAMMA",
-      "description": "S1B_IW_20170823T011304_DHP_RTC10_G_gaufem_"
+      "job_type": "RTC_GAMMA"
     }
   ],
   "validate_only": false

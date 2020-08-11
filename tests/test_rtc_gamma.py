@@ -41,8 +41,9 @@ def test_golden_wait_and_download(comparison_dirs):
     for dir_ in comparison_dirs:
         with open(dir_ / f'{dir_.name}_response.json') as f:
             resp = json.load(f)
-            job_name = resp['jobs'][0]['name']
-            request_time = resp['jobs'][0]['request_time']
+
+        job_name = resp['jobs'][0]['name']
+        request_time = resp['jobs'][0]['request_time']
 
         while True:
             update = helpers.get_jobs_update(job_name, _API[dir_.name], hyp3_session, request_time=request_time)
