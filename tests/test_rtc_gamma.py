@@ -50,7 +50,6 @@ def test_golden(tmp_path):
 
     # TODO: log asserts instead and continue with set unions to do most possible comparisons
     #   OR: all of the above as a session scoped fixture...
-    # produced the same set of product base names for both
     assert sorted(main_products) == sorted(develop_products)
 
     for product_base, main_hash in main_products.items():
@@ -60,16 +59,9 @@ def test_golden(tmp_path):
         develop_files = {Path(f).name.replace(develop_hash, 'HASH')
                          for f in glob(str(develop_dir / '_'.join([product_base, develop_hash]) / '*'))}
 
-        # produced the same set of files in both products
         assert main_files == develop_files
 
         for file_ in main_files & develop_files:
-            # TODO: compare *kmz contents
-            # TODO: compare *png contents
-            # TODO: compare *shp *shx *prj *dbf contents
-            # TODO: compare *xml contents
-            # ~~TODO: compare log contents~~
-            # TODO: compare README.txt contents
             if file_.endswith('.tif'):
                 main_file = main_dir / "_".join([product_base, main_hash]) / file_.replace("HASH", main_hash)
                 develop_file = develop_dir / "_".join([product_base, develop_hash]) / file_.replace("HASH", develop_hash)
