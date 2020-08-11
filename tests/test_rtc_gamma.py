@@ -3,15 +3,20 @@ import time
 from glob import glob
 from pathlib import Path
 
+from hyp3_testing import helpers
+
 _API_URL = 'https://hyp3-api.asf.alaska.edu/jobs'
 _API_TEST_URL = 'https://hyp3-test-api.asf.alaska.edu/jobs'
 
 # TODO: submit test; doesn't run if --name argument passed
-# TODO: wait_and_download test; looks for --name argument, or use main_response.json, develop_response.json if they exist?
-#          will mean can't use URL from submit...
+# TODO: wait_and_download test
+#          looks for --name argument,
+#          or use main_response.json, develop_response.json if they exist?
 
 
-def test_golden(tmp_path, helpers, hyp3_session):
+def test_golden(tmp_path):
+    hyp3_session = helpers.hyp3_session()
+
     submission_payload = helpers.get_submission_payload(Path(__file__).resolve().parent / 'data' / 'rtc_gamma_golden.json')
 
     main_response = hyp3_session.post(url=_API_URL, json=submission_payload)
