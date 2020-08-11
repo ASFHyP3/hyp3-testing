@@ -31,7 +31,7 @@ def get_submission_payload(template):
 
 
 # TODO: don't take response -- take params instead
-def get_jobs_update(post_response, hyp3_session):
+def get_jobs_update(post_response, session):
     pr = post_response.json()
     requests_time = pr['jobs'][0]['request_time']
     params = {
@@ -39,7 +39,7 @@ def get_jobs_update(post_response, hyp3_session):
         'end': requests_time,
         'name': pr['jobs'][0]['name']
     }
-    update = hyp3_session.get(post_response.url, params=params)
+    update = session.get(post_response.url, params=params)
     update.raise_for_status()
     return update
 
