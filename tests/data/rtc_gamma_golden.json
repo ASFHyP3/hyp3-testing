@@ -90,5 +90,6 @@
       "job_type": "RTC_GAMMA",
       "description": "S1B_IW_20170823T011304_DHP_RTC10_G_gaufem_"
     }
-  ]
+  ],
+  "validate_only": false
 }
