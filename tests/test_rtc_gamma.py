@@ -9,6 +9,7 @@ import pytest
 from hyp3_testing import API_URL, API_TEST_URL
 from hyp3_testing import helpers
 
+_API = {'main': API_URL, 'develop': API_TEST_URL}
 
 # TODO: submit test; doesn't run if --name argument passed
 # TODO: wait_and_download test
@@ -22,23 +23,16 @@ def test_golden_submission(comparison_dirs):
 
     submission_payload = helpers.get_submission_payload(
         Path(__file__).resolve().parent / 'data' / 'rtc_gamma_golden.json')
-
-    main_response = hyp3_session.post(url=API_URL, json=submission_payload)
-    main_response.raise_for_status()
-
-    develop_response = hyp3_session.post(url=API_TEST_URL, json=submission_payload)
-    develop_response.raise_for_status()
-
-    main_dir, develop_dir = comparison_dirs
-    with open(main_dir / 'main_response.json', 'w') as f:
-        json.dump(main_response.json(), f)
-
-    with open(develop_dir / 'develop_response.json', 'w') as f:
-        json.dump(develop_response.json(), f)
-
     print(f'Job name: {submission_payload["jobs"][0]["name"]}')
-    print(f'Main request time: {main_response.json()["jobs"][0]["request_time"]}')
-    print(f'Develop request time: {develop_response.json()["jobs"][0]["request_time"]}')
+
+    for dir_ in comparison_dirs:
+        response = hyp3_session.post(url=_API[dir_.name], json=submission_payload)
+        response.raise_for_status()
+        print(f'{dir_.name} request time: {response.json()["jobs"][0]["request_time"]}')
+
+        with open(dir_, f'{dir_.name}_response.json', 'w') as f:
+            json.dump(response.json(), f)
+
 
 
 @pytest.mark.dependency(depends=['test_golden_submission'])
