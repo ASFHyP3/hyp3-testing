@@ -3,10 +3,9 @@ import time
 from glob import glob
 from pathlib import Path
 
+from hyp3_testing import API_URL, API_TEST_URL
 from hyp3_testing import helpers
 
-_API_URL = 'https://hyp3-api.asf.alaska.edu/jobs'
-_API_TEST_URL = 'https://hyp3-test-api.asf.alaska.edu/jobs'
 
 # TODO: submit test; doesn't run if --name argument passed
 # TODO: wait_and_download test
@@ -19,10 +18,10 @@ def test_golden(tmp_path):
 
     submission_payload = helpers.get_submission_payload(Path(__file__).resolve().parent / 'data' / 'rtc_gamma_golden.json')
 
-    main_response = hyp3_session.post(url=_API_URL, json=submission_payload)
+    main_response = hyp3_session.post(url=API_URL, json=submission_payload)
     main_response.raise_for_status()
 
-    develop_response = hyp3_session.post(url=_API_TEST_URL, json=submission_payload)
+    develop_response = hyp3_session.post(url=API_TEST_URL, json=submission_payload)
     develop_response.raise_for_status()
 
     ii = 0

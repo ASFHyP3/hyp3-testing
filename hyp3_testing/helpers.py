@@ -8,14 +8,12 @@ import requests
 from hyp3lib.fetch import download_file
 from jinja2 import Template
 
-_AUTH_URL = 'https://urs.earthdata.nasa.gov/oauth/authorize?response_type=code' \
-            '&client_id=BO_n7nTIlMljdvU6kRRB3g' \
-            '&redirect_uri=https://auth.asf.alaska.edu/login'
+from hyp3_testing import AUTH_URL
 
 
 def hyp3_session():
     session = requests.Session()
-    resp = session.get(_AUTH_URL)
+    resp = session.get(AUTH_URL)
     resp.raise_for_status()
     return session
 
