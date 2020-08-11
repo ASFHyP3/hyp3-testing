@@ -42,6 +42,7 @@ setup(
             'pytest',
             'pytest-cov',
             'pytest-dependency',
+            'pytest-timeout',
             'responses',
         ]
     },

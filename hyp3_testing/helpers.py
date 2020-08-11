@@ -45,7 +45,7 @@ def get_jobs_update(name, url, session, request_time=None):
 
     update = session.get(url, params=params)
     update.raise_for_status()
-    return update
+    return update.json()
 
 
 def jobs_succeeded(jobs):

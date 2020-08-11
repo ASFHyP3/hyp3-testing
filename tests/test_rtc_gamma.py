@@ -1,6 +1,5 @@
 import json
 import subprocess
-import time
 from glob import glob
 from pathlib import Path
 
@@ -34,45 +33,23 @@ def test_golden_submission(comparison_dirs):
             json.dump(response.json(), f)
 
 
-
+@pytest.mark.timeout(5400)  # 90 minutes as golden 10m RTC jobs take ~1 hr
 @pytest.mark.dependency(depends=['test_golden_submission'])
 def test_golden_wait_and_download(comparison_dirs):
-    main_dir, develop_dir = comparison_dirs
     hyp3_session = helpers.hyp3_session()
 
-    assert (main_dir / 'main_response.json').exists()
-    assert (develop_dir / 'develop_response.json').exists()
+    for dir_ in comparison_dirs:
+        with open(dir_ / f'{dir_.name}_response.json') as f:
+            resp = json.load(f)
+            job_name = resp['jobs'][0]['name']
+            request_time = resp['jobs'][0]['request_time']
 
-    with open(main_dir / 'main_response.json') as f:
-        main_response = json.load(f)
-    with open(develop_dir / 'develop_response.json') as f:
-        develop_response = json.load(f)
+        while True:
+            update = helpers.get_jobs_update(job_name, _API[dir_.name], hyp3_session, request_time=request_time)
+            if helpers.jobs_succeeded(update['jobs']):
+                break
 
-    ii = 0
-    main_succeeded = False
-    develop_succeeded = False
-    main_update = None
-    develop_update = None
-    while (ii := ii + 1) < 90:  # golden 10m RTC jobs take ~1 hr
-        if not main_succeeded:
-            main_update = helpers.get_jobs_update(
-                main_response['jobs'][0]['name'], API_URL, hyp3_session,
-                request_time=main_response['jobs'][0]['request_time']
-            )
-            main_succeeded = helpers.jobs_succeeded(main_update.json()['jobs'])
-        if not develop_succeeded:
-            develop_update = helpers.get_jobs_update(
-                develop_response['jobs'][0]['name'], API_TEST_URL, hyp3_session,
-                request_time=develop_response['jobs'][0]['request_time']
-            )
-            develop_succeeded = helpers.jobs_succeeded(develop_update.json()['jobs'])
-
-        if main_succeeded and develop_succeeded:
-            break
-        time.sleep(60)
-
-    helpers.download_products(main_update.json()['jobs'], main_dir)
-    helpers.download_products(develop_update.json()['jobs'], develop_dir)
+        helpers.download_products(update['jobs'], dir_)
 
 
 @pytest.mark.dependency(depends=['test_golden_wait_and_download'])
