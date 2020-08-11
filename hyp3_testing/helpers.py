@@ -14,9 +14,9 @@ from hyp3_testing import AUTH_URL
 
 
 def hyp3_session(username: str = None, password: str = None):
-    username = os.environ.get('HYP3_USERNAME') if username is None else username
-    password = os.environ.get('HYP3_PASSWORD') if password is None else password
-    if username is None or password is None:
+    username = username if username is not None else os.environ.get('HYP3_USERNAME')
+    password = password if password is not None else os.environ.get('HYP3_PASSWORD')
+    if username is None and password is None:
         auth = None
     else:
         auth = (username, password)
