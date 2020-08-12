@@ -12,8 +12,6 @@ def test_get_submission_payload():
     sp2 = helpers.get_submission_payload(template)
 
     assert sp1["jobs"][0]["name"] != sp2["jobs"][0]["name"]
-    assert len(sp1["jobs"][0]["name"]) == 7
-    assert len(sp2["jobs"][0]["name"]) == 7
 
 
 def test_jobs_succeeded():
