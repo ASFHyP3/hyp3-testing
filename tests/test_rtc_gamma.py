@@ -8,11 +8,8 @@ import pytest
 from hyp3_testing import API_TEST_URL, API_URL
 from hyp3_testing import helpers
 
+pytestmark = pytest.mark.golden
 _API = {'main': API_URL, 'develop': API_TEST_URL}
-
-# TODO: wait_and_download test
-#          looks for --name argument,
-#          or use main_response.json, develop_response.json if they exist?
 
 
 @pytest.mark.nameskip

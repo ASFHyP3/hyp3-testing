@@ -38,10 +38,10 @@ def test_jobs_succeeded():
                   json=jsn, status=200)
 
     update = requests.get(API_URL)
-    assert helpers.jobs_succeeded(update) is False
+    assert helpers.jobs_succeeded(update.json()['jobs']) is False
 
     update = requests.get(API_URL)
-    assert helpers.jobs_succeeded(update) is True
+    assert helpers.jobs_succeeded(update.json()['jobs']) is True
 
 
 @responses.activate
@@ -78,4 +78,4 @@ def test_get_download_urls():
                   json=jsn, status=200)
 
     update = requests.get(API_URL)
-    assert set(urls) == helpers.get_download_urls(update)
+    assert urls == helpers.get_download_urls(update.json()['jobs'])
