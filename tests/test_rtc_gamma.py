@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from hyp3_testing import API_URL, API_TEST_URL
+from hyp3_testing import API_TEST_URL, API_URL
 from hyp3_testing import helpers
 
 _API = {'main': API_URL, 'develop': API_TEST_URL}

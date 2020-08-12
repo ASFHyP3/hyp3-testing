@@ -27,6 +27,7 @@ def pytest_addoption(parser):
         "--golden-dirs", nargs=2, help="Main and develop directories to use for comparison"
     )
 
+
 @pytest.fixture
 def job_name(request):
     return request.config.getoption("--name")

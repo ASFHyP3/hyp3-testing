@@ -1,5 +1,5 @@
-import os
 import json
+import os
 import random
 import string
 from glob import glob

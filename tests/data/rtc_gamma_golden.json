@@ -84,6 +84,5 @@
       },
       "job_type": "RTC_GAMMA"
     }
-  ],
-  "validate_only": false
+  ]
 }
