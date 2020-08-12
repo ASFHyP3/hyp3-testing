@@ -10,13 +10,12 @@ from hyp3_testing import helpers
 
 _API = {'main': API_URL, 'develop': API_TEST_URL}
 
-# TODO: submit test; doesn't run if --name argument passed
 # TODO: wait_and_download test
 #          looks for --name argument,
 #          or use main_response.json, develop_response.json if they exist?
 
 
-@pytest.mark.dependency()
+@pytest.mark.nameskip
 def test_golden_submission(comparison_dirs):
     hyp3_session = helpers.hyp3_session()
 
@@ -34,16 +33,21 @@ def test_golden_submission(comparison_dirs):
 
 
 @pytest.mark.timeout(5400)  # 90 minutes as golden 10m RTC jobs take ~1 hr
-@pytest.mark.dependency(depends=['test_golden_submission'])
-def test_golden_wait_and_download(comparison_dirs):
+@pytest.mark.dependency()
+def test_golden_wait_and_download(comparison_dirs, job_name):
     hyp3_session = helpers.hyp3_session()
-
     for dir_ in comparison_dirs:
-        with open(dir_ / f'{dir_.name}_response.json') as f:
-            resp = json.load(f)
+        products = helpers.find_products(dir_, pattern='*.zip')
+        if products:
+            continue
 
-        job_name = resp['jobs'][0]['name']
-        request_time = resp['jobs'][0]['request_time']
+        if job_name is None:
+            with open(dir_ / f'{dir_.name}_response.json') as f:
+                resp = json.load(f)
+            job_name = resp['jobs'][0]['name']
+            request_time = resp['jobs'][0]['request_time']
+        else:
+            request_time = None
 
         while True:
             update = helpers.get_jobs_update(job_name, _API[dir_.name], hyp3_session, request_time=request_time)
