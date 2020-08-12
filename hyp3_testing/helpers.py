@@ -32,8 +32,8 @@ def get_submission_payload(template):
     with open(template) as f:
         body = f.read()
 
-    hash = ''.join(random.choices(string.ascii_letters + string.digits, k=7))
-    jobs = Template(body).render(hash=hash)
+    hash_ = ''.join(random.choices(string.ascii_letters + string.digits, k=7))
+    jobs = Template(body).render(hash=hash_)
 
     return json.loads(jobs)
 
