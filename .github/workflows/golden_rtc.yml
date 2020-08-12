@@ -1,0 +1,29 @@
+name: Golden RTC
+
+on:
+  workflow_dispatch:
+    inputs:
+      tags:
+        description: 'Test scenario tags'
+
+jobs:
+  golden:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: goanpeca/setup-miniconda@v1
+        with:
+          auto-update-conda: true
+          python-version: 3.8
+          activate-environment: hyp3-testing
+          environment-file: conda-env.yml
+
+      - name: Pytest in conda environment
+        env:
+          EARTHDATA_LOGIN_USER: ${{ secrets.EARTHDATA_LOGIN_USER }}
+          EARTHDATA_LOGIN_PASSWORD: ${{ secrets.EARTHDATA_LOGIN_PASSWORD }}
+        shell: bash -l {0}
+        run: |
+          python -m pip install .[develop]
+          pytest tests/test_rtc_gamma.py

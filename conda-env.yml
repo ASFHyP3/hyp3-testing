@@ -1,0 +1,21 @@
+name: hyp3-testing
+channels:
+  - conda-forge
+  - nodefaults
+dependencies:
+  - python=3.8
+  - pip
+  - gdal
+  - hyp3lib>=1.4
+  - jinja2
+  - setuptools
+  - setuptools_scm
+  - pytest
+  - pytest-cov
+  - pytest-dependency
+  - pytest-timeout
+  - requests
+  - wheel
+  - pip:
+      - s3pypi
+      - safety

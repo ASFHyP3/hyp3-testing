@@ -1,1 +1,3 @@
-# hyp3-testing
+# HyP3 Testing
+
+HyP3 plugin for testing processing
