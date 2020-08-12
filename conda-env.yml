@@ -15,7 +15,6 @@ dependencies:
   - pytest-dependency
   - pytest-timeout
   - requests
-  - responses
   - wheel
   - pip:
       - s3pypi

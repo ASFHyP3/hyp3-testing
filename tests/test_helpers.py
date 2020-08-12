@@ -1,10 +1,7 @@
 from pathlib import Path
 
 import pytest
-import requests
-import responses
 
-from hyp3_testing import API_URL
 from hyp3_testing import helpers
 
 
@@ -19,63 +16,40 @@ def test_get_submission_payload():
     assert len(sp2["jobs"][0]["name"]) == 7
 
 
-@responses.activate
 def test_jobs_succeeded():
-    jsn = {"jobs": [
+    jobs_list = [
         {"status_code": "SUCCEEDED"},
         {"status_code": "RUNNING"},
         {"status_code": "PENDING"},
-    ]}
-    responses.add(responses.GET, API_URL,
-                  json=jsn, status=200)
+    ]
+    assert helpers.jobs_succeeded(jobs_list) is False
 
-    jsn = {"jobs": [
+    jobs_list = [
         {"status_code": "SUCCEEDED"},
         {"status_code": "SUCCEEDED"},
         {"status_code": "SUCCEEDED"},
-    ]}
-    responses.add(responses.GET, API_URL,
-                  json=jsn, status=200)
-
-    update = requests.get(API_URL)
-    assert helpers.jobs_succeeded(update.json()['jobs']) is False
-
-    update = requests.get(API_URL)
-    assert helpers.jobs_succeeded(update.json()['jobs']) is True
+    ]
+    assert helpers.jobs_succeeded(jobs_list) is True
 
 
-@responses.activate
 def test_jobs_succeeded_failed():
-    jsn = {"jobs": [
+    jobs_list = [
         {"status_code": "SUCCEEDED"},
         {"status_code": "RUNNING"},
         {"status_code": "PENDING"},
         {"status_code": "FAILED"},
-    ]}
-
-    responses.add(responses.GET, API_URL,
-                  json=jsn, status=200)
-
-    update = requests.get(API_URL)
-
+    ]
     with pytest.raises(Exception) as exc:
-        helpers.jobs_succeeded(update)
-
+        helpers.jobs_succeeded(jobs_list)
         assert 'Job failed' in str(exc)
 
 
-@responses.activate
 def test_get_download_urls():
     urls = ['https://1', 'https://2', 'https://3', 'https://2']
-    jsn = {"jobs": [
+    jobs_list = [
         {"files": [{"url": urls[0]}]},
         {"files": [{"url": urls[1]}]},
         {"files": [{"url": urls[2]}]},
         {"files": [{"url": urls[3]}]},
-    ]}
-
-    responses.add(responses.GET, API_URL,
-                  json=jsn, status=200)
-
-    update = requests.get(API_URL)
-    assert urls == helpers.get_download_urls(update.json()['jobs'])
+    ]
+    assert urls == helpers.get_download_urls(jobs_list)
