@@ -1,10 +1,6 @@
 name: Golden RTC
 
-on:
-  workflow_dispatch:
-    inputs:
-      tags:
-        description: 'Test scenario tags'
+on: workflow_dispatch
 
 jobs:
   golden:
