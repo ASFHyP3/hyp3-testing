@@ -6,12 +6,17 @@ from hyp3_testing import helpers
 
 
 def test_get_submission_payload():
-    template = Path(__file__).resolve().parent / 'data' / 'rtc_gamma_golden.json'
+    template = Path(__file__).resolve().parent / 'data' / 'rtc_gamma_golden.json.j2'
 
     sp1 = helpers.get_submission_payload(template)
     sp2 = helpers.get_submission_payload(template)
 
     assert sp1["jobs"][0]["name"] != sp2["jobs"][0]["name"]
+
+
+def test_get_jobs_update():
+    # TODO: This.
+    pass
 
 
 def test_jobs_succeeded():
@@ -51,3 +56,39 @@ def test_get_download_urls():
         {"files": [{"url": urls[3]}]},
     ]
     assert urls == helpers.get_download_urls(jobs_list)
+
+
+def test_download_products():
+    # TODO: This.
+    pass
+
+
+def test_find_products(tmp_path):
+    product_zips = [tmp_path / f'{ii}_H{ii}.zip' for ii in range(3)]
+    for z in product_zips:
+        z.touch()
+
+    found_products = helpers.find_products(tmp_path)
+    assert len(found_products) == len(product_zips)
+    for base, hash_ in found_products.items():
+        assert f'H{base}' == hash_
+
+
+def test_find_files_in_products(tmp_path):
+    main_dir = tmp_path / 'main' / 'product_MAIN'
+    main_dir.mkdir(parents=True)
+
+    develop_dir = tmp_path / 'develop' / 'product_DEV'
+    develop_dir.mkdir(parents=True)
+
+    product_tifs = ['a.tif', 'b.tif', 'c.tif']
+    for f in product_tifs:
+        (main_dir / f).touch()
+        (develop_dir / f).touch()
+
+    found_files = helpers.find_files_in_products(main_dir, develop_dir)
+    assert len(found_files) == len(product_tifs)
+    for m, d in found_files:
+        assert m.name in product_tifs
+        assert d.name in product_tifs
+        assert m.name == d.name
