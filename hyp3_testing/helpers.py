@@ -98,7 +98,7 @@ def find_files_in_products(main_dir: Path, develop_dir: Path, pattern: str = '*.
 
     comparison_files = [
         (main_base_path / str(f).replace('HASH', main_hash), develop_base_path / str(f).replace('HASH', develop_hash))
-        for f in comparison_set
+        for f in sorted(comparison_set)
     ]
 
     return comparison_files

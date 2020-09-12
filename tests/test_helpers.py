@@ -64,14 +64,20 @@ def test_download_products():
 
 
 def test_find_products(tmp_path):
-    product_zips = [tmp_path / f'{ii}_H{ii}.zip' for ii in range(3)]
+    product_zips = [
+        tmp_path / 'p1_h1.zip',
+        tmp_path / 'p2_h2.zip',
+        tmp_path / 'p3_h3.zip',
+    ]
     for z in product_zips:
         z.touch()
 
     found_products = helpers.find_products(tmp_path)
-    assert len(found_products) == len(product_zips)
-    for base, hash_ in found_products.items():
-        assert f'H{base}' == hash_
+    assert found_products == {
+        'p1': 'h1',
+        'p2': 'h2',
+        'p3': 'h3',
+    }
 
 
 def test_find_files_in_products(tmp_path):
@@ -87,8 +93,8 @@ def test_find_files_in_products(tmp_path):
         (develop_dir / f).touch()
 
     found_files = helpers.find_files_in_products(main_dir, develop_dir)
-    assert len(found_files) == len(product_tifs)
-    for m, d in found_files:
-        assert m.name in product_tifs
-        assert d.name in product_tifs
-        assert m.name == d.name
+    assert found_files == [
+        (main_dir / 'a.tif', develop_dir / 'a.tif'),
+        (main_dir / 'b.tif', develop_dir / 'b.tif'),
+        (main_dir / 'c.tif', develop_dir / 'c.tif'),
+    ]
