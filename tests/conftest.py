@@ -21,6 +21,9 @@ def comparison_dirs(tmp_path_factory, golden_dirs):
 
 def pytest_addoption(parser):
     parser.addoption(
+        "--payload-file", nargs='?', help="Golden payload to submit"
+    )
+    parser.addoption(
         "--name", nargs='?', help="Find jobs by this name to compare"
     )
     parser.addoption(
@@ -36,6 +39,11 @@ def job_name(request):
 @pytest.fixture(scope='session')
 def golden_dirs(request):
     return request.config.getoption("--golden-dirs")
+
+
+@pytest.fixture(scope='session')
+def payload_file(request):
+    return request.config.getoption("--payload-file")
 
 
 def pytest_collection_modifyitems(config, items):

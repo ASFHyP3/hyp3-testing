@@ -13,11 +13,11 @@ _API = {'main': API_URL, 'develop': API_TEST_URL}
 
 
 @pytest.mark.nameskip
-def test_golden_submission(comparison_dirs):
+def test_golden_submission(payload_file, comparison_dirs):
     hyp3_session = helpers.hyp3_session()
 
     submission_payload = helpers.get_submission_payload(
-        Path(__file__).resolve().parent / 'data' / 'rtc_gamma_golden.json.j2')
+        Path(__file__).resolve().parent / 'data' / payload_file)
     print(f'Job name: {submission_payload["jobs"][0]["name"]}')
 
     for dir_ in comparison_dirs:
