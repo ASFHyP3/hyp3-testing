@@ -1,0 +1,45 @@
+{% set name = "hyp3-testing-%s"|format(hash) %}
+{
+  "jobs": [
+    {
+      "name": "{{ name }}",
+      "job_parameters": {
+        "granules": [
+          "S1A_IW_SLC__1SSH_20170221T204710_20170221T204737_015387_0193F6_AB07",
+          "S1B_IW_SLC__1SSH_20170227T204628_20170227T204655_004491_007D11_6654"
+         ]
+      },
+      "job_type": "AUTORIFT"
+    },
+    {
+      "name": "{{ name }}",
+      "job_parameters": {
+        "granules": [
+          "S1B_IW_SLC__1SDH_20180821T204618_20180821T204645_012366_016CC2_59A7",
+          "S1B_IW_SLC__1SDH_20180809T204617_20180809T204644_012191_01674F_9345"
+         ]
+      },
+      "job_type": "AUTORIFT"
+    },
+    {
+      "name": "{{ name }}",
+      "job_parameters": {
+        "granules": [
+          "S1A_IW_SLC__1SSH_20151214T080202_20151214T080229_009035_00CF68_780C",
+          "S1A_IW_SLC__1SSH_20151120T080202_20151120T080229_008685_00C5A7_105E"
+         ]
+      },
+      "job_type": "AUTORIFT"
+    },
+    {
+      "name": "{{ name }}",
+      "job_parameters": {
+        "granules": [
+          "S1A_IW_SLC__1SSH_20150909T162413_20150909T162443_007640_00A97D_922B",
+          "S1A_IW_SLC__1SSH_20150828T162412_20150828T162431_007465_00A4AF_DC3E"
+         ]
+      },
+      "job_type": "AUTORIFT"
+    }
+  ]
+}
