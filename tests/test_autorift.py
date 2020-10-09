@@ -123,4 +123,3 @@ def test_golden_products(comparison_dirs):
     if messages:
         messages.insert(0, f'{failure_count} of {len(products)} products are different!')
         raise ComparisonFailure('\n\n'.join(messages))
-

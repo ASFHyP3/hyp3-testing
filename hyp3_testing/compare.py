@@ -87,7 +87,7 @@ def _array_message(reference, secondary, rtol=1e-05, atol=1e-08):
 
     messages = [
         f'{n_different:,}/{diff.size:,} ({n_different / diff.size:.2%}) values are different.',
-        f'Reference - secondary:',
+        'Reference - secondary:',
         f'    max {diff.max()}; min {diff.min()}; mean {diff.mean()};',
         f'    std {diff.std()}; var {diff.var()}',
     ]
