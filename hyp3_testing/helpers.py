@@ -102,3 +102,16 @@ def find_files_in_products(main_dir: Path, develop_dir: Path, pattern: str = '*.
     ]
 
     return comparison_files
+
+
+def clarify_xr_message(message: str, left: str = 'reference', right: str = 'secondary'):
+    # Note: xarray reffers to the left (L) and right (R) datasets, which we
+    #       typically call reference (R) and secondary (S) datasets
+    message = message.replace('Left', left.title())
+    message = message.replace('left', left.lower())
+    message = message.replace('Right', right.title())
+    message = message.replace('right', right.lower())
+    message = message.replace('\nR ', f'\n{right[0].upper()} ')
+    message = message.replace('\nL ', f'\n{left[0].upper()} ')
+    message = message.replace('\n\n\n', '\n\n')
+    return message

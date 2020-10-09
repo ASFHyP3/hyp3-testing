@@ -5,12 +5,13 @@ from functools import singledispatch
 from pathlib import Path
 from typing import Hashable, Optional, Union
 
-import xarray
-import rioxarray
-import numpy
+import numpy as np
+import xarray as xr
 from rasterio.crs import CRS
 
-XR = Union[xarray.Dataset, xarray.DataArray, xarray.Variable]
+from hyp3_testing.helpers import clarify_xr_message
+
+XR = Union[xr.Dataset, xr.DataArray, xr.Variable]
 
 
 class ComparisonFailure(Exception):
@@ -25,38 +26,22 @@ def bit_for_bit(reference: Path, secondary: Path):
         raise ComparisonFailure('Files differ at the binary level')
 
 
-def load_geotif(tif_file: Path) -> xarray.DataArray:
-    return rioxarray.open_rasterio(tif_file)
-
-
-def load_netcdf(nc_file: Path) -> xarray.Dataset:
-    return xarray.load_dataset(nc_file)
-
-
 def compare_values(reference: XR, secondary: XR, rtol: float = 1e-05, atol: float = 1e-08):
     xr_not_equal_message = None
     xr_not_close_message = None
 
     try:
-        xarray.testing.assert_equal(reference, secondary)
+        xr.testing.assert_equal(reference, secondary)
     except AssertionError as e:
         xr_not_equal_message = str(e)
 
     if xr_not_equal_message is None:
         return
     else:
-        # Note: xarray reffers to the left (L) and right (R) datatsets, which are our
-        #       reference (R) and secondary (S) datasets
-        xr_not_equal_message = xr_not_equal_message.replace('Left', 'Reference')
-        xr_not_equal_message = xr_not_equal_message.replace('left', 'reference')
-        xr_not_equal_message = xr_not_equal_message.replace('Right', 'Secondary')
-        xr_not_equal_message = xr_not_equal_message.replace('right', 'secondary')
-        xr_not_equal_message = xr_not_equal_message.replace('\nR ', '\nS ')
-        xr_not_equal_message = xr_not_equal_message.replace('\nL ', '\nR ')
-        xr_not_equal_message = xr_not_equal_message.replace('\n\n\n', '\n\n')
+        xr_not_equal_message = clarify_xr_message(xr_not_equal_message)
 
     try:
-        xarray.testing.assert_allclose(reference, secondary, rtol=rtol, atol=atol)
+        xr.testing.assert_allclose(reference, secondary, rtol=rtol, atol=atol)
     except AssertionError as e:
         xr_not_close_message = str(e)
 
@@ -75,16 +60,16 @@ def _compare_values_message(reference, secondary, rtol=1e-05, atol=1e-08):
 
 
 # Note: functools can't handle non-class types, so typing.Union is a no-go.
-@_compare_values_message.register(xarray.Variable)
-@_compare_values_message.register(xarray.DataArray)
+@_compare_values_message.register(xr.Variable)
+@_compare_values_message.register(xr.DataArray)
 def _array_message(reference, secondary, rtol=1e-05, atol=1e-08):
     if reference.shape != secondary.shape:
         raise ComparisonFailure(
             f'DataArrays are different shapes. Reference: {reference.shape}; secondary: {secondary.shape}'
         )
 
-    diff = numpy.ma.masked_invalid(reference - secondary)
-    n_close = numpy.isclose(diff.filled(0.0), 0.0, rtol=rtol, atol=atol).sum()
+    diff = np.ma.masked_invalid(reference - secondary)
+    n_close = np.isclose(diff.filled(0.0), 0.0, rtol=rtol, atol=atol).sum()
 
     n_different = diff.size - n_close
     if n_different == 0:
@@ -100,7 +85,7 @@ def _array_message(reference, secondary, rtol=1e-05, atol=1e-08):
 
 
 @_compare_values_message.register
-def _dataset_message(reference: xarray.Dataset, secondary, rtol=1e-05, atol=1e-08):
+def _dataset_message(reference: xr.Dataset, secondary, rtol=1e-05, atol=1e-08):
     ref_vars = set(reference.keys())
     sec_vars = set(secondary.keys())
 
@@ -113,7 +98,7 @@ def _dataset_message(reference: xarray.Dataset, secondary, rtol=1e-05, atol=1e-0
     return '\n'.join(messages)
 
 
-def compare_cf_spatial_reference(reference: xarray.Dataset, secondary: xarray.Dataset):
+def compare_cf_spatial_reference(reference: xr.Dataset, secondary: xr.Dataset):
     if (ref_conventions := reference.attrs.get('Conventions')) is None:
         raise ComparisonFailure('Reference dataset does follow CF Conventions')
 
@@ -145,7 +130,7 @@ def compare_cf_spatial_reference(reference: xarray.Dataset, secondary: xarray.Da
         )
 
 
-def _find_grid_mapping_variable_name(dataset: xarray.Dataset) -> Optional[Hashable]:
+def _find_grid_mapping_variable_name(dataset: xr.Dataset) -> Optional[Hashable]:
     grid_map_var = None
     for var in dataset.variables:
         if dataset.variables[var].attrs.get('grid_mapping_name') is not None:
@@ -155,7 +140,7 @@ def _find_grid_mapping_variable_name(dataset: xarray.Dataset) -> Optional[Hashab
     return grid_map_var
 
 
-def _find_wkt(variable: xarray.Variable) -> Optional[str]:
+def _find_wkt(variable: xr.Variable) -> Optional[str]:
     wkt = variable.attrs.get('crs_wkt')
     if wkt is None:
         wkt = variable.attrs.get('spatial_ref')

@@ -15,9 +15,9 @@ dependencies:
   - pytest-dependency
   - pytest-timeout
   - requests
+  - rasterio
   - wheel
   - xarray
-  - rioxarray
   - pip:
       - s3pypi
       - safety
