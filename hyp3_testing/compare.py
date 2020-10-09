@@ -63,10 +63,12 @@ def _compare_values_message(reference, secondary, rtol=1e-05, atol=1e-08):
 @_compare_values_message.register(xr.Variable)
 @_compare_values_message.register(xr.DataArray)
 def _array_message(reference, secondary, rtol=1e-05, atol=1e-08):
-    if reference.dtype.kind == 'S' or secondary.dtype.kind == 'S':
+    # https://numpy.org/doc/stable/reference/generated/numpy.dtype.kind.html#numpy.dtype.kind
+    exact_dtypes = ["M", "m", "O", "S", "U"]
+    if reference.dtype.kind in exact_dtypes or secondary.dtype.kind in exact_dtypes:
         if reference.values != secondary.values:
             raise ComparisonFailure(
-                f'Strings are different.\n    {reference.values}\n    {secondary.values}'
+                f'Values are different.\n    Reference: {reference.values}\n    Secondary: {secondary.values}'
             )
         else:
             return
