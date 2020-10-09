@@ -31,7 +31,7 @@ def test_golden_submission(comparison_dirs):
             json.dump(response.json(), f)
 
 
-@pytest.mark.timeout(1080)  # 3 hours
+@pytest.mark.timeout(10800)  # 3 hours
 @pytest.mark.dependency()
 def test_golden_wait_and_download(comparison_dirs, job_name):
     hyp3_session = helpers.hyp3_session()
@@ -90,7 +90,9 @@ def test_golden_products(comparison_dirs):
         main_file = main_dir / '_'.join([product_base, f'{main_hash}.nc'])
         develop_file = develop_dir / '_'.join([product_base, f'{develop_hash}.nc'])
 
-        comparison_name = f'{product_base}{{{main_hash},{develop_hash}}}'
+        comparison_header = '\n'.join(
+            ['-'*80, f'{product_base}{{{main_hash},{develop_hash}}}', '-'*80]
+        )
         try:
             bit_for_bit(main_file, develop_file)
         except ComparisonFailure as b4b_failure:
@@ -100,7 +102,7 @@ def test_golden_products(comparison_dirs):
                 xr.testing.assert_identical(main_ds, develop_ds)
             except AssertionError as identical_failure:
                 xr_msg = helpers.clarify_xr_message(str(identical_failure))
-                messages.append(f'{comparison_name}\n{xr_msg}')
+                messages.append(f'{comparison_header}\n{xr_msg}')
 
                 try:
                     compare_values(main_ds, develop_ds)
@@ -113,8 +115,8 @@ def test_golden_products(comparison_dirs):
                     messages.append(str(spatial_ref_failure))
                 continue
 
-            messages.append(f'{comparison_name}\n{b4b_failure}')  # not b4b, but identical
+            messages.append(f'{comparison_header}\n{b4b_failure}')  # not b4b, but identical
 
-        if messages:
-            raise ComparisonFailure('\n\n'.join(messages))
+    if messages:
+        raise ComparisonFailure('\n\n'.join(messages))
 

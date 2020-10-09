@@ -63,6 +63,14 @@ def _compare_values_message(reference, secondary, rtol=1e-05, atol=1e-08):
 @_compare_values_message.register(xr.Variable)
 @_compare_values_message.register(xr.DataArray)
 def _array_message(reference, secondary, rtol=1e-05, atol=1e-08):
+    if reference.dtype.kind == 'S' or secondary.dtype.kind == 'S':
+        if reference.values != secondary.values:
+            raise ComparisonFailure(
+                f'Strings are different.\n    {reference.values}\n    {secondary.values}'
+            )
+        else:
+            return
+
     if reference.shape != secondary.shape:
         raise ComparisonFailure(
             f'DataArrays are different shapes. Reference: {reference.shape}; secondary: {secondary.shape}'

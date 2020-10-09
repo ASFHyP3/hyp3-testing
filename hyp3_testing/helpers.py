@@ -66,9 +66,10 @@ def get_download_urls(jobs: List[dict]) -> List[str]:
 def download_products(jobs: List[dict], directory: Path):
     urls = get_download_urls(jobs)
     for url in urls:
-        zip_file = download_file(url, directory=str(directory))
-        with ZipFile(zip_file) as zip_:
-            zip_.extractall(path=directory)
+        product_file = download_file(url, directory=str(directory))
+        if url.endswith('.zip'):
+            with ZipFile(product_file) as zip_:
+                zip_.extractall(path=directory)
 
 
 def find_products(directory: Path, pattern: str = '*.zip') -> dict:
