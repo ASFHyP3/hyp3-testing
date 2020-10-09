@@ -82,6 +82,7 @@ def test_golden_products(comparison_dirs):
 
     products = set(main_products.keys()) & set(develop_products.keys())
 
+    failure_count = 0
     messages = []
     for product_base in products:
         main_hash = main_products[product_base]
@@ -91,7 +92,7 @@ def test_golden_products(comparison_dirs):
         develop_file = develop_dir / '_'.join([product_base, f'{develop_hash}.nc'])
 
         comparison_header = '\n'.join(
-            ['-'*80, f'{product_base}{{{main_hash},{develop_hash}}}', '-'*80]
+            ['-'*80, f'{product_base}_{{{main_hash},{develop_hash}}}', '-'*80]
         )
         try:
             bit_for_bit(main_file, develop_file)
@@ -102,6 +103,7 @@ def test_golden_products(comparison_dirs):
                 xr.testing.assert_identical(main_ds, develop_ds)
             except AssertionError as identical_failure:
                 xr_msg = helpers.clarify_xr_message(str(identical_failure))
+                failure_count += 1
                 messages.append(f'{comparison_header}\n{xr_msg}')
 
                 try:
@@ -115,8 +117,10 @@ def test_golden_products(comparison_dirs):
                     messages.append(str(spatial_ref_failure))
                 continue
 
+            failure_count += 1
             messages.append(f'{comparison_header}\n{b4b_failure}')  # not b4b, but identical
 
     if messages:
+        messages.insert(0, f'{failure_count} of {len(products)} products are different!')
         raise ComparisonFailure('\n\n'.join(messages))
 

@@ -113,6 +113,6 @@ def clarify_xr_message(message: str, left: str = 'reference', right: str = 'seco
     message = message.replace('Right', right.title())
     message = message.replace('right', right.lower())
     message = message.replace('\nR ', f'\n{right[0].upper()} ')
-    message = message.replace('\nL ', f'\n{left[0].upper()} ')
+    message = message.replace('\nL ', f'\n\n{left[0].upper()} ')
     message = message.replace('\n\n\n', '\n\n')
     return message
