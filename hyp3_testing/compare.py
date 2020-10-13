@@ -1,6 +1,7 @@
 """Tools for comparing datasets"""
 
 import filecmp
+import warnings
 from functools import singledispatch
 from pathlib import Path
 from typing import Hashable, Optional, Union
@@ -8,6 +9,7 @@ from typing import Hashable, Optional, Union
 import numpy as np
 import xarray as xr
 from rasterio.crs import CRS
+from rasterio.errors import CRSError
 
 from hyp3_testing.helpers import clarify_xr_message
 
@@ -33,12 +35,10 @@ def compare_values(reference: XR, secondary: XR, rtol: float = 1e-05, atol: floa
     try:
         xr.testing.assert_equal(reference, secondary)
     except AssertionError as e:
-        xr_not_equal_message = str(e)
+        xr_not_equal_message = clarify_xr_message(str(e))
 
     if xr_not_equal_message is None:
         return
-    else:
-        xr_not_equal_message = clarify_xr_message(xr_not_equal_message)
 
     try:
         xr.testing.assert_allclose(reference, secondary, rtol=rtol, atol=atol)
@@ -46,7 +46,7 @@ def compare_values(reference: XR, secondary: XR, rtol: float = 1e-05, atol: floa
         xr_not_close_message = str(e)
 
     if xr_not_close_message is None:
-        raise ComparisonFailure('Values are close, but not equal.\n' + xr_not_equal_message)
+        return
 
     detailed_failure_message = _compare_values_message(reference, secondary, rtol=rtol, atol=atol)
     raise ComparisonFailure(
@@ -67,15 +67,12 @@ def _array_message(reference, secondary, rtol=1e-05, atol=1e-08):
     exact_dtypes = ["M", "m", "O", "S", "U"]
     if reference.dtype.kind in exact_dtypes or secondary.dtype.kind in exact_dtypes:
         if reference.values != secondary.values:
-            raise ComparisonFailure(
-                f'Values are different.\n    Reference: {reference.values}\n    Secondary: {secondary.values}'
-            )
-        else:
-            return
+            return f'Values are different.\n    Reference: {reference.values}\n    Secondary: {secondary.values}'
+        return
 
     if reference.shape != secondary.shape:
         raise ComparisonFailure(
-            f'DataArrays are different shapes. Reference: {reference.shape}; secondary: {secondary.shape}'
+            f'Data arrays are different shapes. Reference: {reference.shape}; secondary: {secondary.shape}'
         )
 
     diff = np.ma.masked_invalid(reference - secondary)
@@ -115,26 +112,31 @@ def compare_cf_spatial_reference(reference: xr.Dataset, secondary: xr.Dataset):
     if (sec_conventions := secondary.attrs.get('Conventions')) is None:
         raise ComparisonFailure('Secondary dataset does follow CF Conventions')
 
-    messages = []
     if ref_conventions != sec_conventions:
-        messages.append(f'CF Conventions differ. Reference: {ref_conventions}; secondary {sec_conventions}')
+        warnings.warn(f'CF Conventions differ. Reference: {ref_conventions}; secondary {sec_conventions}')
 
     ref_grid_map_var = _find_grid_mapping_variable_name(reference)
     sec_grid_map_var = _find_grid_mapping_variable_name(secondary)
 
     if ref_grid_map_var is None or sec_grid_map_var is None:
-        ComparisonFailure(
+        raise ComparisonFailure(
             f'Could not find a grid_mapping variable! Reference: {ref_grid_map_var}; secondary {sec_grid_map_var}'
         )
 
     ref_wkt = _find_wkt(reference.variables[ref_grid_map_var])
-    sec_wkt = _find_wkt(reference.variables[sec_grid_map_var])
+    sec_wkt = _find_wkt(secondary.variables[sec_grid_map_var])
     if ref_wkt is None or sec_wkt is None:
-        ComparisonFailure(
+        raise ComparisonFailure(
             f'Could not find WKT describing spatial reference.\n  Reference: {ref_wkt}\n  secondary {sec_wkt}'
         )
 
-    if not CRS.from_wkt(ref_wkt) == CRS.from_wkt(sec_wkt):
+    try:
+        ref_crs = CRS.from_wkt(ref_wkt)
+        sec_crs = CRS.from_wkt(sec_wkt)
+    except CRSError:
+        raise ComparisonFailure(f'WKT could not be parsed:\n  Reference: {ref_wkt}\n  secondary {sec_wkt}')
+
+    if not ref_crs == sec_crs:
         raise ComparisonFailure(
             f'Spatial references are not the same.\n  Reference: {ref_wkt}\n  secondary {sec_wkt}'
         )
