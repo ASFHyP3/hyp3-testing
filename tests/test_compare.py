@@ -119,5 +119,3 @@ def test_find_wkt(comparison_netcdfs):
 
     ref_ds.variables['Polar_Stereographic'].attrs['crs_wkt'] = ALAKSA_ALBERS_WKT
     assert ALAKSA_ALBERS_WKT == compare._find_wkt(ref_ds.variables['Polar_Stereographic'])
-
-
