@@ -8,6 +8,7 @@ dependencies:
   - gdal
   - hyp3lib>=1.4
   - jinja2
+  - numpy
   - setuptools
   - setuptools_scm
   - pytest

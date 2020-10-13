@@ -1,4 +1,4 @@
-name: Golden RTC
+name: Golden autoRIFT
 
 on: workflow_dispatch
 
