@@ -7,8 +7,7 @@ import xarray as xr
 
 from hyp3_testing import API_TEST_URL, API_URL
 from hyp3_testing import helpers
-from hyp3_testing.compare import ComparisonFailure
-from hyp3_testing.compare import bit_for_bit, compare_cf_spatial_reference, values_are_close
+from hyp3_testing import compare
 
 pytestmark = pytest.mark.golden
 _API = {'main': API_URL, 'develop': API_TEST_URL}
@@ -95,8 +94,8 @@ def test_golden_products(comparison_dirs):
             ['-'*80, f'{product_base}_{{{main_hash},{develop_hash}}}', '-'*80]
         )
         try:
-            bit_for_bit(main_file, develop_file)
-        except ComparisonFailure as b4b_failure:
+            compare.bit_for_bit(main_file, develop_file)
+        except compare.ComparisonFailure as b4b_failure:
             main_ds = xr.load_dataset(main_file)
             develop_ds = xr.load_dataset(develop_file)
             try:
@@ -107,13 +106,13 @@ def test_golden_products(comparison_dirs):
                 messages.append(f'{comparison_header}\n{xr_msg}')
 
                 try:
-                    values_are_close(main_ds, develop_ds)
-                except ComparisonFailure as value_failure:
+                    compare.values_are_close(main_ds, develop_ds)
+                except compare.ComparisonFailure as value_failure:
                     messages.append(str(value_failure))
 
                 try:
-                    compare_cf_spatial_reference(main_ds, develop_ds)
-                except ComparisonFailure as spatial_ref_failure:
+                    compare.compare_cf_spatial_reference(main_ds, develop_ds)
+                except compare.ComparisonFailure as spatial_ref_failure:
                     messages.append(str(spatial_ref_failure))
                 continue
 
@@ -122,4 +121,4 @@ def test_golden_products(comparison_dirs):
 
     if messages:
         messages.insert(0, f'{failure_count} of {len(products)} products are different!')
-        raise ComparisonFailure('\n\n'.join(messages))
+        raise compare.ComparisonFailure('\n\n'.join(messages))
