@@ -5,7 +5,7 @@ import string
 from glob import glob
 from pathlib import Path
 from typing import List, Tuple
-from zipfile import ZipFile
+from zipfile import ZipFile, is_zipfile
 
 import requests
 from hyp3lib.fetch import download_file
@@ -67,7 +67,7 @@ def download_products(jobs: List[dict], directory: Path):
     urls = get_download_urls(jobs)
     for url in urls:
         product_file = download_file(url, directory=str(directory))
-        if url.endswith('.zip'):
+        if is_zipfile(product_file):
             with ZipFile(product_file) as zip_:
                 zip_.extractall(path=directory)
 
