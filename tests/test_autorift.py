@@ -6,8 +6,8 @@ import pytest
 import xarray as xr
 
 from hyp3_testing import API_TEST_URL, API_URL
-from hyp3_testing import helpers
 from hyp3_testing import compare
+from hyp3_testing import helpers
 
 pytestmark = pytest.mark.golden
 _API = {'main': API_URL, 'develop': API_TEST_URL}
