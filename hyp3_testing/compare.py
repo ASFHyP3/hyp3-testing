@@ -127,13 +127,11 @@ def compare_cf_spatial_reference(reference: xr.Dataset, secondary: xr.Dataset):
 
 
 def _find_grid_mapping_variable_name(dataset: xr.Dataset) -> Optional[Hashable]:
-    grid_map_var = None
     for var in dataset.variables:
         if dataset.variables[var].attrs.get('grid_mapping_name') is not None:
-            grid_map_var = var
-            break
+            return var
 
-    return grid_map_var
+    return None
 
 
 def _find_wkt(variable: xr.Variable) -> Optional[str]:
