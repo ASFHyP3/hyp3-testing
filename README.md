@@ -33,12 +33,15 @@ Currently, it additionally checks for each product:
 ## Quickstart -- Using the manual GitHub actions
 
 Navigate to the [Actions](https://github.com/ASFHyP3/hyp3-testing/actions) panel on GitHub
+
 ![Actions menu item](docs/imgs/actions-tab.png?raw=true)
 
 Select the workflow for any of the available system tests. For example, the "Golden RTC" test
+
 ![Golden RTC workflow](docs/imgs/golden-rtc-workflow.png?raw=true)
 
 Open the "Run workflow" dropdown and click run workflow
+
 ![Golden RTC workflow](docs/imgs/golden-rtc-run.png?raw=true)
 
 You will see a new workflow start in that workflows list, and you can watch its progress by selecting it. 
@@ -46,6 +49,7 @@ For Golden RTC, it will take ~1.5 hours to run through the whole workflow. Tests
 with a green check, and tests that fail will be marked with a red x.
 
 When viewing details of the test, look at "Pytest in conda environment" step in the "golden" job
+
 ![Golden RTC workflow](docs/imgs/golden-rtc-details.png?raw=true)
 
 ## Local testing and development
