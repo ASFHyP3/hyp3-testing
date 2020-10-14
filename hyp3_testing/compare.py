@@ -28,30 +28,14 @@ def bit_for_bit(reference: Path, secondary: Path):
         raise ComparisonFailure('Files differ at the binary level')
 
 
-def compare_values(reference: XR, secondary: XR, rtol: float = 1e-05, atol: float = 1e-08):
-    xr_not_equal_message = None
-    xr_not_close_message = None
-
-    try:
-        xr.testing.assert_equal(reference, secondary)
-    except AssertionError as e:
-        xr_not_equal_message = clarify_xr_message(str(e))
-
-    if xr_not_equal_message is None:
-        return
-
+def values_are_close(reference: XR, secondary: XR, rtol: float = 1e-05, atol: float = 1e-08):
     try:
         xr.testing.assert_allclose(reference, secondary, rtol=rtol, atol=atol)
     except AssertionError as e:
-        xr_not_close_message = str(e)
-
-    if xr_not_close_message is None:
-        return
-
-    detailed_failure_message = _compare_values_message(reference, secondary, rtol=rtol, atol=atol)
-    raise ComparisonFailure(
-        '\n'.join(['Values are different.', detailed_failure_message, '', xr_not_equal_message])
-    )
+        detailed_failure_message = _compare_values_message(reference, secondary, rtol=rtol, atol=atol)
+        raise ComparisonFailure(
+            '\n'.join(['Values are different.', detailed_failure_message, '', clarify_xr_message(str(e))])
+        )
 
 
 @singledispatch

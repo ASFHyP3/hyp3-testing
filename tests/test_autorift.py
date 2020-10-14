@@ -8,7 +8,7 @@ import xarray as xr
 from hyp3_testing import API_TEST_URL, API_URL
 from hyp3_testing import helpers
 from hyp3_testing.compare import ComparisonFailure
-from hyp3_testing.compare import bit_for_bit, compare_cf_spatial_reference, compare_values
+from hyp3_testing.compare import bit_for_bit, compare_cf_spatial_reference, values_are_close
 
 pytestmark = pytest.mark.golden
 _API = {'main': API_URL, 'develop': API_TEST_URL}
@@ -107,7 +107,7 @@ def test_golden_products(comparison_dirs):
                 messages.append(f'{comparison_header}\n{xr_msg}')
 
                 try:
-                    compare_values(main_ds, develop_ds)
+                    values_are_close(main_ds, develop_ds)
                 except ComparisonFailure as value_failure:
                     messages.append(str(value_failure))
 

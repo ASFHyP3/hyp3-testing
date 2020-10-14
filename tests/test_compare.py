@@ -20,25 +20,25 @@ def test_bit_for_bit(tmp_path):
         compare.bit_for_bit(ref_file, sec_file)
 
 
-def test_compare_values(comparison_netcdfs):
+def test_values_are_close(comparison_netcdfs):
     reference, secondary = comparison_netcdfs
 
     ref_ds = xr.load_dataset(reference)
     sec_ds = xr.load_dataset(secondary)
 
-    compare.compare_values(ref_ds, ref_ds)
-    compare.compare_values(sec_ds, sec_ds)
+    compare.values_are_close(ref_ds, ref_ds)
+    compare.values_are_close(sec_ds, sec_ds)
 
     with pytest.raises(compare.ComparisonFailure):
-        compare.compare_values(ref_ds, sec_ds)
+        compare.values_are_close(ref_ds, sec_ds)
 
     # https://numpy.org/doc/stable/reference/generated/numpy.isclose.html
-    compare.compare_values(ref_ds, sec_ds, atol=1000.0)  # coordinates and variables
+    compare.values_are_close(ref_ds, sec_ds, atol=1000.0)  # coordinates and variables
 
     with pytest.raises(compare.ComparisonFailure):
-        compare.compare_values(ref_ds.variables['v'], sec_ds.variables['v'])
+        compare.values_are_close(ref_ds.variables['v'], sec_ds.variables['v'])
 
-    compare.compare_values(ref_ds.variables['v'], sec_ds.variables['v'], atol=5.0)
+    compare.values_are_close(ref_ds.variables['v'], sec_ds.variables['v'], atol=5.0)
 
 
 def test_compare_values_message(comparison_netcdfs):
