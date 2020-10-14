@@ -5,8 +5,7 @@ from importlib.metadata import PackageNotFoundError, version
 API_URL = 'https://hyp3-api.asf.alaska.edu/jobs'
 API_TEST_URL = 'https://hyp3-test-api.asf.alaska.edu/jobs'
 AUTH_URL = 'https://urs.earthdata.nasa.gov/oauth/authorize?response_type=code' \
-           '&app_type=401&client_id=BO_n7nTIlMljdvU6kRRB3g' \
-           '&redirect_uri=https://auth.asf.alaska.edu/login'
+           '&client_id=BO_n7nTIlMljdvU6kRRB3g&redirect_uri=https://auth.asf.alaska.edu/login'
 
 try:
     __version__ = version(__name__)

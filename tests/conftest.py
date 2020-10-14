@@ -1,6 +1,24 @@
+import shutil
 from pathlib import Path
 
 import pytest
+
+
+def pytest_addoption(parser):
+    parser.addoption(
+        "--name", nargs='?', help="Find jobs by this name to compare"
+    )
+    parser.addoption(
+        "--golden-dirs", nargs=2, help="Main and develop directories to use for comparison"
+    )
+
+
+def pytest_collection_modifyitems(config, items):
+    if config.getoption("--name"):
+        name_skip = pytest.mark.skip(reason="Provided name; no need to submit")
+        for item in items:
+            if "nameskip" in item.keywords:
+                item.add_marker(name_skip)
 
 
 @pytest.fixture(scope='session')
@@ -19,15 +37,6 @@ def comparison_dirs(tmp_path_factory, golden_dirs):
     return main_dir, develop_dir
 
 
-def pytest_addoption(parser):
-    parser.addoption(
-        "--name", nargs='?', help="Find jobs by this name to compare"
-    )
-    parser.addoption(
-        "--golden-dirs", nargs=2, help="Main and develop directories to use for comparison"
-    )
-
-
 @pytest.fixture
 def job_name(request):
     return request.config.getoption("--name")
@@ -38,9 +47,14 @@ def golden_dirs(request):
     return request.config.getoption("--golden-dirs")
 
 
-def pytest_collection_modifyitems(config, items):
-    if config.getoption("--name"):
-        name_skip = pytest.mark.skip(reason="Provided name; no need to submit")
-        for item in items:
-            if "nameskip" in item.keywords:
-                item.add_marker(name_skip)
+@pytest.fixture
+def comparison_netcdfs(tmp_path_factory):
+    tmp_dir = tmp_path_factory.mktemp('data')
+    nc106 = tmp_dir / 'autorift_106.nc'
+    nc107 = tmp_dir / 'autorift_107.nc'
+
+    data_dir = Path(__file__).resolve().parent / 'data'
+    shutil.copy(data_dir / nc106.name, nc106)
+    shutil.copy(data_dir / nc107.name, nc107)
+
+    return nc106, nc107

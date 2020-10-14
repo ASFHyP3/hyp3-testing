@@ -34,7 +34,10 @@ setup(
     install_requires=[
         'hyp3lib',
         'jinja2',
+        'numpy',
+        'rasterio',
         'requests',
+        'xarray',
     ],
 
     extras_require={

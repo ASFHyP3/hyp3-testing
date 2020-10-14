@@ -4,27 +4,44 @@ A package for automated system testing of HyP3 processes
 
 ## Available system tests
 
-### Golden RTC comparison
-
-The Golden RTC comparison posts a set of six jobs to both HyP3v2 production 
+System test post a set of jobs to both HyP3v2 production 
 (`https://hyp3-api.asf.alaska.edu/jobs`) and test (`https://hyp3-test-api.asf.alaska.edu/jobs`)
 and compares them. It uses production HyP3v2 as the "golden" (aka baseline, reference) set for the comparison.
+All system test will check:
+* that the same products were produced with the same product names
+* for multi-file products, that the same set of product files were produced inside each product
 
-Currently, it checks:
-* the same products were produced with:
-  * the same product names
-  * the same set of product files inside each product
-* there were no visual differences in the GeoTIFFs using [gdalcompare.py](https://gdal.org/programs/gdalcompare.html)
+
+### Golden RTC comparison
+
+The Golden RTC comparison posts a set of six jobs covering the range of available user options.
+
+Currently, it additionally checks:
+* that there were no visual differences in the GeoTIFFs using [gdalcompare.py](https://gdal.org/programs/gdalcompare.html)
+
+
+### Golden autoRIFT comparison
+
+The Golden autoRIFT comparison posts a set of four jobs covering both Greenland and Antarctica.
+
+Currently, it additionally checks for each product:
+* that the netCDF file is identical (data and attributes)
+* that each data variable is close
+* that there is a spatial variable following [CF Conventions](https://cfconventions.org/)
+  with WKT defining the reference system
 
 ## Quickstart -- Using the manual GitHub actions
 
 Navigate to the [Actions](https://github.com/ASFHyP3/hyp3-testing/actions) panel on GitHub
+
 ![Actions menu item](docs/imgs/actions-tab.png?raw=true)
 
 Select the workflow for any of the available system tests. For example, the "Golden RTC" test
+
 ![Golden RTC workflow](docs/imgs/golden-rtc-workflow.png?raw=true)
 
 Open the "Run workflow" dropdown and click run workflow
+
 ![Golden RTC workflow](docs/imgs/golden-rtc-run.png?raw=true)
 
 You will see a new workflow start in that workflows list, and you can watch its progress by selecting it. 
@@ -32,6 +49,7 @@ For Golden RTC, it will take ~1.5 hours to run through the whole workflow. Tests
 with a green check, and tests that fail will be marked with a red x.
 
 When viewing details of the test, look at "Pytest in conda environment" step in the "golden" job
+
 ![Golden RTC workflow](docs/imgs/golden-rtc-details.png?raw=true)
 
 ## Local testing and development

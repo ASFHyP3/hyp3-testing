@@ -8,6 +8,7 @@ dependencies:
   - gdal
   - hyp3lib>=1.4
   - jinja2
+  - numpy
   - setuptools
   - setuptools_scm
   - pytest
@@ -15,7 +16,9 @@ dependencies:
   - pytest-dependency
   - pytest-timeout
   - requests
+  - rasterio
   - wheel
+  - xarray
   - pip:
       - s3pypi
       - safety
