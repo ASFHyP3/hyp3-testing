@@ -21,10 +21,8 @@ class ComparisonFailure(Exception):
 
 
 def bit_for_bit(reference: Path, secondary: Path):
-    if (ref_size := reference.stat().st_size) != (sec_size := secondary.stat().st_size):
-        raise ComparisonFailure(f'File sizes differ. Reference: {ref_size}; secondary: {sec_size}')
-
-    if not filecmp.cmp(reference, secondary):
+    filecmp.clear_cache()
+    if not filecmp.cmp(reference, secondary, shallow=False):
         raise ComparisonFailure('Files differ at the binary level')
 
 

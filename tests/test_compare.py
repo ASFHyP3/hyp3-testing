@@ -16,6 +16,10 @@ def test_bit_for_bit(tmp_path):
     compare.bit_for_bit(ref_file, sec_file)
 
     with pytest.raises(compare.ComparisonFailure):
+        sec_file.write_text('hell0')
+        compare.bit_for_bit(ref_file, sec_file)
+
+    with pytest.raises(compare.ComparisonFailure):
         sec_file.write_text('Goodbye!')
         compare.bit_for_bit(ref_file, sec_file)
 
@@ -105,6 +109,9 @@ def test_find_grid_mapping_variable_name(comparison_netcdfs):
     ref_ds = xr.load_dataset(reference)
 
     assert 'Polar_Stereographic' == compare._find_grid_mapping_variable_name(ref_ds)
+
+    ref_ds = ref_ds.drop_vars(['Polar_Stereographic'])
+    assert compare._find_grid_mapping_variable_name(ref_ds) is None
 
 
 def test_find_wkt(comparison_netcdfs):
