@@ -4,17 +4,31 @@ A package for automated system testing of HyP3 processes
 
 ## Available system tests
 
-### Golden RTC comparison
-
-The Golden RTC comparison posts a set of six jobs to both HyP3v2 production 
+System test post a set of jobs to both HyP3v2 production 
 (`https://hyp3-api.asf.alaska.edu/jobs`) and test (`https://hyp3-test-api.asf.alaska.edu/jobs`)
 and compares them. It uses production HyP3v2 as the "golden" (aka baseline, reference) set for the comparison.
+All system test will check:
+* that the same products were produced with the same product names
+* for multi-file products, that the same set of product files were produced inside each product
 
-Currently, it checks:
-* the same products were produced with:
-  * the same product names
-  * the same set of product files inside each product
-* there were no visual differences in the GeoTIFFs using [gdalcompare.py](https://gdal.org/programs/gdalcompare.html)
+
+### Golden RTC comparison
+
+The Golden RTC comparison posts a set of six jobs covering the range of available user options.
+
+Currently, it additionally checks:
+* that there were no visual differences in the GeoTIFFs using [gdalcompare.py](https://gdal.org/programs/gdalcompare.html)
+
+
+### Golden autoRIFT comparison
+
+The Golden autoRIFT comparison posts a set of four jobs covering both Greenland and Antarctica.
+
+Currently, it additionally checks for each product:
+* that the netCDF file is identical (data and attributes)
+* that each data variable is close
+* that there is a spatial variable following [CF Conventions](https://cfconventions.org/)
+  with WKT defining the reference system
 
 ## Quickstart -- Using the manual GitHub actions
 
