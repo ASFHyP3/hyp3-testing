@@ -1,6 +1,7 @@
 import json
 from glob import glob
 from pathlib import Path
+from time import sleep
 
 import pytest
 import xarray as xr
@@ -51,6 +52,7 @@ def test_golden_wait_and_download(comparison_dirs, job_name):
             update = helpers.get_jobs_update(job_name, _API[dir_.name], hyp3_session, request_time=request_time)
             if helpers.jobs_succeeded(update['jobs']):
                 break
+            sleep(60)
 
         helpers.download_products(update['jobs'], dir_)
 
