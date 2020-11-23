@@ -1,12 +1,13 @@
 import json
-import subprocess
 from glob import glob
 from pathlib import Path
 from time import sleep
 
 import pytest
+import xarray as xr
 
 from hyp3_testing import API_TEST_URL, API_URL
+from hyp3_testing import compare
 from hyp3_testing import helpers
 
 pytestmark = pytest.mark.golden
@@ -82,6 +83,8 @@ def test_golden_tifs(comparison_dirs):
 
     products = set(main_products.keys()) & set(develop_products.keys())
 
+    failure_count = 0
+    messages = []
     for product_base in products:
         main_hash = main_products[product_base]
         develop_hash = develop_products[product_base]
@@ -93,17 +96,35 @@ def test_golden_tifs(comparison_dirs):
         )
 
         for main_file, develop_file in comparison_files:
-            ret = 0
-            cmd = f'gdalcompare.py {main_file} {develop_file}'
+            comparison_header = '\n'.join(['-'*80, main_file.name, develop_file.name, '-'*80])
             try:
-                stdout = subprocess.check_output(cmd, shell=True, text=True)
-            except subprocess.CalledProcessError as e:
-                stdout = e.output
-                ret = e.returncode
-            print(f'{cmd}\n{stdout}')
+                compare.bit_for_bit(main_file, develop_file)
+            except compare.ComparisonFailure as b4b_failure:
+                main_ds = xr.open_rasterio(main_file).load()
+                main_ds.close()
+                develop_ds = xr.open_rasterio(develop_file).load()
+                develop_ds.close()
+                try:
+                    xr.testing.assert_identical(main_ds, develop_ds)
+                except AssertionError as identical_failure:
+                    xr_msg = helpers.clarify_xr_message(str(identical_failure))
+                    failure_count += 1
+                    messages.append(f'{comparison_header}\n{xr_msg}')
 
-            # ret == 0 --> bit-for-bit
-            # ret == 1 --> only binary level differences
-            # ret > 1 -->  "visible data" is not identical
-            # See: https://gdal.org/programs/gdalcompare.html
-            assert ret <= 1
+                    try:
+                        compare.values_are_close(main_ds, develop_ds, atol=0.05)
+                    except compare.ComparisonFailure as value_failure:
+                        messages.append(str(value_failure))
+
+                    try:
+                        compare.compare_cf_spatial_reference(main_ds, develop_ds)
+                    except compare.ComparisonFailure as spatial_ref_failure:
+                        messages.append(str(spatial_ref_failure))
+                    continue
+
+                failure_count += 1
+                messages.append(f'{comparison_header}\n{b4b_failure}')  # not b4b, but identical
+
+    if messages:
+        messages.insert(0, f'{failure_count} of {len(comparison_files)} GeoTIFFs are different!')
+        raise compare.ComparisonFailure('\n\n'.join(messages))
