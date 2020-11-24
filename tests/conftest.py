@@ -48,13 +48,18 @@ def golden_dirs(request):
 
 
 @pytest.fixture
-def comparison_netcdfs(tmp_path_factory):
+def comparison_netcdfs(tmp_path_factory, test_data_dir):
     tmp_dir = tmp_path_factory.mktemp('data')
     nc106 = tmp_dir / 'autorift_106.nc'
     nc107 = tmp_dir / 'autorift_107.nc'
 
-    data_dir = Path(__file__).resolve().parent / 'data'
-    shutil.copy(data_dir / nc106.name, nc106)
-    shutil.copy(data_dir / nc107.name, nc107)
+    shutil.copy(test_data_dir / nc106.name, nc106)
+    shutil.copy(test_data_dir / nc107.name, nc107)
 
     return nc106, nc107
+
+
+@pytest.fixture
+def test_data_dir():
+    data_dir = Path(__file__).resolve().parent / 'data'
+    return data_dir

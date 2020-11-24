@@ -104,6 +104,15 @@ def test_compare_cf_spatial_reference(comparison_netcdfs):
     assert 'Spatial references are not the same' in str(execinfo.value)
 
 
+def test_compare_raster_info(test_data_dir):
+    a = test_data_dir / 'dem_nodata_0.tif'
+    b = test_data_dir / 'dem_nodata_1.tif'
+    compare.compare_raster_info(a, a)
+    compare.compare_raster_info(b, b)
+    with pytest.raises(compare.ComparisonFailure):
+        compare.compare_raster_info(a, b)
+
+
 def test_find_grid_mapping_variable_name(comparison_netcdfs):
     reference, _ = comparison_netcdfs
     ref_ds = xr.load_dataset(reference)

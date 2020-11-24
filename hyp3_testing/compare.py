@@ -132,7 +132,7 @@ def compare_raster_info(reference: Path, secondary: Path):
         del ref_info[key], sec_info[key]
     if not ref_info == sec_info:
         raise ComparisonFailure(
-            f'Raster info are not the same.\n  Reference: {ref_info}\n  secondary {sec_info}'
+            f'Raster info are not the same.\n  Reference: {ref_info}\n  Secondary: {sec_info}'
         )
 
 
