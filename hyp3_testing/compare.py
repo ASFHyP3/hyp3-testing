@@ -124,6 +124,17 @@ def compare_cf_spatial_reference(reference: xr.Dataset, secondary: xr.Dataset):
         )
 
 
+def compare_raster_info(reference: Path, secondary: Path):
+    ref_info = gdal.Info(str(main_file), format='json')
+    sec_info = gdal.Info(str(develop_file), format='json')
+    for key in ('description', 'files'):
+        del ref_info[key], sec_info[key]
+    if not ref_info == sec_info:
+        raise ComparisonFailure(
+            f'Raster info are not the same.\n  Reference: {ref_info}\n  secondary {sec_info}'
+        )
+
+
 def _find_grid_mapping_variable_name(dataset: xr.Dataset) -> Optional[Hashable]:
     for var in dataset.variables:
         if dataset.variables[var].attrs.get('grid_mapping_name') is not None:
