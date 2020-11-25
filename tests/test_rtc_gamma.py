@@ -14,7 +14,7 @@ pytestmark = pytest.mark.golden
 _API = {'main': API_URL, 'develop': API_TEST_URL}
 
 
-def _get_tolerances(file_name):
+def _get_tif_tolerances(file_name):
     tif_type = file_name.name.split('_')[-1]
     if tif_type == 'area.tif':
         return 2e-05, 0.0
@@ -116,7 +116,7 @@ def test_golden_tifs(comparison_dirs):
 
             try:
                 compare.compare_raster_info(main_file, develop_file)
-                relative_tolerance, absolute_tolerance = _get_tolerances(main_file)
+                relative_tolerance, absolute_tolerance = _get_tif_tolerances(main_file)
                 compare.values_are_close(main_ds, develop_ds, rtol=relative_tolerance, atol=absolute_tolerance)
             except compare.ComparisonFailure as e:
                 messages.append(f'{comparison_header}\n{e}')
