@@ -8,6 +8,7 @@ from typing import Hashable, Optional, Union
 
 import numpy as np
 import xarray as xr
+from osgeo import gdal
 from rasterio.crs import CRS
 from rasterio.errors import CRSError
 
@@ -121,6 +122,17 @@ def compare_cf_spatial_reference(reference: xr.Dataset, secondary: xr.Dataset):
     if not ref_crs == sec_crs:
         raise ComparisonFailure(
             f'Spatial references are not the same.\n  Reference: {ref_wkt}\n  secondary {sec_wkt}'
+        )
+
+
+def compare_raster_info(reference: Path, secondary: Path):
+    ref_info = gdal.Info(str(reference), format='json')
+    sec_info = gdal.Info(str(secondary), format='json')
+    for key in ('description', 'files'):
+        del ref_info[key], sec_info[key]
+    if not ref_info == sec_info:
+        raise ComparisonFailure(
+            f'Raster info are not the same.\n  Reference: {ref_info}\n  Secondary: {sec_info}'
         )
 
 

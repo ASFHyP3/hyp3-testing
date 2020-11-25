@@ -1,16 +1,26 @@
 import json
-import subprocess
 from glob import glob
 from pathlib import Path
 from time import sleep
 
 import pytest
+import xarray as xr
 
 from hyp3_testing import API_TEST_URL, API_URL
+from hyp3_testing import compare
 from hyp3_testing import helpers
 
 pytestmark = pytest.mark.golden
 _API = {'main': API_URL, 'develop': API_TEST_URL}
+
+
+def _get_tif_tolerances(file_name):
+    tif_type = file_name.name.split('_')[-1]
+    if tif_type == 'area.tif':
+        return 2e-05, 0.0
+    if tif_type in ['VV.tif', 'VH.tif', 'HH.tif', 'HV.tif']:
+        return 1e-05, 1e-05
+    return 0.0, 0.0
 
 
 @pytest.mark.nameskip
@@ -82,6 +92,9 @@ def test_golden_tifs(comparison_dirs):
 
     products = set(main_products.keys()) & set(develop_products.keys())
 
+    failure_count = 0
+    total_count = 0
+    messages = []
     for product_base in products:
         main_hash = main_products[product_base]
         develop_hash = develop_products[product_base]
@@ -91,19 +104,24 @@ def test_golden_tifs(comparison_dirs):
             develop_dir / '_'.join([product_base, develop_hash]),
             pattern='*.tif'
         )
+        total_count += len(comparison_files)
 
         for main_file, develop_file in comparison_files:
-            ret = 0
-            cmd = f'gdalcompare.py {main_file} {develop_file}'
-            try:
-                stdout = subprocess.check_output(cmd, shell=True, text=True)
-            except subprocess.CalledProcessError as e:
-                stdout = e.output
-                ret = e.returncode
-            print(f'{cmd}\n{stdout}')
+            comparison_header = '\n'.join(['-'*80, main_file.name, develop_file.name, '-'*80])
 
-            # ret == 0 --> bit-for-bit
-            # ret == 1 --> only binary level differences
-            # ret > 1 -->  "visible data" is not identical
-            # See: https://gdal.org/programs/gdalcompare.html
-            assert ret <= 1
+            with xr.open_rasterio(main_file) as f:
+                main_ds = f.load()
+            with xr.open_rasterio(develop_file) as f:
+                develop_ds = f.load()
+
+            try:
+                compare.compare_raster_info(main_file, develop_file)
+                relative_tolerance, absolute_tolerance = _get_tif_tolerances(main_file)
+                compare.values_are_close(main_ds, develop_ds, rtol=relative_tolerance, atol=absolute_tolerance)
+            except compare.ComparisonFailure as e:
+                messages.append(f'{comparison_header}\n{e}')
+                failure_count += 1
+
+    if messages:
+        messages.insert(0, f'{failure_count} of {total_count} GeoTIFFs are different!')
+        raise compare.ComparisonFailure('\n\n'.join(messages))
