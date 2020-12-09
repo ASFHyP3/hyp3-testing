@@ -19,7 +19,7 @@ def _get_tif_tolerances(file_name):
     if tif_type == 'area.tif':
         return 2e-05, 0.0
     if tif_type in ['VV.tif', 'VH.tif', 'HH.tif', 'HV.tif']:
-        return 1e-05, 1e-05
+        return 2e-05, 1e-05
     return 0.0, 0.0
 
 
