@@ -6,7 +6,7 @@ import pytest
 
 def pytest_addoption(parser):
     parser.addoption(
-        "--process",  help="Submit this processes payload"
+        "--process",  choices=["rtc", "insar"], help="Submit this processes payload"
     )
     parser.addoption(
         "--name", nargs='?', help="Find jobs by this name to compare"
