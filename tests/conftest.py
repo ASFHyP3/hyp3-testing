@@ -6,6 +6,9 @@ import pytest
 
 def pytest_addoption(parser):
     parser.addoption(
+        "--process",  choices=["rtc", "insar"], help="Submit this processes payload"
+    )
+    parser.addoption(
         "--name", nargs='?', help="Find jobs by this name to compare"
     )
     parser.addoption(
@@ -40,6 +43,11 @@ def comparison_dirs(tmp_path_factory, golden_dirs):
 @pytest.fixture
 def job_name(request):
     return request.config.getoption("--name")
+
+
+@pytest.fixture
+def process(request):
+    return request.config.getoption("--process")
 
 
 @pytest.fixture(scope='session')
