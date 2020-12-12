@@ -42,7 +42,7 @@ def test_golden_submission(comparison_dirs, process):
             json.dump(response.json(), f)
 
 
-@pytest.mark.timeout(5400)  # 90 minutes as golden 10m RTC jobs take ~1 hr
+@pytest.mark.timeout(7200)  # 120 minutes as InSAR jobs can take ~1.5 hrs
 @pytest.mark.dependency()
 def test_golden_wait_and_download(comparison_dirs, job_name):
     hyp3_session = helpers.hyp3_session()
