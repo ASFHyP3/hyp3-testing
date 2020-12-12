@@ -1,10 +1,11 @@
 name: Golden TIFs
 
-on: workflow_dispatch
-  inputs:
-    process:
-      description: "Select a supported process: rtc, insar"
-      required: true
+on:
+  workflow_dispatch:
+    inputs:
+      process:
+        description: "Select a supported process: rtc, insar"
+        required: true
 
 
 jobs:
