@@ -16,19 +16,21 @@ _API = {'main': API_URL, 'develop': API_TEST_URL}
 
 def _get_tif_tolerances(file_name):
     tif_type = file_name.name.split('_')[-1]
-    if tif_type == 'area.tif':
+    if tif_type == 'phase.tif':  # InSAR
+        return 0.0, 0.0
+    if tif_type == 'area.tif':  # RTC
         return 2e-05, 0.0
-    if tif_type in ['VV.tif', 'VH.tif', 'HH.tif', 'HV.tif']:
+    if tif_type in ['VV.tif', 'VH.tif', 'HH.tif', 'HV.tif']:  # RTC
         return 2e-05, 1e-05
     return 0.0, 0.0
 
 
 @pytest.mark.nameskip
-def test_golden_submission(comparison_dirs):
+def test_golden_submission(comparison_dirs, process):
     hyp3_session = helpers.hyp3_session()
 
     submission_payload = helpers.get_submission_payload(
-        Path(__file__).resolve().parent / 'data' / 'rtc_gamma_golden.json.j2')
+        Path(__file__).resolve().parent / 'data' / f'{process}_gamma_golden.json.j2')
     print(f'Job name: {submission_payload["jobs"][0]["name"]}')
 
     for dir_ in comparison_dirs:
