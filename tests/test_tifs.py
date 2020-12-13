@@ -14,11 +14,18 @@ pytestmark = pytest.mark.golden
 _API = {'main': API_URL, 'develop': API_TEST_URL}
 
 
-def _get_tif_tolerances(file_name):
-    tif_type = file_name.name.split('_')[-1]
-    if tif_type == 'area.tif':  # RTC
+def _get_tif_tolerances(file_name: str):
+    if file_name.endswith('amp.tif') or file_name.endswith('corr.tif') \
+            or file_name.endswith('vert_disp.tif'):  # InSAR
+        return 2.0, 2.0
+    if file_name.endswith('area.tif'):  # RTC
         return 2e-05, 0.0
-    if tif_type in ['VV.tif', 'VH.tif', 'HH.tif', 'HV.tif']:  # RTC
+    if file_name.endswith('los_disp.tif'):  # InSAR
+        return 1e-01, 1e-01
+    if file_name.endswith('unw_phase.tif'):  # InSAR
+        return 200.0, 200.0
+    if file_name.endswith('VV.tif') or file_name.endswith('VH.tif') \
+            or file_name.endswith('HH.tif') or file_name.endswith('HV.tif'):  # RTC
         return 2e-05, 1e-05
     return 0.0, 0.0
 
@@ -116,7 +123,7 @@ def test_golden_tifs(comparison_dirs):
 
             try:
                 compare.compare_raster_info(main_file, develop_file)
-                relative_tolerance, absolute_tolerance = _get_tif_tolerances(main_file)
+                relative_tolerance, absolute_tolerance = _get_tif_tolerances(str(main_file))
                 compare.values_are_close(main_ds, develop_ds, rtol=relative_tolerance, atol=absolute_tolerance)
             except compare.ComparisonFailure as e:
                 messages.append(f'{comparison_header}\n{e}')
