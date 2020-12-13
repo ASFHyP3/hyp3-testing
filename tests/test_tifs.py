@@ -16,8 +16,6 @@ _API = {'main': API_URL, 'develop': API_TEST_URL}
 
 def _get_tif_tolerances(file_name):
     tif_type = file_name.name.split('_')[-1]
-    if tif_type == 'phase.tif':  # InSAR
-        return 0.0, 0.0
     if tif_type == 'area.tif':  # RTC
         return 2e-05, 0.0
     if tif_type in ['VV.tif', 'VH.tif', 'HH.tif', 'HV.tif']:  # RTC
