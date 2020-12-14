@@ -15,18 +15,23 @@ _API = {'main': API_URL, 'develop': API_TEST_URL}
 
 
 def _get_tif_tolerances(file_name: str):
-    if file_name.endswith('amp.tif') or file_name.endswith('corr.tif') \
-            or file_name.endswith('vert_disp.tif'):  # InSAR
-        return 2.0, 2.0
-    if file_name.endswith('area.tif'):  # RTC
-        return 2e-05, 0.0
-    if file_name.endswith('los_disp.tif'):  # InSAR
+    # InSAR
+    if file_name.endswith('corr.tif'):
+        return 1e-02, 1e-04
+    if file_name.endswith('vert_disp.tif'):
+        return 0.1, 0.2
+    if file_name.endswith('los_disp.tif'):
         return 1e-01, 1e-01
-    if file_name.endswith('unw_phase.tif'):  # InSAR
-        return 200.0, 200.0
-    if file_name.endswith('VV.tif') or file_name.endswith('VH.tif') \
-            or file_name.endswith('HH.tif') or file_name.endswith('HV.tif'):  # RTC
+    if file_name.endswith('unw_phase.tif'):
+        return 0.0, 26.0
+
+    # RTC
+    backscatter_extensions = ['VV.tif', 'VH.tif', 'HH.tif', 'HV.tif']
+    if any([file_name.endswith(ext) for ext in backscatter_extensions]):
         return 2e-05, 1e-05
+    if file_name.endswith('area.tif'):
+        return 2e-05, 0.0
+
     return 0.0, 0.0
 
 
