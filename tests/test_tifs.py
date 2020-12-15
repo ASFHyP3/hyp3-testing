@@ -15,15 +15,26 @@ _API = {'main': API_URL, 'develop': API_TEST_URL}
 
 
 def _get_tif_tolerances(file_name: str):
+    """
+    return the absolute and relative tolerances for the tif comparisons.
+    Comparison will use `numpy.isclose` on the back end:
+        https://numpy.org/doc/stable/reference/generated/numpy.isclose.html
+    Comparison function:
+         absolute(a - b) <= (atol + rtol * absolute(b))
+
+    returns: rtol, atol
+    """
     # InSAR
+    if file_name.endswith('amp.tif'):
+        return 0.0, 1.5
     if file_name.endswith('corr.tif'):
-        return 1e-02, 1e-04
+        return 0.0, 1.0
     if file_name.endswith('vert_disp.tif'):
-        return 0.1, 0.2
+        return 0.0, 1.1
     if file_name.endswith('los_disp.tif'):
-        return 1e-01, 1e-01
+        return 0.0, 1e-01
     if file_name.endswith('unw_phase.tif'):
-        return 0.0, 26.0
+        return 0.0, 200.0
 
     # RTC
     backscatter_extensions = ['VV.tif', 'VH.tif', 'HH.tif', 'HV.tif']
