@@ -24,8 +24,7 @@ def _get_tif_tolerances(file_name: str):
 
     returns: rtol, atol
     """
-    rtol = 0.0
-    atol = 0.0
+    rtol, atol = 0.0, 0.0
 
     # InSAR
     if file_name.endswith('amp.tif'):
