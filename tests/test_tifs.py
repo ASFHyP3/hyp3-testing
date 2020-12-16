@@ -20,30 +20,33 @@ def _get_tif_tolerances(file_name: str):
     Comparison will use `numpy.isclose` on the back end:
         https://numpy.org/doc/stable/reference/generated/numpy.isclose.html
     Comparison function:
-         absolute(a - b) <= (atol + rtol * absolute(b))
+         absolute(a - b) <= rtol * absolute(b) + atol
 
     returns: rtol, atol
     """
+    rtol = 0.0
+    atol = 0.0
+
     # InSAR
     if file_name.endswith('amp.tif'):
-        return 0.0, 1.5
+        rtol, atol = 0.0, 1.5
     if file_name.endswith('corr.tif'):
-        return 0.0, 1.0
+        rtol, atol = 0.0, 1.0
     if file_name.endswith('vert_disp.tif'):
-        return 0.0, 1.1
+        rtol, atol = 0.0, 1.1
     if file_name.endswith('los_disp.tif'):
-        return 0.0, 1e-01
+        rtol, atol = 0.0, 1e-01
     if file_name.endswith('unw_phase.tif'):
-        return 0.0, 200.0
+        rtol, atol = 0.0, 200.0
 
     # RTC
     backscatter_extensions = ['VV.tif', 'VH.tif', 'HH.tif', 'HV.tif']
     if any([file_name.endswith(ext) for ext in backscatter_extensions]):
-        return 2e-05, 1e-05
+        rtol, atol = 2e-05, 1e-05
     if file_name.endswith('area.tif'):
-        return 2e-05, 0.0
+        rtol, atol = 2e-05, 0.0
 
-    return 0.0, 0.0
+    return rtol, atol
 
 
 @pytest.mark.nameskip
