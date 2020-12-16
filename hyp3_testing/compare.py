@@ -129,7 +129,10 @@ def compare_raster_info(reference: Path, secondary: Path):
     ref_info = gdal.Info(str(reference), format='json')
     sec_info = gdal.Info(str(secondary), format='json')
     for key in ('description', 'files'):
-        del ref_info[key], sec_info[key]
+        ref_info.pop(key, None)
+        sec_info.pop(key, None)
+    ref_info['metadata'][''].pop('TIFFTAG_DATETIME', None)
+    sec_info['metadata'][''].pop('TIFFTAG_DATETIME', None)
     if not ref_info == sec_info:
         raise ComparisonFailure(
             f'Raster info are not the same.\n  Reference: {ref_info}\n  Secondary: {sec_info}'

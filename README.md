@@ -12,13 +12,14 @@ All system test will check:
 * for multi-file products, that the same set of product files were produced inside each product
 
 
-### Golden RTC comparison
+### Golden TIF comparison
 
-The Golden RTC comparison posts a set of six jobs covering the range of available user options.
+The Golden TIF comparison is used for HyP3 processes that produce GeoTIFFs in a zip-ed product directory.
+It takes a process name (e.g., `rtc`, `insar`) and posts a set jobs covering the range of available user options.
 
 Currently, it additionally checks:
-* that there were no visual differences in the GeoTIFFs using [gdalcompare.py](https://gdal.org/programs/gdalcompare.html)
-
+* The raster information is the same as provided by `gdal.Info`
+* The raster data is "close" -- within a specified tolerance
 
 ### Golden autoRIFT comparison
 
@@ -36,21 +37,21 @@ Navigate to the [Actions](https://github.com/ASFHyP3/hyp3-testing/actions) panel
 
 ![Actions menu item](docs/imgs/actions-tab.png?raw=true)
 
-Select the workflow for any of the available system tests. For example, the "Golden RTC" test
+Select the workflow for any of the available system tests. For example, the "Golden TIFs" test
 
-![Golden RTC workflow](docs/imgs/golden-rtc-workflow.png?raw=true)
+![Golden RTC workflow](docs/imgs/golden-tif-workflow.png?raw=true)
 
-Open the "Run workflow" dropdown and click run workflow
+Open the "Run workflow" dropdown, provide any required inputs, and click run workflow
 
-![Golden RTC workflow](docs/imgs/golden-rtc-run.png?raw=true)
+![Golden RTC workflow](docs/imgs/golden-tif-run.png?raw=true)
 
-You will see a new workflow start in that workflows list, and you can watch its progress by selecting it. 
-For Golden RTC, it will take ~1.5 hours to run through the whole workflow. Tests that pass will be marked
-with a green check, and tests that fail will be marked with a red x.
+You will see a new workflow start in that workflows list, and you can watch its progress by selecting it.
+For Golden TIFs, it will take ~0.5 hours for an RTC comparison, and ~1.5 hours for an InSAR comparison.
+Tests that pass will be marked with a green check, and tests that fail will be marked with a red x.
 
 When viewing details of the test, look at "Pytest in conda environment" step in the "golden" job
 
-![Golden RTC workflow](docs/imgs/golden-rtc-details.png?raw=true)
+![Golden RTC workflow](docs/imgs/golden-tif-details.png?raw=true)
 
 ## Local testing and development
 

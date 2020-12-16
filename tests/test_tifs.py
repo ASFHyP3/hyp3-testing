@@ -14,15 +14,38 @@ pytestmark = pytest.mark.golden
 _API = {'main': API_URL, 'develop': API_TEST_URL}
 
 
-def _get_tif_tolerances(file_name):
-    tif_type = file_name.name.split('_')[-1]
-    if tif_type == 'phase.tif':  # InSAR
-        return 0.0, 0.0
-    if tif_type == 'area.tif':  # RTC
-        return 2e-05, 0.0
-    if tif_type in ['VV.tif', 'VH.tif', 'HH.tif', 'HV.tif']:  # RTC
-        return 2e-05, 1e-05
-    return 0.0, 0.0
+def _get_tif_tolerances(file_name: str):
+    """
+    return the absolute and relative tolerances for the tif comparisons.
+    Comparison will use `numpy.isclose` on the back end:
+        https://numpy.org/doc/stable/reference/generated/numpy.isclose.html
+    Comparison function:
+         absolute(a - b) <= rtol * absolute(b) + atol
+
+    returns: rtol, atol
+    """
+    rtol, atol = 0.0, 0.0
+
+    # InSAR
+    if file_name.endswith('amp.tif'):
+        rtol, atol = 0.0, 1.5
+    if file_name.endswith('corr.tif'):
+        rtol, atol = 0.0, 1.0
+    if file_name.endswith('vert_disp.tif'):
+        rtol, atol = 0.0, 1.1
+    if file_name.endswith('los_disp.tif'):
+        rtol, atol = 0.0, 1e-01
+    if file_name.endswith('unw_phase.tif'):
+        rtol, atol = 0.0, 200.0
+
+    # RTC
+    backscatter_extensions = ['VV.tif', 'VH.tif', 'HH.tif', 'HV.tif']
+    if any([file_name.endswith(ext) for ext in backscatter_extensions]):
+        rtol, atol = 2e-05, 1e-05
+    if file_name.endswith('area.tif'):
+        rtol, atol = 2e-05, 0.0
+
+    return rtol, atol
 
 
 @pytest.mark.nameskip
@@ -118,7 +141,7 @@ def test_golden_tifs(comparison_dirs):
 
             try:
                 compare.compare_raster_info(main_file, develop_file)
-                relative_tolerance, absolute_tolerance = _get_tif_tolerances(main_file)
+                relative_tolerance, absolute_tolerance = _get_tif_tolerances(str(main_file))
                 compare.values_are_close(main_ds, develop_ds, rtol=relative_tolerance, atol=absolute_tolerance)
             except compare.ComparisonFailure as e:
                 messages.append(f'{comparison_header}\n{e}')
