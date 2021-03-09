@@ -44,6 +44,8 @@ def _get_tif_tolerances(file_name: str):
         rtol, atol = 2e-05, 1e-05
     if file_name.endswith('area.tif'):
         rtol, atol = 2e-05, 0.0
+    if file_name.endswith('rgb.tif'):
+        rtol, atol = 0.0, 1.0
 
     return rtol, atol
 
