@@ -77,7 +77,6 @@ jobs:
           python -m pip install bump2version
 
       - name: Tag version
-        if: github.ref == 'refs/heads/main'
         run: |
           git fetch origin +refs/tags/*:refs/tags/*
           git config user.email "UAF-asf-apd@alaska.edu"
