@@ -61,10 +61,10 @@ jobs:
           owner: ASFHyP3
           name: hyp3-testing
 
-      - name: Upload a Build Artifact
+      - name: Upload query output for debugging
         uses: actions/upload-artifact@v2
         with:
-          name: query-responces
+          name: query-responses
           path: '*.json'
 
       - uses: actions/setup-python@v1
