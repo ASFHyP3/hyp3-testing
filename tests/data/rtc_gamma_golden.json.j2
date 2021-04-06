@@ -13,7 +13,8 @@
         "include_dem": true,
         "include_inc_map": true,
         "include_scattering_area": true,
-        "include_rgb": true
+        "include_rgb": true,
+        "dem_name": "legacy"
       },
       "job_type": "RTC_GAMMA"
     },
@@ -29,7 +30,8 @@
         "include_dem": false,
         "include_inc_map": false,
         "include_scattering_area": false,
-        "include_rgb": false
+        "include_rgb": false,
+        "dem_name": "legacy"
       },
       "job_type": "RTC_GAMMA"
     },
@@ -45,7 +47,8 @@
         "include_dem": false,
         "include_inc_map": false,
         "include_scattering_area": true,
-        "include_rgb": true
+        "include_rgb": true,
+        "dem_name": "legacy"
       },
       "job_type": "RTC_GAMMA"
     },
@@ -61,7 +64,8 @@
         "include_dem": true,
         "include_inc_map": true,
         "include_scattering_area": false,
-        "include_rgb": true
+        "include_rgb": true,
+        "dem_name": "legacy"
       },
       "job_type": "RTC_GAMMA"
     },
@@ -77,7 +81,8 @@
         "include_dem": false,
         "include_inc_map": true,
         "include_scattering_area": true,
-        "include_rgb": false
+        "include_rgb": false,
+        "dem_name": "legacy"
       },
       "job_type": "RTC_GAMMA"
     },
@@ -93,7 +98,110 @@
         "include_dem": true,
         "include_inc_map": false,
         "include_scattering_area": false,
-        "include_rgb": false
+        "include_rgb": false,
+        "dem_name": "legacy"
+      },
+      "job_type": "RTC_GAMMA"
+    },
+    {
+      "name": "{{ name }}",
+      "job_parameters": {
+        "granules": ["S1A_IW_GRDH_1SDH_20210115T100027_20210115T100052_036147_043CF4_049C"],
+        "resolution": 30.0,
+        "radiometry": "gamma0",
+        "scale": "power",
+        "speckle_filter": false,
+        "dem_matching": false,
+        "include_dem": false,
+        "include_inc_map": true,
+        "include_scattering_area": false,
+        "include_rgb": false,
+        "dem_name": "copernicus"
+      },
+      "job_type": "RTC_GAMMA"
+    },
+    {
+      "name": "{{ name }}",
+      "job_parameters": {
+        "granules": ["S1A_IW_GRDH_1SSH_20190731T083303_20190731T083328_028358_033459_A44D"],
+        "resolution": 30.0,
+        "radiometry": "gamma0",
+        "scale": "amplitude",
+        "speckle_filter": true,
+        "dem_matching": true,
+        "include_dem": true,
+        "include_inc_map": true,
+        "include_scattering_area": true,
+        "include_rgb": false,
+        "dem_name": "copernicus"
+      },
+      "job_type": "RTC_GAMMA"
+    },
+    {
+      "name": "{{ name }}",
+      "job_parameters": {
+        "granules": ["S1B_IW_GRDH_1SSV_20170206T001001_20170206T001026_004172_00738E_F7B0"],
+        "resolution": 30.0,
+        "radiometry": "sigma0",
+        "scale": "power",
+        "speckle_filter": false,
+        "dem_matching": true,
+        "include_dem": false,
+        "include_inc_map": false,
+        "include_scattering_area": false,
+        "include_rgb": false,
+        "dem_name": "copernicus"
+      },
+      "job_type": "RTC_GAMMA"
+    },
+    {
+      "name": "{{ name }}",
+      "job_parameters": {
+        "granules": ["S1A_IW_GRDH_1SDV_20200817T034451_20200817T034516_033941_03F00D_8F47"],
+        "resolution": 30.0,
+        "radiometry": "sigma0",
+        "scale": "amplitude",
+        "speckle_filter": true,
+        "dem_matching": false,
+        "include_dem": true,
+        "include_inc_map": true,
+        "include_scattering_area": true,
+        "include_rgb": false,
+        "dem_name": "copernicus"
+      },
+      "job_type": "RTC_GAMMA"
+    },
+    {
+      "name": "{{ name }}",
+      "job_parameters": {
+        "granules": ["S1A_IW_SLC__1SDH_20170428T155315_20170428T155342_016346_01B0D7_61E8"],
+        "resolution": 30.0,
+        "radiometry": "sigma0",
+        "scale": "amplitude",
+        "speckle_filter": true,
+        "dem_matching": true,
+        "include_dem": true,
+        "include_inc_map": false,
+        "include_scattering_area": true,
+        "include_rgb": true,
+        "dem_name": "copernicus"
+      },
+      "job_type": "RTC_GAMMA"
+    },
+    {
+      "name": "{{ name }}",
+      "job_parameters": {
+        "granules": ["S1A_IW_SLC__1SDV_20210130T063219_20210130T063254_036363_044474_2BEB"],
+        "resolution": 30.0,
+        "radiometry": "gamma0",
+        "scale": "power",
+        "speckle_filter": false,
+        "dem_matching": false,
+        "include_dem": true,
+        "include_inc_map": true,
+        "include_scattering_area": true,
+        "include_rgb": true,
+        "dem_name": "copernicus"
       },
       "job_type": "RTC_GAMMA"
     }
