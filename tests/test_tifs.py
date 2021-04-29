@@ -34,7 +34,7 @@ def _get_tif_tolerances(file_name: str):
     if file_name.endswith('vert_disp.tif'):
         rtol, atol = 0.0, 1.1
     if file_name.endswith('los_disp.tif'):
-        rtol, atol = 0.0, 1e-01
+        rtol, atol = 0.0, 1.5e-01
     if file_name.endswith('unw_phase.tif'):
         rtol, atol = 0.0, 200.0
 
