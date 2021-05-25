@@ -43,11 +43,11 @@ def _get_tif_tolerances(file_name: str):
     # RTC
     backscatter_extensions = ['VV.tif', 'VH.tif', 'HH.tif', 'HV.tif']
     if any([file_name.endswith(ext) for ext in backscatter_extensions]):
-        rtol, atol = 2e-05, 1e-05
+        rtol, atol, percent = 0.00002, 0.000002, 0.999
     if file_name.endswith('area.tif'):
-        rtol, atol = 2e-05, 0.0
+        rtol, atol, percent = 0.0, 0.02, 0.999
     if file_name.endswith('rgb.tif'):
-        rtol, atol = 0.0, 1.0
+        rtol, atol, percent = 0.0, 1.0, 0.9999
 
     return rtol, atol, percent
 
