@@ -22,21 +22,23 @@ def _get_tif_tolerances(file_name: str):
     Comparison function:
          absolute(a - b) <= rtol * absolute(b) + atol
 
-    returns: rtol, atol
+    returns: rtol, atol, percent
     """
-    rtol, atol = 0.0, 0.0
+    rtol, atol, percent = 0.0, 0.0, 1.0
 
     # InSAR
     if file_name.endswith('amp.tif'):
-        rtol, atol = 0.0, 1.5
+        rtol, atol, percent = 0.0, 0.01,  0.9999
     if file_name.endswith('corr.tif'):
-        rtol, atol = 0.0, 1.0
+        rtol, atol, percent = 0.0, 0.004, 0.999
     if file_name.endswith('vert_disp.tif'):
-        rtol, atol = 0.0, 1.1
+        rtol, atol, percent = 0.0, 0.04, 0.999
     if file_name.endswith('los_disp.tif'):
-        rtol, atol = 0.0, 1.5e-01
+        rtol, atol, percent = 0.0, 0.03, 0.999
     if file_name.endswith('unw_phase.tif'):
-        rtol, atol = 0.0, 200.0
+        rtol, atol, percent = 0.0, 0.04, 0.997
+    if file_name.endswith('wrapped_phase.tif'):
+        rtol, atol, percent = 0.0, 0.01, 0.996
 
     # RTC
     backscatter_extensions = ['VV.tif', 'VH.tif', 'HH.tif', 'HV.tif']
@@ -47,7 +49,7 @@ def _get_tif_tolerances(file_name: str):
     if file_name.endswith('rgb.tif'):
         rtol, atol = 0.0, 1.0
 
-    return rtol, atol
+    return rtol, atol, percent
 
 
 @pytest.mark.nameskip
@@ -143,8 +145,8 @@ def test_golden_tifs(comparison_dirs):
 
             try:
                 compare.compare_raster_info(main_file, develop_file)
-                relative_tolerance, absolute_tolerance = _get_tif_tolerances(str(main_file))
-                compare.values_are_close(main_ds, develop_ds, rtol=relative_tolerance, atol=absolute_tolerance)
+                relative_tolerance, absolute_tolerance, percent = _get_tif_tolerances(str(main_file))
+                compare.values_are_close(main_ds, develop_ds, relative_tolerance, absolute_tolerance, percent)
             except compare.ComparisonFailure as e:
                 messages.append(f'{comparison_header}\n{e}')
                 failure_count += 1

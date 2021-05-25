@@ -27,13 +27,14 @@ def bit_for_bit(reference: Path, secondary: Path):
         raise ComparisonFailure('Files differ at the binary level')
 
 
-def values_are_close(reference: XR, secondary: XR, rtol: float = 1e-05, atol: float = 1e-08):
-    try:
-        xr.testing.assert_allclose(reference, secondary, rtol=rtol, atol=atol)
-    except AssertionError as e:
+def values_are_close(reference: XR, secondary: XR, rtol: float = 1e-05, atol: float = 1e-08, percent: float = 1.0):
+    diff = np.ma.masked_invalid(reference - secondary)
+    n_close = np.isclose(diff.filled(0.0), 0.0, rtol=rtol, atol=atol).sum()
+
+    if (n_close / diff.size) < percent:
         detailed_failure_message = _compare_values_message(reference, secondary, rtol=rtol, atol=atol)
         raise ComparisonFailure(
-            '\n'.join(['Values are different.', detailed_failure_message, '', clarify_xr_message(str(e))])
+            '\n'.join(['Values are different.', detailed_failure_message])
         )
 
 
