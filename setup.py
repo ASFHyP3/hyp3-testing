@@ -32,7 +32,7 @@ setup(
     python_requires='~=3.8',
 
     install_requires=[
-        'hyp3_sdk',
+        'hyp3_sdk>=1.1',
         'jinja2',
         'numpy',
         'rasterio',
