@@ -1,75 +1,13 @@
-import json
-import os
-import random
-import string
 from glob import glob
 from pathlib import Path
 from typing import List, Tuple
-from zipfile import ZipFile, is_zipfile
-
-import requests
-from hyp3lib.fetch import download_file
-from jinja2 import Template
-
-from hyp3_testing import AUTH_URL
+from zipfile import ZipFile
 
 
-def hyp3_session(username: str = None, password: str = None) -> requests.Session:
-    username = username if username is not None else os.environ.get('EARTHDATA_LOGIN_USER')
-    password = password if password is not None else os.environ.get('EARTHDATA_LOGIN_PASSWORD')
-    if username is None and password is None:
-        auth = None
-    else:
-        auth = (username, password)
-
-    session = requests.Session()
-    response = session.get(AUTH_URL, auth=auth)
-    response.raise_for_status()
-
-    return session
-
-
-def get_submission_payload(template: Path) -> dict:
-    with open(template) as f:
-        body = f.read()
-
-    hash_ = ''.join(random.choices(string.ascii_letters + string.digits, k=7))
-    jobs = Template(body).render(hash=hash_)
-
-    return json.loads(jobs)
-
-
-def get_jobs_update(name: str, url: str, session: requests.Session, request_time: str = None) -> dict:
-    params = {'name': name}
-    if request_time is not None:
-        params.update({'start': request_time, 'end': request_time})
-
-    update = session.get(url, params=params)
-    update.raise_for_status()
-    return update.json()
-
-
-def jobs_succeeded(jobs: List[dict]) -> bool:
-    status = {job['status_code'] for job in jobs}
-    if 'FAILED' in status:
-        raise Exception('Job failed')
-
-    return {'SUCCEEDED'} == status
-
-
-def get_download_urls(jobs: List[dict]) -> List[str]:
-    file_blocks = [file for job in jobs for file in job.get('files', [])]
-    file_urls = [file['url'] for file in file_blocks]
-    return file_urls
-
-
-def download_products(jobs: List[dict], directory: Path):
-    urls = get_download_urls(jobs)
-    for url in urls:
-        product_file = download_file(url, directory=str(directory))
-        if is_zipfile(product_file):
-            with ZipFile(product_file) as zip_:
-                zip_.extractall(path=directory)
+def extract_products(products: List[Path]):
+    for product_file in products:
+        with ZipFile(product_file) as zip_:
+            zip_.extractall(path=product_file.parent)
 
 
 def find_products(directory: Path, pattern: str = '*.zip') -> dict:
