@@ -1,7 +1,7 @@
 import shutil
 from pathlib import Path
 
-import hyp3_sdk as sdk
+import hyp3_sdk
 import pytest
 
 
@@ -39,7 +39,7 @@ def comparison_environments(tmp_path_factory, golden_dirs):
             path.mkdir(exist_ok=True, parents=True)
             comparison_dirs.append(path)
 
-    comparison_apis = [sdk.HYP3_PROD, sdk.HYP3_TEST]
+    comparison_apis = [hyp3_sdk.HYP3_PROD, hyp3_sdk.HYP3_TEST]
     return list(zip(comparison_dirs, comparison_apis))
 
 

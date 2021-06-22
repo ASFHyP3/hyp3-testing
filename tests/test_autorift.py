@@ -3,7 +3,7 @@ import os
 from glob import glob
 from pathlib import Path
 
-import hyp3_sdk as sdk
+import hyp3_sdk
 import pytest
 import xarray as xr
 
@@ -24,7 +24,7 @@ def test_golden_submission(comparison_environments):
     for dir_, api in comparison_environments:
         dir_.mkdir(parents=True, exist_ok=True)
 
-        hyp3 = sdk.HyP3(api, os.environ.get('EARTHDATA_LOGIN_USER'), os.environ.get('EARTHDATA_LOGIN_PASSWORD'))
+        hyp3 = hyp3_sdk.HyP3(api, os.environ.get('EARTHDATA_LOGIN_USER'), os.environ.get('EARTHDATA_LOGIN_PASSWORD'))
         jobs = hyp3.submit_prepared_jobs(submission_payload)
         request_time = jobs.jobs[0].request_time.isoformat(timespec='seconds')
         print(f'{dir_.name} request time: {request_time}')
@@ -47,7 +47,7 @@ def test_golden_wait_and_download(comparison_environments, job_name):
             submission_details = json.loads(submission_report.read_text())
             job_name = submission_details['name']
 
-        hyp3 = sdk.HyP3(api, os.environ.get('EARTHDATA_LOGIN_USER'), os.environ.get('EARTHDATA_LOGIN_PASSWORD'))
+        hyp3 = hyp3_sdk.HyP3(api, os.environ.get('EARTHDATA_LOGIN_USER'), os.environ.get('EARTHDATA_LOGIN_PASSWORD'))
         jobs = hyp3.find_jobs(name=job_name)
         jobs = hyp3.watch(jobs)
         jobs.download_files(dir_)
