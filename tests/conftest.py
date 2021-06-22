@@ -2,8 +2,9 @@ import os
 import shutil
 from pathlib import Path
 
-import pytest
 import hyp3_sdk as sdk
+import pytest
+
 
 def pytest_addoption(parser):
     parser.addoption(
