@@ -1,69 +1,66 @@
-{% set name = "hyp3-testing-%s"|format(hash) %}
-{
-  "jobs": [
-    {
-      "name": "{{ name }}",
-      "job_parameters": {
-        "granules": [
-          "S1A_IW_SLC__1SDV_20200203T172103_20200203T172122_031091_03929B_3048",
-          "S1A_IW_SLC__1SDV_20200110T172104_20200110T172123_030741_03864E_A996"
-         ],
-        "looks": "20x4",
-        "include_look_vectors": true,
-        "include_los_displacement": true,
-        "include_inc_map": true,
-        "include_dem": true,
-        "include_wrapped_phase": true
-      },
-      "job_type": "INSAR_GAMMA"
+[
+  {
+    "name": "{{ name }}",
+    "job_parameters": {
+      "granules": [
+        "S1A_IW_SLC__1SDV_20200203T172103_20200203T172122_031091_03929B_3048",
+        "S1A_IW_SLC__1SDV_20200110T172104_20200110T172123_030741_03864E_A996"
+      ],
+      "looks": "20x4",
+      "include_look_vectors": true,
+      "include_los_displacement": true,
+      "include_inc_map": true,
+      "include_dem": true,
+      "include_wrapped_phase": true
     },
-    {
-      "name": "{{ name }}",
-      "job_parameters": {
-        "granules": [
-          "S1A_IW_SLC__1SDV_20200527T195012_20200527T195028_032755_03CB56_3D96",
-          "S1A_IW_SLC__1SDV_20200515T195012_20200515T195027_032580_03C609_4EBA"
-         ],
-        "looks": "20x4",
-        "include_look_vectors": false,
-        "include_los_displacement": false,
-        "include_inc_map": false,
-        "include_dem": false,
-        "include_wrapped_phase": false
-      },
-      "job_type": "INSAR_GAMMA"
+    "job_type": "INSAR_GAMMA"
+  },
+  {
+    "name": "{{ name }}",
+    "job_parameters": {
+      "granules": [
+        "S1A_IW_SLC__1SDV_20200527T195012_20200527T195028_032755_03CB56_3D96",
+        "S1A_IW_SLC__1SDV_20200515T195012_20200515T195027_032580_03C609_4EBA"
+      ],
+      "looks": "20x4",
+      "include_look_vectors": false,
+      "include_los_displacement": false,
+      "include_inc_map": false,
+      "include_dem": false,
+      "include_wrapped_phase": false
     },
-    {
-      "name": "{{ name }}",
-      "job_parameters": {
-        "granules": [
-          "S1A_IW_SLC__1SSV_20150513T123847_20150513T123914_005903_0079A9_19C4",
-          "S1A_IW_SLC__1SSV_20150501T123846_20150501T123913_005728_0075A6_1964"
-         ],
-        "looks": "10x2",
-        "include_look_vectors": false,
-        "include_los_displacement": true,
-        "include_inc_map": true,
-        "include_dem": false,
-        "include_wrapped_phase": true
-      },
-      "job_type": "INSAR_GAMMA"
+    "job_type": "INSAR_GAMMA"
+  },
+  {
+    "name": "{{ name }}",
+    "job_parameters": {
+      "granules": [
+        "S1A_IW_SLC__1SSV_20150513T123847_20150513T123914_005903_0079A9_19C4",
+        "S1A_IW_SLC__1SSV_20150501T123846_20150501T123913_005728_0075A6_1964"
+      ],
+      "looks": "10x2",
+      "include_look_vectors": false,
+      "include_los_displacement": true,
+      "include_inc_map": true,
+      "include_dem": false,
+      "include_wrapped_phase": true
     },
-    {
-      "name": "{{ name }}",
-      "job_parameters": {
-        "granules": [
-          "S1A_IW_SLC__1SDH_20200331T133427_20200331T133456_031920_03AF6C_9E5F",
-          "S1A_IW_SLC__1SDH_20200307T133427_20200307T133455_031570_03A324_C47F"
-         ],
-        "looks": "10x2",
-        "include_look_vectors": true,
-        "include_los_displacement": false,
-        "include_inc_map": false,
-        "include_dem": true,
-        "include_wrapped_phase": false
-      },
-      "job_type": "INSAR_GAMMA"
-    }
-  ]
-}
+    "job_type": "INSAR_GAMMA"
+  },
+  {
+    "name": "{{ name }}",
+    "job_parameters": {
+      "granules": [
+        "S1A_IW_SLC__1SDH_20200331T133427_20200331T133456_031920_03AF6C_9E5F",
+        "S1A_IW_SLC__1SDH_20200307T133427_20200307T133455_031570_03A324_C47F"
+      ],
+      "looks": "10x2",
+      "include_look_vectors": true,
+      "include_los_displacement": false,
+      "include_inc_map": false,
+      "include_dem": true,
+      "include_wrapped_phase": false
+    },
+    "job_type": "INSAR_GAMMA"
+  }
+]

@@ -1,17 +1,15 @@
 import json
 from glob import glob
 from pathlib import Path
-from time import sleep
 
 import pytest
 import xarray as xr
 
-from hyp3_testing import API_TEST_URL, API_URL
 from hyp3_testing import compare
 from hyp3_testing import helpers
+from hyp3_testing import util
 
 pytestmark = pytest.mark.golden
-_API = {'main': API_URL, 'develop': API_TEST_URL}
 
 
 def _get_tif_tolerances(file_name: str):
@@ -51,46 +49,41 @@ def _get_tif_tolerances(file_name: str):
 
 
 @pytest.mark.nameskip
-def test_golden_submission(comparison_dirs, process):
-    hyp3_session = helpers.hyp3_session()
+def test_golden_submission(comparison_dirs, comparison_hyp3s, process):
+    job_name = util.get_job_name()
+    print(f'Job name: {job_name}')
 
-    submission_payload = helpers.get_submission_payload(
-        Path(__file__).resolve().parent / 'data' / f'{process}_gamma_golden.json.j2')
-    print(f'Job name: {submission_payload["jobs"][0]["name"]}')
+    submission_payload = util.render_template(f'{process}_gamma_golden.json.j2', name=job_name)
 
-    for dir_ in comparison_dirs:
-        response = hyp3_session.post(url=_API[dir_.name], json=submission_payload)
-        response.raise_for_status()
-        print(f'{dir_.name} request time: {response.json()["jobs"][0]["request_time"]}')
+    for dir_, hyp3 in zip(comparison_dirs, comparison_hyp3s):
+        dir_.mkdir(parents=True, exist_ok=True)
 
-        with open(dir_ / f'{dir_.name}_response.json', 'w') as f:
-            json.dump(response.json(), f)
+        jobs = hyp3.submit_prepared_jobs(submission_payload)
+        request_time = jobs.jobs[0].request_time.isoformat(timespec='seconds')
+        print(f'{dir_.name} request time: {request_time}')
+
+        submission_details = {'name': job_name, 'request_time': request_time}
+        submission_report = dir_ / f'{dir_.name}_submission.json'
+        submission_report.write_text(json.dumps(submission_details))
 
 
 @pytest.mark.timeout(7200)  # 120 minutes as InSAR jobs can take ~1.5 hrs
 @pytest.mark.dependency()
-def test_golden_wait_and_download(comparison_dirs, job_name):
-    hyp3_session = helpers.hyp3_session()
-    for dir_ in comparison_dirs:
+def test_golden_wait_and_download(comparison_dirs, comparison_hyp3s, job_name):
+    for dir_, hyp3 in zip(comparison_dirs, comparison_hyp3s):
         products = helpers.find_products(dir_, pattern='*.zip')
         if products:
             continue
 
         if job_name is None:
-            with open(dir_ / f'{dir_.name}_response.json') as f:
-                resp = json.load(f)
-            job_name = resp['jobs'][0]['name']
-            request_time = resp['jobs'][0]['request_time']
-        else:
-            request_time = None
+            submission_report = dir_ / f'{dir_.name}_submission.json'
+            submission_details = json.loads(submission_report.read_text())
+            job_name = submission_details['name']
 
-        while True:
-            update = helpers.get_jobs_update(job_name, _API[dir_.name], hyp3_session, request_time=request_time)
-            if helpers.jobs_succeeded(update['jobs']):
-                break
-            sleep(60)
-
-        helpers.download_products(update['jobs'], dir_)
+        jobs = hyp3.find_jobs(name=job_name)
+        jobs = hyp3.watch(jobs)
+        products = jobs.download_files(dir_)
+        helpers.extract_products(products)
 
 
 @pytest.mark.dependency(depends=['test_golden_wait_and_download'])

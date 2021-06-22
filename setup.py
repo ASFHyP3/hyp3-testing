@@ -32,11 +32,10 @@ setup(
     python_requires='~=3.8',
 
     install_requires=[
-        'hyp3lib',
+        'hyp3_sdk',
         'jinja2',
         'numpy',
         'rasterio',
-        'requests',
         'xarray',
     ],
 

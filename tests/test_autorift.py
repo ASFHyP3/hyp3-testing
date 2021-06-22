@@ -23,7 +23,7 @@ def test_golden_submission(comparison_dirs, comparison_hyp3s):
         dir_.mkdir(parents=True, exist_ok=True)
 
         jobs = hyp3.submit_prepared_jobs(submission_payload)
-        request_time = jobs.jobs[0].request_time
+        request_time = jobs.jobs[0].request_time.isoformat(timespec='seconds')
         print(f'{dir_.name} request time: {request_time}')
 
         submission_details = {'name': job_name, 'request_time': request_time}
