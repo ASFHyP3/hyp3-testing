@@ -4,8 +4,8 @@ from typing import List, Tuple
 from zipfile import ZipFile
 
 
-def extract_products(products: List[Path]):
-    for product_file in products:
+def extract_zip_files(zip_files: List[Path]):
+    for product_file in zip_files:
         with ZipFile(product_file) as zip_:
             zip_.extractall(path=product_file.parent)
 

@@ -5,8 +5,8 @@ from hyp3_testing import util
 
 
 def test_get_job_name():
-    name1 = util.get_job_name()
-    name2 = util.get_job_name()
+    name1 = util.generate_job_name()
+    name2 = util.generate_job_name()
 
     assert name1 != name2
 

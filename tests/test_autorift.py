@@ -14,7 +14,7 @@ pytestmark = pytest.mark.golden
 
 @pytest.mark.nameskip
 def test_golden_submission(comparison_environments):
-    job_name = util.get_job_name()
+    job_name = util.generate_job_name()
     print(f'Job name: {job_name}')
 
     submission_payload = util.render_template('autorift_golden.json.j2', name=job_name)

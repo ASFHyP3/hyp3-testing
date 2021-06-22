@@ -50,7 +50,7 @@ def _get_tif_tolerances(file_name: str):
 
 @pytest.mark.nameskip
 def test_golden_submission(comparison_environments, process):
-    job_name = util.get_job_name()
+    job_name = util.generate_job_name()
     print(f'Job name: {job_name}')
 
     submission_payload = util.render_template(f'{process}_gamma_golden.json.j2', name=job_name)
@@ -83,7 +83,7 @@ def test_golden_wait_and_download(comparison_environments, job_name):
         jobs = hyp3.find_jobs(name=job_name)
         jobs = hyp3.watch(jobs)
         products = jobs.download_files(dir_)
-        helpers.extract_products(products)
+        helpers.extract_zip_files(products)
 
 
 @pytest.mark.dependency(depends=['test_golden_wait_and_download'])

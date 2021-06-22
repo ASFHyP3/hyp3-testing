@@ -5,7 +5,7 @@ import string
 from jinja2 import Environment, PackageLoader, StrictUndefined, select_autoescape
 
 
-def get_job_name() -> str:
+def generate_job_name() -> str:
     hash_ = ''.join(random.choices(string.ascii_letters + string.digits, k=7))
     return f'hyp3-testing-{hash_}'
 
@@ -22,8 +22,8 @@ def get_environment() -> Environment:
     return env
 
 
-def render_template(template: str, **kwargs) -> dict:
+def render_template(template_file: str, **kwargs) -> dict:
     env = get_environment()
-    template = env.get_template(template)
-    rendered = template.render(**kwargs)
+    template_file = env.get_template(template_file)
+    rendered = template_file.render(**kwargs)
     return json.loads(rendered)
