@@ -27,29 +27,27 @@ def pytest_collection_modifyitems(config, items):
 
 
 @pytest.fixture(scope='session')
-def comparison_dirs(tmp_path_factory, golden_dirs):
-    if golden_dirs is not None:
+def comparison_environments(tmp_path_factory, golden_dirs):
+    if golden_dirs is None:
+        comparison_dirs = [
+            tmp_path_factory.mktemp('main', numbered=False),
+            tmp_path_factory.mktemp('develop', numbered=False)
+        ]
+    else:
         comparison_dirs = []
         for dir_ in golden_dirs:
             path = Path(dir_)
-            assert path.name in ('main', 'develop')
             path.mkdir(exist_ok=True, parents=True)
             comparison_dirs.append(path)
-        return sorted(comparison_dirs, reverse=True)
 
-    main_dir = tmp_path_factory.mktemp('main', numbered=False)
-    develop_dir = tmp_path_factory .mktemp('develop', numbered=False)
-    return main_dir, develop_dir
-
-
-@pytest.fixture(scope='session')
-def comparison_hyp3s():
     username = os.environ.get('EARTHDATA_LOGIN_USER')
     password = os.environ.get('EARTHDATA_LOGIN_PASSWORD')
+    comparison_hyp3s = [
+        sdk.HyP3(sdk.HYP3_PROD, username=username, password=password),
+        sdk.HyP3(sdk.HYP3_TEST, username=username, password=password),
+    ]
 
-    hyp3_prod = sdk.HyP3(sdk.HYP3_PROD, username=username, password=password)
-    hyp3_test = sdk.HyP3(sdk.HYP3_TEST, username=username, password=password)
-    return hyp3_prod, hyp3_test
+    return zip(comparison_dirs, comparison_hyp3s)
 
 
 @pytest.fixture

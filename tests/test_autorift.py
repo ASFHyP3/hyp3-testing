@@ -13,13 +13,13 @@ pytestmark = pytest.mark.golden
 
 
 @pytest.mark.nameskip
-def test_golden_submission(comparison_dirs, comparison_hyp3s):
+def test_golden_submission(comparison_environments):
     job_name = util.get_job_name()
     print(f'Job name: {job_name}')
 
     submission_payload = util.render_template('autorift_golden.json.j2', name=job_name)
 
-    for dir_, hyp3 in zip(comparison_dirs, comparison_hyp3s):
+    for dir_, hyp3 in comparison_environments:
         dir_.mkdir(parents=True, exist_ok=True)
 
         jobs = hyp3.submit_prepared_jobs(submission_payload)
@@ -33,8 +33,8 @@ def test_golden_submission(comparison_dirs, comparison_hyp3s):
 
 @pytest.mark.timeout(10800)  # 3 hours
 @pytest.mark.dependency()
-def test_golden_wait_and_download(comparison_dirs, comparison_hyp3s, job_name):
-    for dir_, hyp3 in zip(comparison_dirs, comparison_hyp3s):
+def test_golden_wait_and_download(comparison_environments, job_name):
+    for dir_, hyp3 in comparison_environments:
         products = helpers.find_products(dir_, pattern='*.nc')
         if products:
             continue
@@ -50,8 +50,8 @@ def test_golden_wait_and_download(comparison_dirs, comparison_hyp3s, job_name):
 
 
 @pytest.mark.dependency(depends=['test_golden_wait_and_download'])
-def test_golden_product_files(comparison_dirs):
-    main_dir, develop_dir = comparison_dirs
+def test_golden_product_files(comparison_environments):
+    (main_dir, _), (develop_dir, _) = comparison_environments
     main_products = helpers.find_products(main_dir, pattern='*.nc')
     develop_products = helpers.find_products(develop_dir, pattern='*.nc')
 
@@ -68,8 +68,8 @@ def test_golden_product_files(comparison_dirs):
 
 
 @pytest.mark.dependency(depends=['test_golden_wait_and_download'])
-def test_golden_products(comparison_dirs):
-    main_dir, develop_dir = comparison_dirs
+def test_golden_products(comparison_environments):
+    (main_dir, _), (develop_dir, _) = comparison_environments
     main_products = helpers.find_products(main_dir, pattern='*.nc')
     develop_products = helpers.find_products(develop_dir, pattern='*.nc')
 
