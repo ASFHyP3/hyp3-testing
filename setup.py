@@ -35,7 +35,7 @@ setup(
         'hyp3_sdk>=1.1',
         'jinja2',
         'numpy',
-        'netCDF4', # provides xarray netCDF IO backend
+        'netCDF4',  # provides xarray netCDF IO backend
         'rasterio',
         'xarray',
     ],
