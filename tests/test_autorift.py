@@ -1,7 +1,9 @@
 import json
+import os
 from glob import glob
 from pathlib import Path
 
+import hyp3_sdk as sdk
 import pytest
 import xarray as xr
 
@@ -19,9 +21,10 @@ def test_golden_submission(comparison_environments):
 
     submission_payload = util.render_template('autorift_golden.json.j2', name=job_name)
 
-    for dir_, hyp3 in comparison_environments:
+    for dir_, api in comparison_environments:
         dir_.mkdir(parents=True, exist_ok=True)
 
+        hyp3 = sdk.HyP3(api, os.environ.get('EARTHDATA_LOGIN_USER'), os.environ.get('EARTHDATA_LOGIN_PASSWORD'))
         jobs = hyp3.submit_prepared_jobs(submission_payload)
         request_time = jobs.jobs[0].request_time.isoformat(timespec='seconds')
         print(f'{dir_.name} request time: {request_time}')
@@ -34,7 +37,7 @@ def test_golden_submission(comparison_environments):
 @pytest.mark.timeout(10800)  # 3 hours
 @pytest.mark.dependency()
 def test_golden_wait_and_download(comparison_environments, job_name):
-    for dir_, hyp3 in comparison_environments:
+    for dir_, api in comparison_environments:
         products = helpers.find_products(dir_, pattern='*.nc')
         if products:
             continue
@@ -44,6 +47,7 @@ def test_golden_wait_and_download(comparison_environments, job_name):
             submission_details = json.loads(submission_report.read_text())
             job_name = submission_details['name']
 
+        hyp3 = sdk.HyP3(api, os.environ.get('EARTHDATA_LOGIN_USER'), os.environ.get('EARTHDATA_LOGIN_PASSWORD'))
         jobs = hyp3.find_jobs(name=job_name)
         jobs = hyp3.watch(jobs)
         jobs.download_files(dir_)

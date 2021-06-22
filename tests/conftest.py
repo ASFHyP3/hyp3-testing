@@ -1,4 +1,3 @@
-import os
 import shutil
 from pathlib import Path
 
@@ -40,14 +39,8 @@ def comparison_environments(tmp_path_factory, golden_dirs):
             path.mkdir(exist_ok=True, parents=True)
             comparison_dirs.append(path)
 
-    username = os.environ.get('EARTHDATA_LOGIN_USER')
-    password = os.environ.get('EARTHDATA_LOGIN_PASSWORD')
-    comparison_hyp3s = [
-        sdk.HyP3(sdk.HYP3_PROD, username=username, password=password),
-        sdk.HyP3(sdk.HYP3_TEST, username=username, password=password),
-    ]
-
-    return list(zip(comparison_dirs, comparison_hyp3s))
+    comparison_apis = [sdk.HYP3_PROD, sdk.HYP3_TEST]
+    return list(zip(comparison_dirs, comparison_apis))
 
 
 @pytest.fixture
