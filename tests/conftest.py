@@ -47,7 +47,7 @@ def comparison_environments(tmp_path_factory, golden_dirs):
         sdk.HyP3(sdk.HYP3_TEST, username=username, password=password),
     ]
 
-    return zip(comparison_dirs, comparison_hyp3s)
+    return list(zip(comparison_dirs, comparison_hyp3s))
 
 
 @pytest.fixture
