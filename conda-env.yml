@@ -6,7 +6,7 @@ dependencies:
   - python=3.8
   - pip
   - gdal
-  - hyp3_sdk>=1.1
+  - hyp3_sdk>=1.1,<2
   - jinja2
   - numpy
   - netCDF4  # provides xarray netCDF IO backend
