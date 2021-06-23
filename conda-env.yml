@@ -6,16 +6,16 @@ dependencies:
   - python=3.8
   - pip
   - gdal
-  - hyp3lib>=1.4
+  - hyp3_sdk>=1.1,<2
   - jinja2
   - numpy
+  - netCDF4  # provides xarray netCDF IO backend
   - setuptools
   - setuptools_scm
   - pytest
   - pytest-cov
   - pytest-dependency
   - pytest-timeout
-  - requests
   - rasterio
   - wheel
   - xarray

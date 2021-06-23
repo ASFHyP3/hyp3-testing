@@ -1,65 +1,61 @@
 import json
+import os
 from glob import glob
 from pathlib import Path
-from time import sleep
 
+import hyp3_sdk
 import pytest
 import xarray as xr
 
-from hyp3_testing import API_TEST_URL, API_URL
 from hyp3_testing import compare
 from hyp3_testing import helpers
+from hyp3_testing import util
 
 pytestmark = pytest.mark.golden
-_API = {'main': API_URL, 'develop': API_TEST_URL}
 
 
 @pytest.mark.nameskip
-def test_golden_submission(comparison_dirs):
-    hyp3_session = helpers.hyp3_session()
+def test_golden_submission(comparison_environments):
+    job_name = util.generate_job_name()
+    print(f'Job name: {job_name}')
 
-    submission_payload = helpers.get_submission_payload(
-        Path(__file__).resolve().parent / 'data' / 'autorift_golden.json.j2')
-    print(f'Job name: {submission_payload["jobs"][0]["name"]}')
+    submission_payload = util.render_template('autorift_golden.json.j2', name=job_name)
 
-    for dir_ in comparison_dirs:
-        response = hyp3_session.post(url=_API[dir_.name], json=submission_payload)
-        response.raise_for_status()
-        print(f'{dir_.name} request time: {response.json()["jobs"][0]["request_time"]}')
+    for dir_, api in comparison_environments:
+        dir_.mkdir(parents=True, exist_ok=True)
 
-        with open(dir_ / f'{dir_.name}_response.json', 'w') as f:
-            json.dump(response.json(), f)
+        hyp3 = hyp3_sdk.HyP3(api, os.environ.get('EARTHDATA_LOGIN_USER'), os.environ.get('EARTHDATA_LOGIN_PASSWORD'))
+        jobs = hyp3.submit_prepared_jobs(submission_payload)
+        request_time = jobs.jobs[0].request_time.isoformat(timespec='seconds')
+        print(f'{dir_.name} request time: {request_time}')
+
+        submission_details = {'name': job_name, 'request_time': request_time}
+        submission_report = dir_ / f'{dir_.name}_submission.json'
+        submission_report.write_text(json.dumps(submission_details))
 
 
 @pytest.mark.timeout(10800)  # 3 hours
 @pytest.mark.dependency()
-def test_golden_wait_and_download(comparison_dirs, job_name):
-    hyp3_session = helpers.hyp3_session()
-    for dir_ in comparison_dirs:
+def test_golden_wait_and_download(comparison_environments, job_name):
+    for dir_, api in comparison_environments:
         products = helpers.find_products(dir_, pattern='*.nc')
         if products:
             continue
 
         if job_name is None:
-            with open(dir_ / f'{dir_.name}_response.json') as f:
-                resp = json.load(f)
-            job_name = resp['jobs'][0]['name']
-            request_time = resp['jobs'][0]['request_time']
-        else:
-            request_time = None
+            submission_report = dir_ / f'{dir_.name}_submission.json'
+            submission_details = json.loads(submission_report.read_text())
+            job_name = submission_details['name']
 
-        while True:
-            update = helpers.get_jobs_update(job_name, _API[dir_.name], hyp3_session, request_time=request_time)
-            if helpers.jobs_succeeded(update['jobs']):
-                break
-            sleep(60)
-
-        helpers.download_products(update['jobs'], dir_)
+        hyp3 = hyp3_sdk.HyP3(api, os.environ.get('EARTHDATA_LOGIN_USER'), os.environ.get('EARTHDATA_LOGIN_PASSWORD'))
+        jobs = hyp3.find_jobs(name=job_name)
+        jobs = hyp3.watch(jobs)
+        jobs.download_files(dir_)
 
 
 @pytest.mark.dependency(depends=['test_golden_wait_and_download'])
-def test_golden_product_files(comparison_dirs):
-    main_dir, develop_dir = comparison_dirs
+def test_golden_product_files(comparison_environments):
+    (main_dir, _), (develop_dir, _) = comparison_environments
     main_products = helpers.find_products(main_dir, pattern='*.nc')
     develop_products = helpers.find_products(develop_dir, pattern='*.nc')
 
@@ -76,8 +72,8 @@ def test_golden_product_files(comparison_dirs):
 
 
 @pytest.mark.dependency(depends=['test_golden_wait_and_download'])
-def test_golden_products(comparison_dirs):
-    main_dir, develop_dir = comparison_dirs
+def test_golden_products(comparison_environments):
+    (main_dir, _), (develop_dir, _) = comparison_environments
     main_products = helpers.find_products(main_dir, pattern='*.nc')
     develop_products = helpers.find_products(develop_dir, pattern='*.nc')
 

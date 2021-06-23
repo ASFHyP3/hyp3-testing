@@ -1,6 +1,7 @@
 import shutil
 from pathlib import Path
 
+import hyp3_sdk
 import pytest
 
 
@@ -25,19 +26,21 @@ def pytest_collection_modifyitems(config, items):
 
 
 @pytest.fixture(scope='session')
-def comparison_dirs(tmp_path_factory, golden_dirs):
-    if golden_dirs is not None:
+def comparison_environments(tmp_path_factory, golden_dirs):
+    if golden_dirs is None:
+        comparison_dirs = [
+            tmp_path_factory.mktemp('main', numbered=False),
+            tmp_path_factory.mktemp('develop', numbered=False)
+        ]
+    else:
         comparison_dirs = []
         for dir_ in golden_dirs:
             path = Path(dir_)
-            if not path.exists():
-                path.mkdir()
+            path.mkdir(exist_ok=True, parents=True)
             comparison_dirs.append(path)
-        return comparison_dirs
 
-    main_dir = tmp_path_factory.mktemp('main', numbered=False)
-    develop_dir = tmp_path_factory .mktemp('develop', numbered=False)
-    return main_dir, develop_dir
+    comparison_apis = [hyp3_sdk.HYP3_PROD, hyp3_sdk.HYP3_TEST]
+    return list(zip(comparison_dirs, comparison_apis))
 
 
 @pytest.fixture
