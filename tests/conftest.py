@@ -7,7 +7,7 @@ import pytest
 
 def pytest_addoption(parser):
     parser.addoption(
-        "--process",  choices=["rtc", "insar"], help="Submit this processes payload"
+        "--process", choices=["rtc", "insar"], help="Submit this processes payload"
     )
     parser.addoption(
         "--name", nargs='?', help="Find jobs by this name to compare"
@@ -62,6 +62,11 @@ def process(request):
 @pytest.fixture(scope='session')
 def golden_dirs(request):
     return request.config.getoption("--golden-dirs")
+
+
+@pytest.fixture
+def delete_files(request):
+    return request.config.getoption("--files")
 
 
 @pytest.fixture
