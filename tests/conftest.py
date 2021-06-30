@@ -19,6 +19,7 @@ def pytest_addoption(parser):
         "--delete-files", action='store_true', default=False
     )
 
+
 def pytest_collection_modifyitems(config, items):
     if config.getoption("--name"):
         name_skip = pytest.mark.skip(reason="Provided name; no need to submit")
