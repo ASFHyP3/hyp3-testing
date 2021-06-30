@@ -15,7 +15,9 @@ def pytest_addoption(parser):
     parser.addoption(
         "--golden-dirs", nargs=2, help="Main and develop directories to use for comparison"
     )
-
+    parser.addoption(
+        "--delete-files", action='store_true', default=False
+    )
 
 def pytest_collection_modifyitems(config, items):
     if config.getoption("--name"):
@@ -26,7 +28,7 @@ def pytest_collection_modifyitems(config, items):
 
 
 @pytest.fixture(scope='session')
-def comparison_environments(tmp_path_factory, golden_dirs):
+def comparison_environments(tmp_path_factory, golden_dirs, delete_files):
     if golden_dirs is None:
         comparison_dirs = [
             tmp_path_factory.mktemp('main', numbered=False),
@@ -40,8 +42,10 @@ def comparison_environments(tmp_path_factory, golden_dirs):
             comparison_dirs.append(path)
 
     comparison_apis = [hyp3_sdk.HYP3_PROD, hyp3_sdk.HYP3_TEST]
-    return list(zip(comparison_dirs, comparison_apis))
-
+    yield list(zip(comparison_dirs, comparison_apis))
+    if delete_files:
+        for dir in comparison_dirs:
+            Path(dir).rmdir()
 
 @pytest.fixture
 def job_name(request):

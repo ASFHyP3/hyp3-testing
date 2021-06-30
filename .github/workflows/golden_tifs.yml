@@ -28,4 +28,4 @@ jobs:
         shell: bash -l {0}
         run: |
           python -m pip install .[develop]
-          pytest -s --process ${{ github.event.inputs.process }} tests/test_tifs.py
+          pytest -s --process ${{ github.event.inputs.process }} --delete-files tests/test_tifs.py
