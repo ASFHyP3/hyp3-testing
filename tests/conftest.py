@@ -66,7 +66,7 @@ def golden_dirs(request):
 
 @pytest.fixture
 def delete_files(request):
-    return request.config.getoption("--files")
+    return request.config.getoption("--delete-files")
 
 
 @pytest.fixture
