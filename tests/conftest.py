@@ -45,8 +45,9 @@ def comparison_environments(tmp_path_factory, golden_dirs, delete_files):
     comparison_apis = [hyp3_sdk.HYP3_PROD, hyp3_sdk.HYP3_TEST]
     yield list(zip(comparison_dirs, comparison_apis))
     if delete_files:
-        for dir in comparison_dirs:
+        for _dir in comparison_dirs:
             Path(dir).rmdir()
+
 
 @pytest.fixture
 def job_name(request):
