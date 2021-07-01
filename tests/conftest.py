@@ -43,7 +43,9 @@ def comparison_environments(tmp_path_factory, golden_dirs, delete_files):
             comparison_dirs.append(path)
 
     comparison_apis = [hyp3_sdk.HYP3_PROD, hyp3_sdk.HYP3_TEST]
+
     yield list(zip(comparison_dirs, comparison_apis))
+
     if delete_files:
         for _dir in comparison_dirs:
             shutil.rmtree(_dir.absolute())
