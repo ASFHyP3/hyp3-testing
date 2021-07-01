@@ -46,7 +46,7 @@ def comparison_environments(tmp_path_factory, golden_dirs, delete_files):
     yield list(zip(comparison_dirs, comparison_apis))
     if delete_files:
         for _dir in comparison_dirs:
-            Path(dir).rmdir()
+            shutil.rmtree(_dir.absolute())
 
 
 @pytest.fixture
