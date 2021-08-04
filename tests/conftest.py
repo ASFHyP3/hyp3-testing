@@ -39,7 +39,7 @@ def comparison_environments(tmp_path_factory, golden_dirs):
             path.mkdir(exist_ok=True, parents=True)
             comparison_dirs.append(path)
 
-    comparison_apis = [hyp3_sdk.HYP3_PROD, hyp3_sdk.HYP3_TEST]
+    comparison_apis = [hyp3_sdk.PROD_API, hyp3_sdk.TEST_API]
     return list(zip(comparison_dirs, comparison_apis))
 
 
