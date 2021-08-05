@@ -32,7 +32,7 @@ setup(
     python_requires='~=3.8',
 
     install_requires=[
-        'hyp3_sdk~=1.1',
+        'hyp3_sdk~=1.3',
         'jinja2',
         'numpy',
         'netCDF4',  # provides xarray netCDF IO backend
