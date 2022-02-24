@@ -19,5 +19,3 @@ dependencies:
   - rasterio
   - wheel
   - xarray
-  - pip:
-      - s3pypi
