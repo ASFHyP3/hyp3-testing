@@ -66,10 +66,10 @@ cd hyp3-testing
 
 A HyP3 Testing environment can be setup via 
 [Anaconda/Miniconda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/download.html#) 
-using the provided `conda-env.yml`:
+using the provided `environment.yml`:
 
 ```
-conda env create -f conda-env.yml
+conda env create -f environment.yml
 ```
 
 which will create a `hyp3-testing` conda environment. Once created, you can activate it like:

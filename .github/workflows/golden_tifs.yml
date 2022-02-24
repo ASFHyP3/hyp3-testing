@@ -19,7 +19,7 @@ jobs:
           auto-update-conda: true
           python-version: 3.8
           activate-environment: hyp3-testing
-          environment-file: conda-env.yml
+          environment-file: environment.yml
 
       - name: Pytest in conda environment
         env:
