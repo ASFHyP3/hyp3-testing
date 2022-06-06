@@ -3,6 +3,18 @@ from pathlib import Path
 from typing import List, Tuple
 from zipfile import ZipFile
 
+from hyp3_sdk import Batch, Job
+
+
+def freeze_job_parameters(job: Job) -> tuple:
+    job_parameters = job.job_parameters
+    return tuple((key, job_parameters[key]) for key in sorted(job_parameters.keys()))
+
+
+def sort_jobs_by_parameters(jobs: Batch) -> Batch:
+    sorted_jobs = sorted(jobs, key=freeze_job_parameters)
+    return Batch(sorted_jobs)
+
 
 def extract_zip_files(zip_files: List[Path]):
     for product_file in zip_files:
