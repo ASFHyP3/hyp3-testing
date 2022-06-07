@@ -11,6 +11,8 @@ from hyp3_testing import compare
 from hyp3_testing import helpers
 from hyp3_testing import util
 
+import zipfile
+
 pytestmark = pytest.mark.golden
 
 
@@ -125,27 +127,25 @@ def test_golden_tifs(comparison_environments, job_name):
 
     for main_job, develop_job in zip(main_jobs, develop_jobs):
         main_downloads = main_job.download_files(main_dir)
+        main_downloads = main_downloads[0]
         develop_downloads = develop_job.download_files(develop_dir)
-        # FIXME: Unzip?
+        develop_downloads = develop_downloads[0]
+        #Get a list of contents
+        with zipfile.ZipFile(main_downloads) as zipMain:
+            zipMain.extractall(path=main_dir)
 
-        # FIXME: don't need these
-        main_products = helpers.find_products(main_dir, pattern='*.zip')
-        develop_products = helpers.find_products(develop_dir, pattern='*.zip')
+        with zipfile.ZipFile(develop_downloads) as zipDevelop:
+            zipDevelop.extractall(path=develop_dir)
 
-        products = set(main_products.keys()) & set(develop_products.keys())
+        main_products = sorted(zipfile.ZipFile(main_downloads).namelist())
+        develop_products = sorted(zipfile.ZipFile(develop_downloads).namelist())
 
-        for product_base in products:
-            main_hash = main_products[product_base]
-            develop_hash = develop_products[product_base]
+        main_files = sorted([product for product in main_products if product.endswith('.tif')])
+        develop_files = sorted([product for product in develop_products if product.endswith('.tif')])
 
-            comparison_files = helpers.find_files_in_products(
-                main_dir / '_'.join([product_base, main_hash]),
-                develop_dir / '_'.join([product_base, develop_hash]),
-                pattern='*.tif'
-            )
-            total_count += len(comparison_files)
+        comparison_files = [main_files, develop_files]
 
-            for main_file, develop_file in comparison_files:
+        for main_file, develop_file in comparison_files:
                 comparison_header = '\n'.join(['-'*80, main_file.name, develop_file.name, '-'*80])
 
                 with xr.open_rasterio(main_file) as f:
