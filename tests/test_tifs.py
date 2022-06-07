@@ -6,6 +6,7 @@ from pathlib import Path
 import hyp3_sdk
 import pytest
 import xarray as xr
+import numpy as np
 
 from hyp3_testing import compare
 from hyp3_testing import helpers
@@ -134,17 +135,17 @@ def test_golden_tifs(comparison_environments, job_name):
         comparison_files = [helpers.find_files_in_download(main_downloads[0], '.tif'),
                             helpers.find_files_in_download(develop_downloads[0], '.tif')]
 
-        for main_file, develop_file in comparison_files:
-                comparison_header = '\n'.join(['-'*80, main_file.name, develop_file.name, '-'*80])
+        for main_file, develop_file in np.array(comparison_files).transpose():
+                comparison_header = '\n'.join(['-'*80, main_file, develop_file, '-'*80])
 
-                with xr.open_rasterio(main_file) as f:
+                with xr.open_rasterio(f'{main_dir}/{main_file}') as f:
                     main_ds = f.load()
-                with xr.open_rasterio(develop_file) as f:
+                with xr.open_rasterio(f'{develop_dir}/{develop_file}') as f:
                     develop_ds = f.load()
 
                 try:
-                    compare.compare_raster_info(main_file, develop_file)
-                    relative_tolerance, absolute_tolerance = _get_tif_tolerances(str(main_file))
+                    compare.compare_raster_info(f'{main_dir}/{main_file}', f'{develop_dir}/{develop_file}')
+                    relative_tolerance, absolute_tolerance = _get_tif_tolerances(str(f'{main_dir}/{main_file}'))
                     compare.values_are_close(main_ds, develop_ds, rtol=relative_tolerance, atol=absolute_tolerance)
                 except compare.ComparisonFailure as e:
                     messages.append(f'{comparison_header}\n{e}')
