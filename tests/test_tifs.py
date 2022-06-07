@@ -113,11 +113,13 @@ def test_golden_tifs(comparison_environments, job_name):
         submission_details = json.loads(submission_report.read_text())
         job_name = submission_details['name']
 
-    main_hyp3 = hyp3_sdk.HyP3(main_api, os.environ.get('EARTHDATA_LOGIN_USER'), os.environ.get('EARTHDATA_LOGIN_PASSWORD'))
+    main_hyp3 = hyp3_sdk.HyP3(main_api, os.environ.get('EARTHDATA_LOGIN_USER'),
+                              os.environ.get('EARTHDATA_LOGIN_PASSWORD'))
     main_jobs = main_hyp3.find_jobs(name=job_name)
     main_jobs = helpers.sort_jobs_by_parameters(main_jobs)
 
-    develop_hyp3 = hyp3_sdk.HyP3(develop_api, os.environ.get('EARTHDATA_LOGIN_USER'), os.environ.get('EARTHDATA_LOGIN_PASSWORD'))
+    develop_hyp3 = hyp3_sdk.HyP3(develop_api, os.environ.get('EARTHDATA_LOGIN_USER'),
+                                 os.environ.get('EARTHDATA_LOGIN_PASSWORD'))
     develop_jobs = develop_hyp3.find_jobs(name=job_name)
     develop_jobs = helpers.sort_jobs_by_parameters(develop_jobs)
 
