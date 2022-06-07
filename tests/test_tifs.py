@@ -11,7 +11,7 @@ from hyp3_testing import compare
 from hyp3_testing import helpers
 from hyp3_testing import util
 
-import zipfile
+from zipfile import ZipFile
 
 pytestmark = pytest.mark.golden
 
@@ -127,23 +127,12 @@ def test_golden_tifs(comparison_environments, job_name):
 
     for main_job, develop_job in zip(main_jobs, develop_jobs):
         main_downloads = main_job.download_files(main_dir)
-        main_downloads = main_downloads[0]
         develop_downloads = develop_job.download_files(develop_dir)
-        develop_downloads = develop_downloads[0]
-        #Get a list of contents
-        with zipfile.ZipFile(main_downloads) as zipMain:
-            zipMain.extractall(path=main_dir)
 
-        with zipfile.ZipFile(develop_downloads) as zipDevelop:
-            zipDevelop.extractall(path=develop_dir)
+        helpers.extract_zip_files([main_downloads, develop_downloads])
 
-        main_products = sorted(zipfile.ZipFile(main_downloads).namelist())
-        develop_products = sorted(zipfile.ZipFile(develop_downloads).namelist())
-
-        main_files = sorted([product for product in main_products if product.endswith('.tif')])
-        develop_files = sorted([product for product in develop_products if product.endswith('.tif')])
-
-        comparison_files = [main_files, develop_files]
+        comparison_files = [helpers.find_files_in_download(main_downloads, '.tif'),
+                            helpers.find_files_in_download(develop_downloads, '.tif')]
 
         for main_file, develop_file in comparison_files:
                 comparison_header = '\n'.join(['-'*80, main_file.name, develop_file.name, '-'*80])
