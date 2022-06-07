@@ -10,9 +10,6 @@ from hyp3_testing import compare
 from hyp3_testing import helpers
 from hyp3_testing import util
 
-
-
-
 pytestmark = pytest.mark.golden
 
 
@@ -137,23 +134,23 @@ def test_golden_tifs(comparison_environments, job_name):
         develop_files = helpers.find_files_in_download(develop_downloads, '.tif')
 
         for main_file, develop_file in zip(main_files, develop_files):
-                comparison_header = '\n'.join(['-'*80, main_file, develop_file, '-'*80])
+            comparison_header = '\n'.join(['-' * 80, main_file, develop_file, '-' * 80])
 
-                main_file = main_dir / main_file
-                develop_file = develop_dir / develop_file
+            main_file = main_dir / main_file
+            develop_file = develop_dir / develop_file
 
-                with xr.open_rasterio(main_file) as f:
-                    main_ds = f.load()
-                with xr.open_rasterio(develop_file) as f:
-                    develop_ds = f.load()
+            with xr.open_rasterio(main_file) as f:
+                main_ds = f.load()
+            with xr.open_rasterio(develop_file) as f:
+                develop_ds = f.load()
 
-                try:
-                    compare.compare_raster_info(main_file, develop_file)
-                    relative_tolerance, absolute_tolerance = _get_tif_tolerances(str(main_file))
-                    compare.values_are_close(main_ds, develop_ds, rtol=relative_tolerance, atol=absolute_tolerance)
-                except compare.ComparisonFailure as e:
-                    messages.append(f'{comparison_header}\n{e}')
-                    failure_count += 1
+            try:
+                compare.compare_raster_info(main_file, develop_file)
+                relative_tolerance, absolute_tolerance = _get_tif_tolerances(str(main_file))
+                compare.values_are_close(main_ds, develop_ds, rtol=relative_tolerance, atol=absolute_tolerance)
+            except compare.ComparisonFailure as e:
+                messages.append(f'{comparison_header}\n{e}')
+                failure_count += 1
 
         # FIXME: Make optional
         Path(main_file).unlink()
