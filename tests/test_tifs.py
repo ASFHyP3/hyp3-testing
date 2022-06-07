@@ -1,18 +1,17 @@
 import json
 import os
-from glob import glob
 from pathlib import Path
 
 import hyp3_sdk
 import pytest
 import xarray as xr
-import numpy as np
 
 from hyp3_testing import compare
 from hyp3_testing import helpers
 from hyp3_testing import util
 
-from zipfile import ZipFile
+
+
 
 pytestmark = pytest.mark.golden
 
@@ -87,23 +86,23 @@ def test_golden_wait(comparison_environments, job_name):
         _ = hyp3.watch(jobs)
 
 
-# FIXME: need to implement this below
+# # FIXME: need to implement this below
 # @pytest.mark.dependency(depends=['test_golden_wait_and_download'])
-# def test_golden_product_files(comparison_environments):
-#     (main_dir, _), (develop_dir, _) = comparison_environments
-#     main_products = helpers.find_products(main_dir, pattern='*.zip')
-#     develop_products = helpers.find_products(develop_dir, pattern='*.zip')
+#  def test_golden_product_files(comparison_environments):
+#      (main_dir, _), (develop_dir, _) = comparison_environments
+#      main_products = helpers.find_products(main_dir, pattern='*.zip')
+#      develop_products = helpers.find_products(develop_dir, pattern='*.zip')
 #
-#     assert sorted(main_products) == sorted(develop_products)
+#      assert sorted(main_products) == sorted(develop_products)
 #
-#     for product_base, main_hash in main_products.items():
-#         develop_hash = develop_products[product_base]
-#         main_files = {Path(f).name.replace(main_hash, 'HASH')
-#                       for f in glob(str(main_dir / '_'.join([product_base, main_hash]) / '*'))}
-#         develop_files = {Path(f).name.replace(develop_hash, 'HASH')
-#                          for f in glob(str(develop_dir / '_'.join([product_base, develop_hash]) / '*'))}
+#      for product_base, main_hash in main_products.items():
+#          develop_hash = develop_products[product_base]
+#          main_files = {Path(f).name.replace(main_hash, 'HASH')
+#                        for f in glob(str(main_dir / '_'.join([product_base, main_hash]) / '*'))}
+#          develop_files = {Path(f).name.replace(develop_hash, 'HASH')
+#                           for f in glob(str(develop_dir / '_'.join([product_base, develop_hash]) / '*'))}
 #
-#         assert main_files == develop_files
+#          assert main_files == develop_files
 
 
 @pytest.mark.dependency(depends=['test_golden_wait_and_download'])
@@ -127,19 +126,19 @@ def test_golden_tifs(comparison_environments, job_name):
     messages = []
 
     for main_job, develop_job in zip(main_jobs, develop_jobs):
-        main_downloads = main_job.download_files(main_dir)
-        develop_downloads = develop_job.download_files(develop_dir)
+        main_downloads = main_job.download_files(main_dir)[0]
+        develop_downloads = develop_job.download_files(develop_dir)[0]
 
-        helpers.extract_zip_files([main_downloads[0], develop_downloads[0]])
+        helpers.extract_zip_files([main_downloads, develop_downloads])
 
-        comparison_files = [helpers.find_files_in_download(main_downloads[0], '.tif'),
-                            helpers.find_files_in_download(develop_downloads[0], '.tif')]
+        main_files = helpers.find_files_in_download(main_downloads, '.tif')
+        develop_files = helpers.find_files_in_download(develop_downloads, '.tif')
 
-        for main_file, develop_file in np.array(comparison_files).transpose():
+        for main_file, develop_file in zip(main_files, develop_files):
                 comparison_header = '\n'.join(['-'*80, main_file, develop_file, '-'*80])
 
-                main_file = main_dir + '/' + main_file
-                develop_file = develop_dir + '/' + develop_file
+                main_file = main_dir / main_file
+                develop_file = develop_dir / develop_file
 
                 with xr.open_rasterio(main_file) as f:
                     main_ds = f.load()
@@ -154,6 +153,7 @@ def test_golden_tifs(comparison_environments, job_name):
                     messages.append(f'{comparison_header}\n{e}')
                     failure_count += 1
 
+        # FIXME: Make optional
         Path(main_file).unlink()
         Path(develop_file).unlink()
 

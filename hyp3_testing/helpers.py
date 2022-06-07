@@ -21,8 +21,7 @@ def extract_zip_files(zip_files: List[Path]):
         with ZipFile(product_file) as zip_:
             zip_.extractall(path=product_file.parent)
 
-
-def find_files_in_download(zip_dir: Path, file_type: str = '.tif') -> List:
+def find_files_in_download(zip_dir: Path, file_type: str='.tif') -> List:
     products = ZipFile(zip_dir).namelist()
     return sorted([product for product in products if product.endswith(file_type)])
 
