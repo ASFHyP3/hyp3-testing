@@ -129,10 +129,10 @@ def test_golden_tifs(comparison_environments, job_name):
         main_downloads = main_job.download_files(main_dir)
         develop_downloads = develop_job.download_files(develop_dir)
 
-        helpers.extract_zip_files([main_downloads, develop_downloads])
+        helpers.extract_zip_files([main_downloads[0], develop_downloads[0]])
 
-        comparison_files = [helpers.find_files_in_download(main_downloads, '.tif'),
-                            helpers.find_files_in_download(develop_downloads, '.tif')]
+        comparison_files = [helpers.find_files_in_download(main_downloads[0], '.tif'),
+                            helpers.find_files_in_download(develop_downloads[0], '.tif')]
 
         for main_file, develop_file in comparison_files:
                 comparison_header = '\n'.join(['-'*80, main_file.name, develop_file.name, '-'*80])
