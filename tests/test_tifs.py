@@ -84,7 +84,7 @@ def test_golden_wait(comparison_environments, job_name):
 
 
 # # FIXME: need to implement this below
-# @pytest.mark.dependency(depends=['test_golden_wait_and_download'])
+# @pytest.mark.dependency(depends=['test_golden_wait'])
 #  def test_golden_product_files(comparison_environments):
 #      (main_dir, _), (develop_dir, _) = comparison_environments
 #      main_products = helpers.find_products(main_dir, pattern='*.zip')
@@ -102,7 +102,7 @@ def test_golden_wait(comparison_environments, job_name):
 #          assert main_files == develop_files
 
 
-@pytest.mark.dependency(depends=['test_golden_wait_and_download'])
+@pytest.mark.dependency(depends=['test_golden_wait'])
 def test_golden_tifs(comparison_environments, job_name):
     (main_dir, main_api), (develop_dir, develop_api) = comparison_environments
     if job_name is None:
