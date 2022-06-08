@@ -110,15 +110,8 @@ def test_golden_tifs(comparison_environments, job_name):
         submission_details = json.loads(submission_report.read_text())
         job_name = submission_details['name']
 
-    main_hyp3 = hyp3_sdk.HyP3(main_api, os.environ.get('EARTHDATA_LOGIN_USER'),
-                              os.environ.get('EARTHDATA_LOGIN_PASSWORD'))
-    main_jobs = main_hyp3.find_jobs(name=job_name)
-    main_jobs = helpers.sort_jobs_by_parameters(main_jobs)
-
-    develop_hyp3 = hyp3_sdk.HyP3(develop_api, os.environ.get('EARTHDATA_LOGIN_USER'),
-                                 os.environ.get('EARTHDATA_LOGIN_PASSWORD'))
-    develop_jobs = develop_hyp3.find_jobs(name=job_name)
-    develop_jobs = helpers.sort_jobs_by_parameters(develop_jobs)
+    main_jobs = helpers.get_jobs_in_environment(job_name, main_api)
+    develop_jobs = helpers.get_jobs_in_environment(job_name, develop_api)
 
     failure_count = 0
     total_count = 0
@@ -128,16 +121,14 @@ def test_golden_tifs(comparison_environments, job_name):
         main_downloads = main_job.download_files(main_dir)[0]
         develop_downloads = develop_job.download_files(develop_dir)[0]
 
-        helpers.extract_zip_files([main_downloads, develop_downloads])
+        main_downloads = hyp3_sdk.util.extract_zipped_product(main_downloads)
+        develop_downloads = hyp3_sdk.util.extract_zipped_product(develop_downloads)
 
         main_files = helpers.find_files_in_download(main_downloads, '.tif')
         develop_files = helpers.find_files_in_download(develop_downloads, '.tif')
 
         for main_file, develop_file in zip(main_files, develop_files):
             comparison_header = '\n'.join(['-' * 80, main_file, develop_file, '-' * 80])
-
-            main_file = main_dir / main_file
-            develop_file = develop_dir / develop_file
 
             with xr.open_rasterio(main_file) as f:
                 main_ds = f.load()

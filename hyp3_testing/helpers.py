@@ -1,9 +1,10 @@
+import os
 from glob import glob
 from pathlib import Path
 from typing import List, Tuple
 from zipfile import ZipFile
 
-from hyp3_sdk import Batch, Job
+from hyp3_sdk import Batch, Job, HyP3
 
 
 def freeze_job_parameters(job: Job) -> tuple:
@@ -16,15 +17,21 @@ def sort_jobs_by_parameters(jobs: Batch) -> Batch:
     return Batch(sorted_jobs)
 
 
+def get_jobs_in_environment(job_name, api):
+    hyp3 = HyP3(api, os.environ.get('EARTHDATA_LOGIN_USER'),
+                              os.environ.get('EARTHDATA_LOGIN_PASSWORD'))
+    jobs = hyp3.find_jobs(name=job_name)
+    return sort_jobs_by_parameters(jobs)
+
+
 def extract_zip_files(zip_files: List[Path]):
     for product_file in zip_files:
         with ZipFile(product_file) as zip_:
             zip_.extractall(path=product_file.parent)
 
 
-def find_files_in_download(zip_dir: Path, file_type: str = '.tif') -> List:
-    products = ZipFile(zip_dir).namelist()
-    return sorted([product for product in products if product.endswith(file_type)])
+def find_files_in_download(products_dir: Path, file_type: str = '.tif') -> List:
+    return sorted(products_dir.glob(f'*{file_type}'))
 
 
 def find_products(directory: Path, pattern: str = '*.zip') -> dict:
