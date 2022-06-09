@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import List, Tuple
 from zipfile import ZipFile
 
-from hyp3_sdk import Batch, Job, HyP3
+from hyp3_sdk import Batch, HyP3, Job
 
 
 def freeze_job_parameters(job: Job) -> tuple:
@@ -63,7 +63,7 @@ def find_files_in_products(main_dir: Path, develop_dir: Path, pattern: str = '*.
 
 
 def clarify_xr_message(message: str, left: str = 'reference', right: str = 'secondary'):
-    # Note: xarray reffers to the left (L) and right (R) datasets, which we
+    # Note: xarray refers to the left (L) and right (R) datasets, which we
     #       typically call reference (R) and secondary (S) datasets
     message = message.replace('Left', left.title())
     message = message.replace('left', left.lower())
