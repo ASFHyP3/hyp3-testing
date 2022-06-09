@@ -147,8 +147,8 @@ def test_golden_tifs(comparison_environments, job_name, keep):
         if not keep:
             for product_file in main_files + develop_files:
                 Path(product_file).unlink()
-            Path(main_product_dir).unlink()
-            Path(develop_product_dir).unlink()
+            Path(main_product_dir).rmdir()
+            Path(develop_product_dir).rmdir()
 
     if messages:
         messages.insert(0, f'{failure_count} of {total_count} GeoTIFFs are different!')
