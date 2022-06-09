@@ -84,7 +84,7 @@ def test_golden_wait(comparison_environments, job_name):
 
 
 @pytest.mark.dependency(depends=['test_golden_wait'])
-def test_golden_tifs(comparison_environments, job_name):
+def test_golden_tifs(comparison_environments, job_name, keep):
     (main_dir, main_api), (develop_dir, develop_api) = comparison_environments
     if job_name is None:
         submission_report = main_dir / f'{main_dir.name}_submission.json'
@@ -144,11 +144,11 @@ def test_golden_tifs(comparison_environments, job_name):
                 messages.append(f'{comparison_header}\n{e}')
                 failure_count += 1
 
-        # FIXME: Make optional
-        for product_file in main_files + develop_files:
-            Path(product_file).unlink()
-        Path(main_product_dir).unlink()
-        Path(develop_product_dir).unlink()
+        if not keep:
+            for product_file in main_files + develop_files:
+                Path(product_file).unlink()
+            Path(main_product_dir).unlink()
+            Path(develop_product_dir).unlink()
 
     if messages:
         messages.insert(0, f'{failure_count} of {total_count} GeoTIFFs are different!')

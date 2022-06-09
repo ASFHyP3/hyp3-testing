@@ -10,6 +10,9 @@ def pytest_addoption(parser):
         "--process",  choices=["rtc", "insar"], help="Submit this processes payload"
     )
     parser.addoption(
+        "--keep",  action='store_true', help="Do not remove downloaded test products"
+    )
+    parser.addoption(
         "--name", nargs='?', help="Find jobs by this name to compare"
     )
     parser.addoption(
@@ -44,13 +47,18 @@ def comparison_environments(tmp_path_factory, golden_dirs):
 
 
 @pytest.fixture
-def job_name(request):
-    return request.config.getoption("--name")
+def process(request):
+    return request.config.getoption("--process")
 
 
 @pytest.fixture
-def process(request):
-    return request.config.getoption("--process")
+def keep(request):
+    return request.config.getoption("--keep")
+
+
+@pytest.fixture
+def job_name(request):
+    return request.config.getoption("--name")
 
 
 @pytest.fixture(scope='session')
