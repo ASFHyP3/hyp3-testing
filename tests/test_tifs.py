@@ -2,7 +2,7 @@ import json
 import os
 from pathlib import Path
 
-import hyp3_sdk
+import hyp3_sdk.util
 import pytest
 import xarray as xr
 
@@ -83,25 +83,6 @@ def test_golden_wait(comparison_environments, job_name):
         _ = hyp3.watch(jobs)
 
 
-# # FIXME: need to implement this below
-# @pytest.mark.dependency(depends=['test_golden_wait'])
-#  def test_golden_product_files(comparison_environments):
-#      (main_dir, _), (develop_dir, _) = comparison_environments
-#      main_products = helpers.find_products(main_dir, pattern='*.zip')
-#      develop_products = helpers.find_products(develop_dir, pattern='*.zip')
-#
-#      assert sorted(main_products) == sorted(develop_products)
-#
-#      for product_base, main_hash in main_products.items():
-#          develop_hash = develop_products[product_base]
-#          main_files = {Path(f).name.replace(main_hash, 'HASH')
-#                        for f in glob(str(main_dir / '_'.join([product_base, main_hash]) / '*'))}
-#          develop_files = {Path(f).name.replace(develop_hash, 'HASH')
-#                           for f in glob(str(develop_dir / '_'.join([product_base, develop_hash]) / '*'))}
-#
-#          assert main_files == develop_files
-
-
 @pytest.mark.dependency(depends=['test_golden_wait'])
 def test_golden_tifs(comparison_environments, job_name):
     (main_dir, main_api), (develop_dir, develop_api) = comparison_environments
@@ -117,35 +98,57 @@ def test_golden_tifs(comparison_environments, job_name):
     total_count = 0
     messages = []
 
+    if main_jobs._count_statuses()['SUCCEEDED'] != develop_jobs._count_statuses()['SUCCEEDED']:
+        failure_count += 1
+        messages.append(f'Number of jobs that SUCCEEDED is different!\n'
+                        f'    Main: {main_jobs}'
+                        f'    Develop: {develop_jobs}')
+
     for main_job, develop_job in zip(main_jobs, develop_jobs):
-        main_downloads = main_job.download_files(main_dir)[0]
-        develop_downloads = develop_job.download_files(develop_dir)[0]
+        main_product_archive = main_job.download_files(main_dir)[0]
+        main_hash = main_product_archive.name.split('_')[-1]
 
-        main_downloads = hyp3_sdk.util.extract_zipped_product(main_downloads)
-        develop_downloads = hyp3_sdk.util.extract_zipped_product(develop_downloads)
+        develop_product_archive = develop_job.download_files(develop_dir)[0]
+        develop_hash = main_product_archive.name.split('_')[-1]
 
-        main_files = helpers.find_files_in_download(main_downloads, '.tif')
-        develop_files = helpers.find_files_in_download(develop_downloads, '.tif')
+        main_product_dir = hyp3_sdk.util.extract_zipped_product(main_product_archive)
+        develop_product_dir = hyp3_sdk.util.extract_zipped_product(develop_product_archive)
 
-        for main_file, develop_file in zip(main_files, develop_files):
-            comparison_header = '\n'.join(['-' * 80, main_file, develop_file, '-' * 80])
+        main_files = sorted(main_product_dir.glob('*'))
+        develop_files = sorted(develop_product_dir.glob('*'))
 
-            with xr.open_rasterio(main_file) as f:
+        main_files_normalized = {f.name.replace(main_hash, 'HASH') for f in main_files}
+        develop_files_normalized = {f.name.replace(develop_hash, 'HASH') for f in develop_files}
+        if main_files_normalized != develop_files_normalized:
+            failure_count += 1
+            messages.append(f'File names are different!\n'
+                            f'    Main: {main_files}'
+                            f'    Develop: {develop_files}')
+
+        main_tifs = sorted(main_product_dir.glob('*.tif'))
+        develop_tifs = sorted(develop_product_dir.glob('*.tif'))
+
+        for main_tif, develop_tif in zip(main_tifs, develop_tifs):
+            comparison_header = '\n'.join(['-' * 80, main_tif, develop_tif, '-' * 80])
+
+            with xr.open_rasterio(main_tif) as f:
                 main_ds = f.load()
-            with xr.open_rasterio(develop_file) as f:
+            with xr.open_rasterio(develop_tif) as f:
                 develop_ds = f.load()
 
             try:
-                compare.compare_raster_info(main_file, develop_file)
-                relative_tolerance, absolute_tolerance = _get_tif_tolerances(str(main_file))
+                compare.compare_raster_info(main_tif, develop_tif)
+                relative_tolerance, absolute_tolerance = _get_tif_tolerances(str(main_tif))
                 compare.values_are_close(main_ds, develop_ds, rtol=relative_tolerance, atol=absolute_tolerance)
             except compare.ComparisonFailure as e:
                 messages.append(f'{comparison_header}\n{e}')
                 failure_count += 1
 
         # FIXME: Make optional
-        Path(main_file).unlink()
-        Path(develop_file).unlink()
+        for product_file in main_files + develop_files:
+            Path(product_file).unlink()
+        Path(main_product_dir).unlink()
+        Path(develop_product_dir).unlink()
 
     if messages:
         messages.insert(0, f'{failure_count} of {total_count} GeoTIFFs are different!')

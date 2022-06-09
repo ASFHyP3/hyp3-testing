@@ -18,8 +18,7 @@ def sort_jobs_by_parameters(jobs: Batch) -> Batch:
 
 
 def get_jobs_in_environment(job_name, api):
-    hyp3 = HyP3(api, os.environ.get('EARTHDATA_LOGIN_USER'),
-                              os.environ.get('EARTHDATA_LOGIN_PASSWORD'))
+    hyp3 = HyP3(api, os.environ.get('EARTHDATA_LOGIN_USER'), os.environ.get('EARTHDATA_LOGIN_PASSWORD'))
     jobs = hyp3.find_jobs(name=job_name)
     return sort_jobs_by_parameters(jobs)
 
@@ -28,10 +27,6 @@ def extract_zip_files(zip_files: List[Path]):
     for product_file in zip_files:
         with ZipFile(product_file) as zip_:
             zip_.extractall(path=product_file.parent)
-
-
-def find_files_in_download(products_dir: Path, file_type: str = '.tif') -> List:
-    return sorted(products_dir.glob(f'*{file_type}'))
 
 
 def find_products(directory: Path, pattern: str = '*.zip') -> dict:
