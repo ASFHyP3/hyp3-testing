@@ -129,7 +129,7 @@ def test_golden_tifs(comparison_environments, job_name, keep):
         develop_tifs = sorted(develop_product_dir.glob('*.tif'))
 
         for main_tif, develop_tif in zip(main_tifs, develop_tifs):
-            comparison_header = '\n'.join(['-' * 80, main_tif, develop_tif, '-' * 80])
+            comparison_header = '\n'.join(['-' * 80, str(main_tif), str(develop_tif), '-' * 80])
 
             with xr.open_rasterio(main_tif) as f:
                 main_ds = f.load()
