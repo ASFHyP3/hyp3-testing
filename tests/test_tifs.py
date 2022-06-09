@@ -1,6 +1,7 @@
 import json
 import os
 from pathlib import Path
+from pprint import pformat
 
 import hyp3_sdk.util
 import pytest
@@ -91,12 +92,11 @@ def test_golden_tifs(comparison_environments, job_name, keep):
         submission_details = json.loads(submission_report.read_text())
         job_name = submission_details['name']
 
+    failure_count = 0
+    messages = []
+
     main_jobs = helpers.get_jobs_in_environment(job_name, main_api)
     develop_jobs = helpers.get_jobs_in_environment(job_name, develop_api)
-
-    failure_count = 0
-    total_count = 0
-    messages = []
 
     if main_jobs._count_statuses()['SUCCEEDED'] != develop_jobs._count_statuses()['SUCCEEDED']:
         failure_count += 1
@@ -106,10 +106,10 @@ def test_golden_tifs(comparison_environments, job_name, keep):
 
     for main_job, develop_job in zip(main_jobs, develop_jobs):
         main_product_archive = main_job.download_files(main_dir)[0]
-        main_hash = main_product_archive.name.split('_')[-1]
+        main_hash = main_product_archive.stem.split('_')[-1]
 
         develop_product_archive = develop_job.download_files(develop_dir)[0]
-        develop_hash = main_product_archive.name.split('_')[-1]
+        develop_hash = main_product_archive.stem.split('_')[-1]
 
         main_product_dir = hyp3_sdk.util.extract_zipped_product(main_product_archive)
         develop_product_dir = hyp3_sdk.util.extract_zipped_product(develop_product_archive)
@@ -119,11 +119,12 @@ def test_golden_tifs(comparison_environments, job_name, keep):
 
         main_files_normalized = {f.name.replace(main_hash, 'HASH') for f in main_files}
         develop_files_normalized = {f.name.replace(develop_hash, 'HASH') for f in develop_files}
+
         if main_files_normalized != develop_files_normalized:
             failure_count += 1
             messages.append(f'File names are different!\n'
-                            f'    Main: {main_files}'
-                            f'    Develop: {develop_files}')
+                            f'    Main:\n{pformat(main_files)}\n'
+                            f'    develop:\n{pformat(develop_files)}\n')
 
         main_tifs = sorted(main_product_dir.glob('*.tif'))
         develop_tifs = sorted(develop_product_dir.glob('*.tif'))
@@ -151,5 +152,5 @@ def test_golden_tifs(comparison_environments, job_name, keep):
             Path(develop_product_dir).rmdir()
 
     if messages:
-        messages.insert(0, f'{failure_count} of {total_count} GeoTIFFs are different!')
+        messages.insert(0, f'{failure_count} differences found!!')
         raise compare.ComparisonFailure('\n\n'.join(messages))
