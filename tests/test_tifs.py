@@ -109,7 +109,7 @@ def test_golden_tifs(comparison_environments, job_name, keep):
         main_hash = main_product_archive.stem.split('_')[-1]
 
         develop_product_archive = develop_job.download_files(develop_dir)[0]
-        develop_hash = main_product_archive.stem.split('_')[-1]
+        develop_hash = develop_product_archive.stem.split('_')[-1]
 
         main_product_dir = hyp3_sdk.util.extract_zipped_product(main_product_archive)
         develop_product_dir = hyp3_sdk.util.extract_zipped_product(develop_product_archive)
@@ -123,8 +123,8 @@ def test_golden_tifs(comparison_environments, job_name, keep):
         if main_files_normalized != develop_files_normalized:
             failure_count += 1
             messages.append(f'File names are different!\n'
-                            f'    Main:\n{pformat(main_files)}\n'
-                            f'    develop:\n{pformat(develop_files)}\n')
+                            f'    Main:\n{pformat(main_files_normalized)}\n'
+                            f'    develop:\n{pformat(develop_files_normalized)}\n')
 
         main_tifs = sorted(main_product_dir.glob('*.tif'))
         develop_tifs = sorted(develop_product_dir.glob('*.tif'))
