@@ -1,7 +1,26 @@
+import os
 from glob import glob
 from pathlib import Path
 from typing import List, Tuple
 from zipfile import ZipFile
+
+from hyp3_sdk import Batch, HyP3, Job
+
+
+def freeze_job_parameters(job: Job) -> tuple:
+    job_parameters = job.job_parameters
+    return tuple((key, job_parameters[key]) for key in sorted(job_parameters.keys()))
+
+
+def sort_jobs_by_parameters(jobs: Batch) -> Batch:
+    sorted_jobs = sorted(jobs, key=freeze_job_parameters)
+    return Batch(sorted_jobs)
+
+
+def get_jobs_in_environment(job_name, api):
+    hyp3 = HyP3(api, os.environ.get('EARTHDATA_LOGIN_USER'), os.environ.get('EARTHDATA_LOGIN_PASSWORD'))
+    jobs = hyp3.find_jobs(name=job_name)
+    return sort_jobs_by_parameters(jobs)
 
 
 def extract_zip_files(zip_files: List[Path]):
@@ -44,7 +63,7 @@ def find_files_in_products(main_dir: Path, develop_dir: Path, pattern: str = '*.
 
 
 def clarify_xr_message(message: str, left: str = 'reference', right: str = 'secondary'):
-    # Note: xarray reffers to the left (L) and right (R) datasets, which we
+    # Note: xarray refers to the left (L) and right (R) datasets, which we
     #       typically call reference (R) and secondary (S) datasets
     message = message.replace('Left', left.title())
     message = message.replace('left', left.lower())
