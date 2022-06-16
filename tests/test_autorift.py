@@ -117,6 +117,6 @@ def test_golden_products(comparison_environments, job_name, keep):
             for product_file in main_nc + develop_nc:
                 Path(product_file).unlink()
 
-        if messages:
-            messages.insert(0, f'{failure_count} differences found!')
-            raise compare.ComparisonFailure('\n\n'.join(messages))
+    if messages:
+        messages.insert(0, f'{failure_count} differences found!')
+        raise compare.ComparisonFailure('\n\n'.join(messages))
