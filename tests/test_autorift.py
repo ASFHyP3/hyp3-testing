@@ -1,7 +1,7 @@
 import json
 import os
-from glob import glob
 from pathlib import Path
+from pprint import pformat
 
 import hyp3_sdk
 import pytest
@@ -36,7 +36,7 @@ def test_golden_submission(comparison_environments):
 
 @pytest.mark.timeout(10800)  # 3 hours
 @pytest.mark.dependency()
-def test_golden_wait_and_download(comparison_environments, job_name):
+def test_golden_wait(comparison_environments, job_name):
     for dir_, api in comparison_environments:
         products = helpers.find_products(dir_, pattern='*.nc')
         if products:
@@ -49,53 +49,49 @@ def test_golden_wait_and_download(comparison_environments, job_name):
 
         hyp3 = hyp3_sdk.HyP3(api, os.environ.get('EARTHDATA_LOGIN_USER'), os.environ.get('EARTHDATA_LOGIN_PASSWORD'))
         jobs = hyp3.find_jobs(name=job_name)
-        jobs = hyp3.watch(jobs)
-        jobs.download_files(dir_)
+        _ = hyp3.watch(jobs)
 
 
-@pytest.mark.dependency(depends=['test_golden_wait_and_download'])
-def test_golden_product_files(comparison_environments):
-    (main_dir, _), (develop_dir, _) = comparison_environments
-    main_products = helpers.find_products(main_dir, pattern='*.nc')
-    develop_products = helpers.find_products(develop_dir, pattern='*.nc')
-
-    assert sorted(main_products) == sorted(develop_products)
-
-    for product_base, main_hash in main_products.items():
-        develop_hash = develop_products[product_base]
-        main_files = {Path(f).name.replace(main_hash, 'HASH')
-                      for f in glob(str(main_dir / '_'.join([product_base, main_hash]) / '*'))}
-        develop_files = {Path(f).name.replace(develop_hash, 'HASH')
-                         for f in glob(str(develop_dir / '_'.join([product_base, develop_hash]) / '*'))}
-
-        assert main_files == develop_files
-
-
-@pytest.mark.dependency(depends=['test_golden_wait_and_download'])
-def test_golden_products(comparison_environments):
-    (main_dir, _), (develop_dir, _) = comparison_environments
-    main_products = helpers.find_products(main_dir, pattern='*.nc')
-    develop_products = helpers.find_products(develop_dir, pattern='*.nc')
-
-    products = set(main_products.keys()) & set(develop_products.keys())
+@pytest.mark.dependency(depends=['test_golden_wait'])
+def test_golden_products(comparison_environments, job_name, keep):
+    (main_dir, main_api), (develop_dir, develop_api) = comparison_environments
+    if job_name is None:
+        submission_report = main_dir / f'{main_dir.name}_submission.json'
+        submission_details = json.loads(submission_report.read_text())
+        job_name = submission_details['name']
 
     failure_count = 0
     messages = []
-    for product_base in products:
-        main_hash = main_products[product_base]
-        develop_hash = develop_products[product_base]
 
-        main_file = main_dir / '_'.join([product_base, f'{main_hash}.nc'])
-        develop_file = develop_dir / '_'.join([product_base, f'{develop_hash}.nc'])
+    main_jobs = helpers.get_jobs_in_environment(job_name, main_api)
+    develop_jobs = helpers.get_jobs_in_environment(job_name, develop_api)
 
-        comparison_header = '\n'.join(
-            ['-'*80, f'{product_base}_{{{main_hash},{develop_hash}}}', '-'*80]
-        )
+    if main_jobs._count_statuses()['SUCCEEDED'] != develop_jobs._count_statuses()['SUCCEEDED']:
+        failure_count += 1
+        messages.append(f'Number of jobs that SUCCEEDED is different!\n'
+                        f'    Main: {main_jobs}'
+                        f'    Develop: {develop_jobs}')
+
+    for main_job, develop_job in zip(main_jobs, develop_jobs):
+        main_nc = main_job.download_files(main_dir)[0]
+        main_hash = main_nc.stem
+
+        develop_nc = develop_job.download_files(develop_dir)[0]
+        develop_hash = develop_nc.stem
+
+        if main_hash != develop_hash:
+            failure_count += 1
+            messages.append(f'File names are different!\n'
+                            f'    Main:\n{pformat(main_hash)}\n'
+                            f'    develop:\n{pformat(develop_hash)}\n')
+
+        comparison_header = '\n'.join(['-' * 80, str(main_nc), str(develop_nc), '-' * 80])
+
         try:
-            compare.bit_for_bit(main_file, develop_file)
+            compare.bit_for_bit(main_nc, develop_nc)
         except compare.ComparisonFailure as b4b_failure:
-            main_ds = xr.load_dataset(main_file)
-            develop_ds = xr.load_dataset(develop_file)
+            main_ds = xr.load_dataset(main_nc)
+            develop_ds = xr.load_dataset(develop_nc)
             try:
                 xr.testing.assert_identical(main_ds, develop_ds)
             except AssertionError as identical_failure:
@@ -117,6 +113,10 @@ def test_golden_products(comparison_environments):
             failure_count += 1
             messages.append(f'{comparison_header}\n{b4b_failure}')  # not b4b, but identical
 
-    if messages:
-        messages.insert(0, f'{failure_count} of {len(products)} products are different!')
-        raise compare.ComparisonFailure('\n\n'.join(messages))
+        if not keep:
+            for product_file in main_nc + develop_nc:
+                Path(product_file).unlink()
+
+        if messages:
+            messages.insert(0, f'{failure_count} differences found!')
+            raise compare.ComparisonFailure('\n\n'.join(messages))
