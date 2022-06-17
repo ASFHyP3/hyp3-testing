@@ -114,7 +114,7 @@ def test_golden_products(comparison_environments, job_name, keep):
             messages.append(f'{comparison_header}\n{b4b_failure}')  # not b4b, but identical
 
         if not keep:
-            for product_file in main_nc + develop_nc:
+            for product_file in (main_nc, develop_nc):
                 Path(product_file).unlink()
 
     if messages:
