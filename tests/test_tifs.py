@@ -55,7 +55,9 @@ def test_golden_submission(comparison_environments, process):
     job_name = util.generate_job_name()
     print(f'Job name: {job_name}')
 
-    submission_payload = util.render_template(f'{process}_gamma_golden.json.j2', name=job_name)
+    testing_parameters = util.render_template(f'{process}_gamma_golden.json.j2', name=job_name)
+    submission_payload = [{k: item[k] for k in ['name', 'job_parameters', 'job_type']} for item in testing_parameters]
+    tolerance_parameters = [item['tolerance_parameters'] for item in testing_parameters]
 
     for dir_, api in comparison_environments:
         dir_.mkdir(parents=True, exist_ok=True)
@@ -65,7 +67,8 @@ def test_golden_submission(comparison_environments, process):
         request_time = jobs.jobs[0].request_time.isoformat(timespec='seconds')
         print(f'{dir_.name} request time: {request_time}')
 
-        submission_details = {'name': job_name, 'request_time': request_time}
+        submission_details = {'name': job_name, 'request_time': request_time,
+                              'tolerance_parameters': tolerance_parameters}
         submission_report = dir_ / f'{dir_.name}_submission.json'
         submission_report.write_text(json.dumps(submission_details))
 
