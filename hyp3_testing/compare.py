@@ -21,10 +21,27 @@ class ComparisonFailure(Exception):
     """Exception to raise when a comparison fails"""
 
 
+class ToleranceFailure(Exception):
+    """Exception to raise when a tolerance fails"""
+
+
 def bit_for_bit(reference: Path, secondary: Path):
     filecmp.clear_cache()
     if not filecmp.cmp(reference, secondary, shallow=False):
         raise ComparisonFailure('Files differ at the binary level')
+
+
+def values_are_within_tolerance(reference: XR, secondary: XR, atol: float, n_allowable: int):
+    try:
+        diff = np.ma.masked_invalid(reference - secondary)
+        n_exceed = (~np.isclose(diff.filled(0.0), 0.0, rtol=0.0, atol=atol)).sum()
+        if n_exceed > n_allowable:
+            raise ToleranceFailure('Too many values are outside of the tolerance')
+    except AssertionError as e:
+        detailed_failure_message = _compare_values_message(reference, secondary, rtol=0.0, atol=atol)
+        raise ComparisonFailure(
+            '\n'.join(['Values are different.', detailed_failure_message, '', clarify_xr_message(str(e))])
+        )
 
 
 def values_are_close(reference: XR, secondary: XR, rtol: float = 1e-05, atol: float = 1e-08):

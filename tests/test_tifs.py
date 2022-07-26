@@ -57,7 +57,6 @@ def test_golden_submission(comparison_environments, process):
 
     testing_parameters = util.render_template(f'{process}_gamma_golden.json.j2', name=job_name)
     submission_payload = [{k: item[k] for k in ['name', 'job_parameters', 'job_type']} for item in testing_parameters]
-    tolerance_parameters = [item['tolerance_parameters'] for item in testing_parameters]
 
     for dir_, api in comparison_environments:
         dir_.mkdir(parents=True, exist_ok=True)
@@ -67,8 +66,7 @@ def test_golden_submission(comparison_environments, process):
         request_time = jobs.jobs[0].request_time.isoformat(timespec='seconds')
         print(f'{dir_.name} request time: {request_time}')
 
-        submission_details = {'name': job_name, 'request_time': request_time,
-                              'tolerance_parameters': tolerance_parameters}
+        submission_details = {'name': job_name, 'request_time': request_time}
         submission_report = dir_ / f'{dir_.name}_submission.json'
         submission_report.write_text(json.dumps(submission_details))
 
@@ -100,6 +98,13 @@ def test_golden_tifs(comparison_environments, job_name, keep):
 
     main_jobs = helpers.get_jobs_in_environment(job_name, main_api)
     develop_jobs = helpers.get_jobs_in_environment(job_name, develop_api)
+    job_type = main_jobs[0].to_dict()['job_type'].lower()
+
+    if job_type == 'insar_gamma':
+        testing_parameters = util.render_template(f'{job_type}_golden.json.j2', name=job_name)
+        tolerance_names = ['_'.join(sorted(item['job_parameters']['granules'])) for item in testing_parameters]
+        tolerance_parameters = [item['tolerance_parameters'] for name, item in testing_parameters]
+        tolerance_dict = {k: v for k, v in zip(tolerance_names, tolerance_parameters)}
 
     if main_jobs._count_statuses()['SUCCEEDED'] != develop_jobs._count_statuses()['SUCCEEDED']:
         failure_count += 1
@@ -108,6 +113,10 @@ def test_golden_tifs(comparison_environments, job_name, keep):
                         f'    Develop: {develop_jobs}')
 
     for main_job, develop_job in zip(main_jobs, develop_jobs):
+        if job_type == 'insar_gamma':
+            tolerance_name = '_'.join(sorted(main_job.to_dict()['job_parameters']['granules']))
+            job_tolerances = tolerance_dict['tolerance_parameters'][tolerance_name]
+
         main_product_archive = main_job.download_files(main_dir)[0]
         main_hash = main_product_archive.stem.split('_')[-1]
 
@@ -140,13 +149,25 @@ def test_golden_tifs(comparison_environments, job_name, keep):
             with xr.open_rasterio(develop_tif) as f:
                 develop_ds = f.load()
 
-            try:
-                compare.compare_raster_info(main_tif, develop_tif)
-                relative_tolerance, absolute_tolerance = _get_tif_tolerances(str(main_tif))
-                compare.values_are_close(main_ds, develop_ds, rtol=relative_tolerance, atol=absolute_tolerance)
-            except compare.ComparisonFailure as e:
-                messages.append(f'{comparison_header}\n{e}')
-                failure_count += 1
+            if job_type == 'insar_gamma':
+                try:
+                    compare.compare_raster_info(main_tif, develop_tif)
+                    file_type = '_'.join(Path(main_tif).name.split('_')[8:])[:-4]
+                    file_tolerance = job_tolerances[file_type]
+
+                    compare.values_are_within_tolerance(main_ds, develop_ds, atol=file_tolerance['threshold'],
+                                                        n_allowable=file_tolerance['n_allowable'])
+                except compare.ComparisonFailure as e:
+                    messages.append(f'{comparison_header}\n{e}')
+                    failure_count += 1
+            else:
+                try:
+                    compare.compare_raster_info(main_tif, develop_tif)
+                    relative_tolerance, absolute_tolerance = _get_tif_tolerances(str(main_tif))
+                    compare.values_are_close(main_ds, develop_ds, rtol=relative_tolerance, atol=absolute_tolerance)
+                except compare.ComparisonFailure as e:
+                    messages.append(f'{comparison_header}\n{e}')
+                    failure_count += 1
 
         if not keep:
             for product_file in main_files + develop_files:
