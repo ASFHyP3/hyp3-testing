@@ -72,7 +72,7 @@ def test_golden_submission(comparison_environments, process):
         submission_report.write_text(json.dumps(submission_details))
 
 
-@pytest.mark.timeout(7200)  # 120 minutes as InSAR jobs can take ~1.5 hrs
+@pytest.mark.timeout(10800)  # 120 minutes as InSAR jobs can take ~1.5 hrs
 @pytest.mark.dependency()
 def test_golden_wait(comparison_environments, job_name):
     for dir_, api in comparison_environments:
