@@ -6,6 +6,7 @@ from pprint import pformat
 import hyp3_sdk.util
 import pytest
 import xarray as xr
+import rioxarray
 
 from hyp3_testing import compare
 from hyp3_testing import helpers
@@ -103,7 +104,7 @@ def test_golden_tifs(comparison_environments, job_name, keep):
     if job_type == 'insar_gamma':
         testing_parameters = util.render_template(f'{job_type}_golden.json.j2', name=job_name)
         tolerance_names = ['_'.join(sorted(item['job_parameters']['granules'])) for item in testing_parameters]
-        tolerance_parameters = [item['tolerance_parameters'] for name, item in testing_parameters]
+        tolerance_parameters = [item['tolerance_parameters'] for item in testing_parameters]
         tolerance_dict = {k: v for k, v in zip(tolerance_names, tolerance_parameters)}
 
     if main_jobs._count_statuses()['SUCCEEDED'] != develop_jobs._count_statuses()['SUCCEEDED']:
@@ -115,16 +116,19 @@ def test_golden_tifs(comparison_environments, job_name, keep):
     for main_job, develop_job in zip(main_jobs, develop_jobs):
         if job_type == 'insar_gamma':
             tolerance_name = '_'.join(sorted(main_job.to_dict()['job_parameters']['granules']))
-            job_tolerances = tolerance_dict['tolerance_parameters'][tolerance_name]
+            job_tolerances = tolerance_dict[tolerance_name]
 
-        main_product_archive = main_job.download_files(main_dir)[0]
-        main_hash = main_product_archive.stem.split('_')[-1]
+        main_product_dir = main_dir / main_job.to_dict()['files'][0]['filename'][:-4]
+        if not main_product_dir.is_dir():
+            main_product_archive = main_job.download_files(main_dir)[0]
+            main_product_dir = hyp3_sdk.util.extract_zipped_product(main_product_archive)
+        main_hash = main_product_dir.name.split('_')[-1]
 
-        develop_product_archive = develop_job.download_files(develop_dir)[0]
-        develop_hash = develop_product_archive.stem.split('_')[-1]
-
-        main_product_dir = hyp3_sdk.util.extract_zipped_product(main_product_archive)
-        develop_product_dir = hyp3_sdk.util.extract_zipped_product(develop_product_archive)
+        develop_product_dir = develop_dir / develop_job.to_dict()['files'][0]['filename'][:-4]
+        if not develop_product_dir.is_dir():
+            develop_product_archive = develop_job.download_files(develop_dir)[0]
+            develop_product_dir = hyp3_sdk.util.extract_zipped_product(develop_product_archive)
+        develop_hash = develop_product_dir.name.split('_')[-1]
 
         main_files = sorted(main_product_dir.glob('*'))
         develop_files = sorted(develop_product_dir.glob('*'))
@@ -144,19 +148,19 @@ def test_golden_tifs(comparison_environments, job_name, keep):
         for main_tif, develop_tif in zip(main_tifs, develop_tifs):
             comparison_header = '\n'.join(['-' * 80, str(main_tif), str(develop_tif), '-' * 80])
 
-            with xr.open_rasterio(main_tif) as f:
-                main_ds = f.load()
-            with xr.open_rasterio(develop_tif) as f:
-                develop_ds = f.load()
+            main_ds = xr.open_dataset(main_tif, engine='rasterio').band_data.data[0]
+            develop_ds = xr.open_dataset(develop_tif, engine='rasterio').band_data.data[0]
 
             if job_type == 'insar_gamma':
                 try:
                     compare.compare_raster_info(main_tif, develop_tif)
-                    file_type = '_'.join(Path(main_tif).name.split('_')[8:])[:-4]
-                    file_tolerance = job_tolerances[file_type]
-
-                    compare.values_are_within_tolerance(main_ds, develop_ds, atol=file_tolerance['threshold'],
-                                                        n_allowable=file_tolerance['n_allowable'])
+                    if job_tolerances != {}:
+                        file_type = '_'.join(Path(main_tif).name.split('_')[8:])[:-4]
+                        file_tolerance = job_tolerances[file_type]
+                        threshold = file_tolerance['threshold']
+                        n_allowable = file_tolerance['n_allowable']
+                        compare.values_are_within_tolerance(main_ds, develop_ds, atol=threshold,
+                                                            n_allowable=n_allowable)
                 except compare.ComparisonFailure as e:
                     messages.append(f'{comparison_header}\n{e}')
                     failure_count += 1
