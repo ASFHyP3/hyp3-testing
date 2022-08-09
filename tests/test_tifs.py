@@ -5,7 +5,7 @@ from pprint import pformat
 
 import hyp3_sdk.util
 import pytest
-import rioxarray  # noqa: f401
+import rioxarray  # noqa: F401
 import xarray as xr
 
 from hyp3_testing import compare
@@ -169,10 +169,12 @@ def test_golden_insar(jobs_info, insar_tolerances):
     main_succeeds = sum([value['main']['succeeded'] for value in jobs_info.values()])
     develop_succeeds = sum([value['develop']['succeeded'] for value in jobs_info.values()])
     if main_succeeds != develop_succeeds:
+        main_succeeds_names = [value["main"]["dir"] for value in jobs_info.values() if value["main"]["succeeded"]]
+        develop_succeeds_names = [value["develop"]["dir"] for value in jobs_info.values() if value["main"]["succeeded"]]
         failure_count += 1
         messages.append(f'Number of jobs that SUCCEEDED is different!\n'
-                        f'    Main: {[value["main"]["dir"] for value in jobs_info.values() if value["main"]["succeeded"]]}'
-                        f'    Develop: {[value["develop"]["dir"] for value in jobs_info.values() if value["develop"]["succeeded"]]}')
+                        f'    Main: {main_succeeds_names}'
+                        f'    Develop: {develop_succeeds_names}')
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~#
 
     for pair in jobs_info:
@@ -227,10 +229,12 @@ def test_golden_rtc(jobs_info, rtc_tolerances):
     main_succeeds = sum([value['main']['succeeded'] for value in jobs_info.values()])
     develop_succeeds = sum([value['develop']['succeeded'] for value in jobs_info.values()])
     if main_succeeds != develop_succeeds:
+        main_succeeds_names = [value["main"]["dir"] for value in jobs_info.values() if value["main"]["succeeded"]]
+        develop_succeeds_names = [value["develop"]["dir"] for value in jobs_info.values() if value["main"]["succeeded"]]
         failure_count += 1
         messages.append(f'Number of jobs that SUCCEEDED is different!\n'
-                        f'    Main: {[value["main"]["dir"] for value in jobs_info.values() if value["main"]["succeeded"]]}'
-                        f'    Develop: {[value["develop"]["dir"] for value in jobs_info.values() if value["develop"]["succeeded"]]}')
+                        f'    Main: {main_succeeds_names}'
+                        f'    Develop: {develop_succeeds_names}')
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~#
 
     for pair in jobs_info:
