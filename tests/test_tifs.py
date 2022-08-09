@@ -5,7 +5,7 @@ from pprint import pformat
 
 import hyp3_sdk.util
 import pytest
-import rioxarray
+import rioxarray # noqa: f401
 import xarray as xr
 
 from hyp3_testing import compare
