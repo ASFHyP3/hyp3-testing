@@ -117,7 +117,7 @@ def insar_tolerances(job_name):
 
 
 @pytest.fixture(scope='function')
-def jobs_info(comparison_environments, insar_tolerances, job_name, keep):
+def jobs_info(comparison_environments, job_name, keep):
     (main_dir, main_api), (develop_dir, develop_api) = comparison_environments
     if job_name is None:
         submission_report = main_dir / f'{main_dir.name}_submission.json'
@@ -130,7 +130,6 @@ def jobs_info(comparison_environments, insar_tolerances, job_name, keep):
     jobs_dict = {}
     for main_job, develop_job in zip(main_jobs, develop_jobs):
         pair_name = '_'.join(sorted(main_job.to_dict()['job_parameters']['granules']))
-        job_tolerances = insar_tolerances[pair_name]
         main_succeed = main_job.to_dict()['status_code'] == 'SUCCEEDED'
         develop_succeed = develop_job.to_dict()['status_code'] == 'SUCCEEDED'
 
@@ -141,7 +140,7 @@ def jobs_info(comparison_environments, insar_tolerances, job_name, keep):
                      'dir': job_main_dir, 'succeeded': main_succeed},
             'develop': {'tifs': develop_tifs, 'normalized_files': develop_normalized_files, 'job': develop_job,
                         'dir': job_develop_dir, 'succeeded': develop_succeed},
-            'tolerances': job_tolerances}
+        }
 
     yield jobs_dict
 
@@ -155,7 +154,7 @@ def jobs_info(comparison_environments, insar_tolerances, job_name, keep):
 
 
 # @pytest.mark.dependency(depends=['test_golden_wait'])
-def test_golden_insar(jobs_info, keep):
+def test_golden_insar(jobs_info, insar_tolerances):
     failure_count = 0
     messages = []
 
@@ -178,7 +177,7 @@ def test_golden_insar(jobs_info, keep):
         main_normalized_files = pair_information['main']['normalized_files']
         develop_normalized_files = pair_information['develop']['normalized_files']
 
-        pair_tolerances = pair_information['tolerances']
+        pair_tolerances = insar_tolerances[pair]
 
         # TODO: make own test?~~~~~~~#
         if main_normalized_files != develop_normalized_files:
