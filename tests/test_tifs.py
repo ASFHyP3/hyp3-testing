@@ -125,35 +125,32 @@ def jobs_info(comparison_environments, insar_tolerances, job_name, keep):
         job_name = submission_details['name']
 
     main_jobs = helpers.get_jobs_in_environment(job_name, main_api)
-    main_n_succeed = main_jobs._count_statuses()['SUCCEEDED']
-
     develop_jobs = helpers.get_jobs_in_environment(job_name, develop_api)
-    develop_n_succeed = develop_jobs._count_statuses()['SUCCEEDED']
 
-    jobs_dict = {'status': {'main': {}, 'develop': {}}, 'pairs': {}}
-    jobs_dict['status']['main']['n_succeed'] = main_n_succeed
-    jobs_dict['status']['develop']['n_succeed'] = develop_n_succeed
+    jobs_dict = {}
     for main_job, develop_job in zip(main_jobs, develop_jobs):
         pair_name = '_'.join(sorted(main_job.to_dict()['job_parameters']['granules']))
         job_tolerances = insar_tolerances[pair_name]
+        main_succeed = main_job.to_dict()['status_code'] == 'SUCCEEDED'
+        develop_succeed = develop_job.to_dict()['status_code'] == 'SUCCEEDED'
 
         job_main_dir, main_tifs, main_normalized_files = download_jobs(main_job, main_dir)
         job_develop_dir, develop_tifs, develop_normalized_files = download_jobs(develop_job, develop_dir)
-        jobs_dict['pairs'][pair_name] = {
+        jobs_dict[pair_name] = {
             'main': {'tifs': main_tifs, 'normalized_files': main_normalized_files, 'job': main_job,
-                     'dir': job_main_dir},
-            'develop': {'tifs': develop_tifs,
-                        'normalized_files': develop_normalized_files, 'job': develop_job, 'dir': job_develop_dir},
+                     'dir': job_main_dir, 'succeeded': main_succeed},
+            'develop': {'tifs': develop_tifs, 'normalized_files': develop_normalized_files, 'job': develop_job,
+                        'dir': job_develop_dir, 'succeeded': develop_succeed},
             'tolerances': job_tolerances}
 
     yield jobs_dict
 
     if not keep:
-        all_files = [jobs_dict['pairs'][x][y]['tifs'] for y in ['main', 'develop'] for x in jobs_dict['pairs'].keys()]
+        all_files = [value[y]['tifs'] for y in ['main', 'develop'] for value in jobs_dict.values()]
         flat_files = [element for sublist in all_files for element in sublist]
         [Path(x).unlink() for x in flat_files]
 
-        all_dirs = [jobs_dict['pairs'][x][y]['dir'] for y in ['main', 'develop'] for x in jobs_dict['pairs'].keys()]
+        all_dirs = [value[y]['dir'] for y in ['main', 'develop'] for value in jobs_dict.values()]
         [Path(x).rmdir() for x in all_dirs]
 
 
@@ -163,15 +160,17 @@ def test_golden_insar(jobs_info, keep):
     messages = []
 
     # TODO: make own test?~~~~~~~#
-    if jobs_info['status']['main']['n_succeed'] != jobs_info['status']['develop']['n_succeed']:
+    main_succeeds = sum([value['main']['succeeded'] for value in jobs_info.values()])
+    develop_succeeds = sum([value['develop']['succeeded'] for value in jobs_info.values()])
+    if main_succeeds != develop_succeeds:
         failure_count += 1
         messages.append(f'Number of jobs that SUCCEEDED is different!\n'
-                        f'    Main: {[jobs_info["pairs"][key]["main"]["job"] for key in jobs_info["pairs"].keys()]}'
-                        f'    Develop: {[jobs_info["pairs"][key]["develop"]["job"] for key in jobs_info["pairs"].keys()]}')
+                        f'    Main: {[value["main"]["dir"] for value in jobs_info.values() if value["main"]["succeeded"]]}'
+                        f'    Develop: {[value["develop"]["dir"] for value in jobs_info.values() if value["develop"]["succeeded"]]}')
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~#
 
-    for pair in jobs_info['pairs']:
-        pair_information = jobs_info['pairs'][pair]
+    for pair in jobs_info:
+        pair_information = jobs_info[pair]
 
         main_tifs = pair_information['main']['tifs']
         develop_tifs = pair_information['develop']['tifs']
