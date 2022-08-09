@@ -220,7 +220,7 @@ def test_golden_insar(jobs_info, insar_tolerances):
         raise compare.ComparisonFailure('\n\n'.join(messages))
 
 
-@pytest.mark.dependency(depends=['test_golden_wait'])
+# @pytest.mark.dependency(depends=['test_golden_wait'])
 def test_golden_rtc(jobs_info, rtc_tolerances):
     failure_count = 0
     messages = []
