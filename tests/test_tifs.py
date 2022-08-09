@@ -102,18 +102,21 @@ def download_jobs(job_instance, directory):
 def insar_tolerances(job_name):
     testing_parameters = util.render_template('insar_gamma_golden.json.j2', name=job_name)
     tolerance_names = ['_'.join(sorted(item['job_parameters']['granules'])) for item in testing_parameters]
-    tolerance_parameters = [item['tolerance_parameters'] for item in testing_parameters]
-    tolerance_dict = {k: v for k, v in zip(tolerance_names, tolerance_parameters)}
+    tolerances = [item['tolerance_parameters'] for item in testing_parameters]
+    tolerance_dict = {k: v for k, v in zip(tolerance_names, tolerances)}
     return tolerance_dict
 
 
-# @pytest.fixture(scope='function')
-# def rtc_tolerances(job_name):
-#     testing_parameters = util.render_template('insar_gamma_golden.json.j2', name=job_name)
-#     tolerance_names = ['_'.join(sorted(item['job_parameters']['granules'])) for item in testing_parameters]
-#     tolerance_parameters = [item['tolerance_parameters'] for item in testing_parameters]
-#     tolerance_dict = {k: v for k, v in zip(tolerance_names, tolerance_parameters)}
-#     return tolerance_dict
+@pytest.fixture(scope='function')
+def rtc_tolerances(job_name):
+    testing_parameters = util.render_template('rtc_gamma_golden.json.j2', name=job_name)
+    tolerance_names = ['_'.join(sorted(item['job_parameters']['granules'])) for item in testing_parameters]
+    backscatter_types = ['VV', 'VH', 'HH', 'HV']
+    backscatter_tolerances = {x: {'rtol': 2e-05, 'atol': 1e-05} for x in backscatter_types}
+    other_tolerances = {'area': {'rtol': 2e-05, 'atol': 0.0}, 'rgb': {'rtol': 0.0, 'atol': 1.0}}
+    tolerances = {**backscatter_tolerances, **other_tolerances}
+    tolerance_dict = {k: tolerances for k in tolerance_names}
+    return tolerance_dict
 
 
 @pytest.fixture(scope='function')
@@ -136,9 +139,9 @@ def jobs_info(comparison_environments, job_name, keep):
         job_main_dir, main_tifs, main_normalized_files = download_jobs(main_job, main_dir)
         job_develop_dir, develop_tifs, develop_normalized_files = download_jobs(develop_job, develop_dir)
         jobs_dict[pair_name] = {
-            'main': {'tifs': main_tifs, 'normalized_files': main_normalized_files, 'job': main_job,
+            'main': {'tifs': main_tifs, 'normalized_files': main_normalized_files,
                      'dir': job_main_dir, 'succeeded': main_succeed},
-            'develop': {'tifs': develop_tifs, 'normalized_files': develop_normalized_files, 'job': develop_job,
+            'develop': {'tifs': develop_tifs, 'normalized_files': develop_normalized_files,
                         'dir': job_develop_dir, 'succeeded': develop_succeed},
         }
 
@@ -153,7 +156,7 @@ def jobs_info(comparison_environments, job_name, keep):
         [Path(x).rmdir() for x in all_dirs]
 
 
-# @pytest.mark.dependency(depends=['test_golden_wait'])
+@pytest.mark.dependency(depends=['test_golden_wait'])
 def test_golden_insar(jobs_info, insar_tolerances):
     failure_count = 0
     messages = []
@@ -211,74 +214,57 @@ def test_golden_insar(jobs_info, insar_tolerances):
         raise compare.ComparisonFailure('\n\n'.join(messages))
 
 
-# @pytest.mark.dependency(depends=['test_golden_wait'])
-def test_golden_rtc(comparison_environments, job_name, keep):
-    (main_dir, main_api), (develop_dir, develop_api) = comparison_environments
-    if job_name is None:
-        submission_report = main_dir / f'{main_dir.name}_submission.json'
-        submission_details = json.loads(submission_report.read_text())
-        job_name = submission_details['name']
-
+@pytest.mark.dependency(depends=['test_golden_wait'])
+def test_golden_rtc(jobs_info, rtc_tolerances):
     failure_count = 0
     messages = []
 
-    main_jobs = helpers.get_jobs_in_environment(job_name, main_api)
-    develop_jobs = helpers.get_jobs_in_environment(job_name, develop_api)
-    job_type = main_jobs[0].to_dict()['job_type'].lower()
-
-    if main_jobs._count_statuses()['SUCCEEDED'] != develop_jobs._count_statuses()['SUCCEEDED']:
+    # TODO: make own test?~~~~~~~#
+    main_succeeds = sum([value['main']['succeeded'] for value in jobs_info.values()])
+    develop_succeeds = sum([value['develop']['succeeded'] for value in jobs_info.values()])
+    if main_succeeds != develop_succeeds:
         failure_count += 1
         messages.append(f'Number of jobs that SUCCEEDED is different!\n'
-                        f'    Main: {main_jobs}'
-                        f'    Develop: {develop_jobs}')
+                        f'    Main: {[value["main"]["dir"] for value in jobs_info.values() if value["main"]["succeeded"]]}'
+                        f'    Develop: {[value["develop"]["dir"] for value in jobs_info.values() if value["develop"]["succeeded"]]}')
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~#
 
-    for main_job, develop_job in zip(main_jobs, develop_jobs):
-        main_product_dir = main_dir / main_job.to_dict()['files'][0]['filename'][:-4]
-        if not main_product_dir.is_dir():
-            main_product_archive = main_job.download_files(main_dir)[0]
-            main_product_dir = hyp3_sdk.util.extract_zipped_product(main_product_archive)
-        main_hash = main_product_dir.name.split('_')[-1]
+    for pair in jobs_info:
+        pair_information = jobs_info[pair]
 
-        develop_product_dir = develop_dir / develop_job.to_dict()['files'][0]['filename'][:-4]
-        if not develop_product_dir.is_dir():
-            develop_product_archive = develop_job.download_files(develop_dir)[0]
-            develop_product_dir = hyp3_sdk.util.extract_zipped_product(develop_product_archive)
-        develop_hash = develop_product_dir.name.split('_')[-1]
+        main_tifs = pair_information['main']['tifs']
+        develop_tifs = pair_information['develop']['tifs']
 
-        main_files = sorted(main_product_dir.glob('*'))
-        develop_files = sorted(develop_product_dir.glob('*'))
+        main_normalized_files = pair_information['main']['normalized_files']
+        develop_normalized_files = pair_information['develop']['normalized_files']
 
-        main_files_normalized = {f.name.replace(main_hash, 'HASH') for f in main_files}
-        develop_files_normalized = {f.name.replace(develop_hash, 'HASH') for f in develop_files}
+        pair_tolerances = rtc_tolerances[pair]
 
-        if main_files_normalized != develop_files_normalized:
+        # TODO: make own test?~~~~~~~#
+        if main_normalized_files != develop_normalized_files:
             failure_count += 1
             messages.append(f'File names are different!\n'
-                            f'    Main:\n{pformat(main_files_normalized)}\n'
-                            f'    develop:\n{pformat(develop_files_normalized)}\n')
-
-        main_tifs = sorted(main_product_dir.glob('*.tif'))
-        develop_tifs = sorted(develop_product_dir.glob('*.tif'))
-
+                            f'    Main:\n{pformat(main_normalized_files)}\n'
+                            f'    develop:\n{pformat(develop_normalized_files)}\n')
+        # ~~~~~~~~~~~~~~~~~~~~~~~~~~#
         for main_tif, develop_tif in zip(main_tifs, develop_tifs):
+            file_type = '_'.join(Path(main_tif).name.split('_')[8:])[:-4]
+            if file_type not in ['VV', 'VH', 'HV', 'HH', 'area', 'rgb']:
+                continue
+
+            file_tolerance = pair_tolerances[file_type]
+            relative_tolerance, absolute_tolerance = file_tolerance['atol'], file_tolerance['rtol']
+
             comparison_header = '\n'.join(['-' * 80, str(main_tif), str(develop_tif), '-' * 80])
 
-            main_ds = xr.open_dataset(main_tif, engine='rasterio').band_data.data[0]
-            develop_ds = xr.open_dataset(develop_tif, engine='rasterio').band_data.data[0]
-
+            main_ds = xr.open_dataset(main_tif, engine='rasterio')
+            develop_ds = xr.open_dataset(develop_tif, engine='rasterio')
             try:
                 compare.compare_raster_info(main_tif, develop_tif)
-                relative_tolerance, absolute_tolerance = _get_tif_tolerances(str(main_tif))
                 compare.values_are_close(main_ds, develop_ds, rtol=relative_tolerance, atol=absolute_tolerance)
             except compare.ComparisonFailure as e:
                 messages.append(f'{comparison_header}\n{e}')
                 failure_count += 1
-
-        if not keep:
-            for product_file in main_files + develop_files:
-                Path(product_file).unlink()
-            Path(main_product_dir).rmdir()
-            Path(develop_product_dir).rmdir()
 
     if messages:
         messages.insert(0, f'{failure_count} differences found!!')
