@@ -5,7 +5,7 @@ from pprint import pformat
 
 import hyp3_sdk.util
 import pytest
-import rioxarray # noqa: f401
+import rioxarray  # noqa: f401
 import xarray as xr
 
 from hyp3_testing import compare
@@ -112,9 +112,13 @@ def rtc_tolerances(job_name):
     testing_parameters = util.render_template('rtc_gamma_golden.json.j2', name=job_name)
     tolerance_names = ['_'.join(sorted(item['job_parameters']['granules'])) for item in testing_parameters]
     backscatter_types = ['VV', 'VH', 'HH', 'HV']
+    other_types = ['inc_map', 'ls_map', 'dem']
+
     backscatter_tolerances = {x: {'rtol': 2e-05, 'atol': 1e-05} for x in backscatter_types}
-    other_tolerances = {'area': {'rtol': 2e-05, 'atol': 0.0}, 'rgb': {'rtol': 0.0, 'atol': 1.0}}
-    tolerances = {**backscatter_tolerances, **other_tolerances}
+    other_tolerances = {x: {'rtol': 0.0, 'atol': 0.0} for x in other_types}
+    specific_tolerances = {'area': {'rtol': 2e-05, 'atol': 0.0}, 'rgb': {'rtol': 0.0, 'atol': 1.0}}
+
+    tolerances = {**backscatter_tolerances, **specific_tolerances, **other_tolerances}
     tolerance_dict = {k: tolerances for k in tolerance_names}
     return tolerance_dict
 
@@ -214,7 +218,7 @@ def test_golden_insar(jobs_info, insar_tolerances):
         raise compare.ComparisonFailure('\n\n'.join(messages))
 
 
-@pytest.mark.dependency(depends=['test_golden_wait'])
+# @pytest.mark.dependency(depends=['test_golden_wait'])
 def test_golden_rtc(jobs_info, rtc_tolerances):
     failure_count = 0
     messages = []
@@ -249,8 +253,6 @@ def test_golden_rtc(jobs_info, rtc_tolerances):
         # ~~~~~~~~~~~~~~~~~~~~~~~~~~#
         for main_tif, develop_tif in zip(main_tifs, develop_tifs):
             file_type = '_'.join(Path(main_tif).name.split('_')[8:])[:-4]
-            if file_type not in ['VV', 'VH', 'HV', 'HH', 'area', 'rgb']:
-                continue
 
             file_tolerance = pair_tolerances[file_type]
             relative_tolerance, absolute_tolerance = file_tolerance['atol'], file_tolerance['rtol']
