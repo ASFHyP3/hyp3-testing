@@ -73,3 +73,16 @@ def clarify_xr_message(message: str, left: str = 'reference', right: str = 'seco
     message = message.replace('\nL ', f'\n\n{left[0].upper()} ')
     message = message.replace('\n\n\n', '\n\n')
     return message
+
+
+def download_jobs(job_instance, directory):
+    product_dir = directory / job_instance.to_dict()['files'][0]['filename'][:-4]
+    if not product_dir.is_dir():
+        product_archive = job_instance.download_files(directory)[0]
+        product_dir = hyp3_sdk.util.extract_zipped_product(product_archive)
+    hash_name = product_dir.name.split('_')[-1]
+    files = sorted(product_dir.glob('*'))
+    files_normalized = {f.name.replace(hash_name, 'HASH') for f in files}
+    tif_paths = sorted(product_dir.glob('*.tif'))
+    return product_dir, tif_paths, files_normalized
+
