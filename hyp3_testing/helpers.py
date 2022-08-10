@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import List, Tuple
 from zipfile import ZipFile
 
+import hyp3_sdk
 from hyp3_sdk import Batch, HyP3, Job
 
 
