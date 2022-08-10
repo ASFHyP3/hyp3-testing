@@ -9,6 +9,7 @@ import xarray as xr
 
 from hyp3_testing import compare
 from hyp3_testing import util
+from hyp3_testing.helpers import job_tifs
 
 pytestmark = pytest.mark.golden
 
@@ -64,31 +65,33 @@ def test_golden_tif_names(jobs_info):
 
 
 @pytest.mark.dependency(depends=['test_golden_wait'])
-def test_golden_rtc(jobs_info, rtc_tolerances):
+def test_golden_rtc(comparison_environments, jobs_info, rtc_tolerances, keep):
+    (main_dir, main_api), (develop_dir, develop_api) = comparison_environments
+
     failure_count = 0
     messages = []
-    for pair in jobs_info:
-        pair_information = jobs_info[pair]
-        main_tifs = pair_information['main']['tifs']
-        develop_tifs = pair_information['develop']['tifs']
+    for pair, pair_information in jobs_info.items():
         pair_tolerances = rtc_tolerances[pair]
 
-        for main_tif, develop_tif in zip(main_tifs, develop_tifs):
-            file_type = '_'.join(Path(main_tif).name.split('_')[8:])[:-4]
+        with job_tifs(pair_information['main']['job_id'], main_api, main_dir, keep) as main_tifs, \
+                job_tifs(pair_information['develop']['job_id'], develop_api, develop_dir, keep) as develop_tifs:
 
-            file_tolerance = pair_tolerances[file_type]
-            absolute_tolerance, relative_tolerance = file_tolerance['atol'], file_tolerance['rtol']
+            for main_tif, develop_tif in zip(main_tifs, develop_tifs):
+                file_type = '_'.join(Path(main_tif).name.split('_')[8:])[:-4]
 
-            comparison_header = '\n'.join(['-' * 80, str(main_tif), str(develop_tif), '-' * 80])
+                file_tolerance = pair_tolerances[file_type]
+                absolute_tolerance, relative_tolerance = file_tolerance['atol'], file_tolerance['rtol']
 
-            main_ds = xr.open_dataset(main_tif, engine='rasterio')
-            develop_ds = xr.open_dataset(develop_tif, engine='rasterio')
-            try:
-                compare.compare_raster_info(main_tif, develop_tif)
-                compare.values_are_close(main_ds, develop_ds, rtol=relative_tolerance, atol=absolute_tolerance)
-            except compare.ComparisonFailure as e:
-                messages.append(f'{comparison_header}\n{e}')
-                failure_count += 1
+                comparison_header = '\n'.join(['-' * 80, str(main_tif), str(develop_tif), '-' * 80])
+
+                main_ds = xr.open_dataset(main_tif, engine='rasterio')
+                develop_ds = xr.open_dataset(develop_tif, engine='rasterio')
+                try:
+                    compare.compare_raster_info(main_tif, develop_tif)
+                    compare.values_are_close(main_ds, develop_ds, rtol=relative_tolerance, atol=absolute_tolerance)
+                except compare.ComparisonFailure as e:
+                    messages.append(f'{comparison_header}\n{e}')
+                    failure_count += 1
 
     if messages:
         messages.insert(0, f'{failure_count} differences found!!')

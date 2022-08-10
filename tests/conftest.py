@@ -106,7 +106,7 @@ def rtc_tolerances(job_name):
 
 
 @pytest.fixture(scope='module')
-def jobs_info(comparison_environments, job_name, keep):
+def jobs_info(comparison_environments, job_name):
     (main_dir, main_api), (develop_dir, develop_api) = comparison_environments
     if job_name is None:
         submission_report = main_dir / f'{main_dir.name}_submission.json'
@@ -118,25 +118,20 @@ def jobs_info(comparison_environments, job_name, keep):
 
     jobs_dict = {}
     for main_job, develop_job in zip(main_jobs, develop_jobs):
-        pair_name = '_'.join(sorted(main_job.to_dict()['job_parameters']['granules']))
-        main_succeed = main_job.to_dict()['status_code'] == 'SUCCEEDED'
-        develop_succeed = develop_job.to_dict()['status_code'] == 'SUCCEEDED'
+        pair_name = '_'.join(sorted(main_job.job_parameters['granules']))
 
-        job_main_dir, main_tifs, main_normalized_files = helpers.download_jobs(main_job, main_dir)
-        job_develop_dir, develop_tifs, develop_normalized_files = helpers.download_jobs(develop_job, develop_dir)
+        job_main_dir, main_normalized_files = helpers.determine_product_files(main_job)
+        job_develop_dir, develop_normalized_files = helpers.determine_product_files(develop_job)
+
         jobs_dict[pair_name] = {
-            'main': {'tifs': main_tifs, 'normalized_files': main_normalized_files,
-                     'dir': job_main_dir, 'succeeded': main_succeed},
-            'develop': {'tifs': develop_tifs, 'normalized_files': develop_normalized_files,
-                        'dir': job_develop_dir, 'succeeded': develop_succeed},
+            'main': {
+                'job_id': main_job.job_id, 'succeeded': main_job.succeeded(),
+                'dir': job_main_dir, 'normalized_files': main_normalized_files,
+            },
+            'develop': {
+                'job_id': develop_job.job_id, 'succeeded': develop_job.succeeded(),
+                'dir': job_develop_dir, 'normalized_files': develop_normalized_files,
+            },
         }
 
-    yield jobs_dict
-
-    if not keep:
-        all_files = [value[y]['tifs'] for y in ['main', 'develop'] for value in jobs_dict.values()]
-        flat_files = [element for sublist in all_files for element in sublist]
-        [Path(x).unlink() for x in flat_files]
-
-        all_dirs = [value[y]['dir'] for y in ['main', 'develop'] for value in jobs_dict.values()]
-        [Path(x).rmdir() for x in all_dirs]
+    return jobs_dict
