@@ -49,7 +49,7 @@ def test_golden_wait(comparison_environments, job_name):
         _ = hyp3.watch(jobs)
 
 
-@pytest.mark.dependency(depends=['test_golden_wait'])
+# @pytest.mark.dependency(depends=['test_golden_wait'])
 def test_golden_rtc(jobs_info, rtc_tolerances):
     failure_count = 0
     messages = []
@@ -88,7 +88,7 @@ def test_golden_rtc(jobs_info, rtc_tolerances):
             file_type = '_'.join(Path(main_tif).name.split('_')[8:])[:-4]
 
             file_tolerance = pair_tolerances[file_type]
-            relative_tolerance, absolute_tolerance = file_tolerance['atol'], file_tolerance['rtol']
+            absolute_tolerance, relative_tolerance = file_tolerance['atol'], file_tolerance['rtol']
 
             comparison_header = '\n'.join(['-' * 80, str(main_tif), str(develop_tif), '-' * 80])
 
