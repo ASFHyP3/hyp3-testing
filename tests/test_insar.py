@@ -49,14 +49,14 @@ def test_golden_wait(comparison_environments, job_name):
         _ = hyp3.watch(jobs)
 
 
-# @pytest.mark.dependency(depends=['test_golden_wait'])
+@pytest.mark.dependency(depends=['test_golden_wait'])
 def test_golden_job_succeeds(jobs_info):
     main_succeeds = sum([value['main']['succeeded'] for value in jobs_info.values()])
     develop_succeeds = sum([value['develop']['succeeded'] for value in jobs_info.values()])
     assert main_succeeds == develop_succeeds
 
 
-# @pytest.mark.dependency(depends=['test_golden_wait'])
+@pytest.mark.dependency(depends=['test_golden_wait'])
 def test_golden_tif_names(jobs_info):
     for pair_information in jobs_info.values():
         main_normalized_files = pair_information['main']['normalized_files']
