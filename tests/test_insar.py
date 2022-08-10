@@ -49,41 +49,30 @@ def test_golden_wait(comparison_environments, job_name):
         _ = hyp3.watch(jobs)
 
 
+# @pytest.mark.dependency(depends=['test_golden_wait'])
+def test_golden_job_succeeds(jobs_info):
+    main_succeeds = sum([value['main']['succeeded'] for value in jobs_info.values()])
+    develop_succeeds = sum([value['develop']['succeeded'] for value in jobs_info.values()])
+    assert main_succeeds == develop_succeeds
+
+
+# @pytest.mark.dependency(depends=['test_golden_wait'])
+def test_golden_tif_names(jobs_info):
+    for pair_information in jobs_info.values():
+        main_normalized_files = pair_information['main']['normalized_files']
+        develop_normalized_files = pair_information['develop']['normalized_files']
+        assert main_normalized_files == develop_normalized_files
+
+
 @pytest.mark.dependency(depends=['test_golden_wait'])
 def test_golden_insar(jobs_info, insar_tolerances):
     failure_count = 0
     messages = []
-
-    # TODO: make own test?~~~~~~~#
-    main_succeeds = sum([value['main']['succeeded'] for value in jobs_info.values()])
-    develop_succeeds = sum([value['develop']['succeeded'] for value in jobs_info.values()])
-    if main_succeeds != develop_succeeds:
-        main_succeeds_names = [value["main"]["dir"] for value in jobs_info.values() if value["main"]["succeeded"]]
-        develop_succeeds_names = [value["develop"]["dir"] for value in jobs_info.values() if value["main"]["succeeded"]]
-        failure_count += 1
-        messages.append(f'Number of jobs that SUCCEEDED is different!\n'
-                        f'    Main: {main_succeeds_names}'
-                        f'    Develop: {develop_succeeds_names}')
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~#
-
     for pair in jobs_info:
         pair_information = jobs_info[pair]
-
         main_tifs = pair_information['main']['tifs']
         develop_tifs = pair_information['develop']['tifs']
-
-        main_normalized_files = pair_information['main']['normalized_files']
-        develop_normalized_files = pair_information['develop']['normalized_files']
-
         pair_tolerances = insar_tolerances[pair]
-
-        # TODO: make own test?~~~~~~~#
-        if main_normalized_files != develop_normalized_files:
-            failure_count += 1
-            messages.append(f'File names are different!\n'
-                            f'    Main:\n{pformat(main_normalized_files)}\n'
-                            f'    develop:\n{pformat(develop_normalized_files)}\n')
-        # ~~~~~~~~~~~~~~~~~~~~~~~~~~#
 
         for main_tif, develop_tif in zip(main_tifs, develop_tifs):
             comparison_header = '\n'.join(['-' * 80, str(main_tif), str(develop_tif), '-' * 80])

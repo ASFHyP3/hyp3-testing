@@ -50,17 +50,17 @@ def comparison_environments(tmp_path_factory, golden_dirs):
     return list(zip(comparison_dirs, comparison_apis))
 
 
-@pytest.fixture
+@pytest.fixture(scope='module')
 def process(request):
     return request.config.getoption("--process")
 
 
-@pytest.fixture
+@pytest.fixture(scope='module')
 def keep(request):
     return request.config.getoption("--keep")
 
 
-@pytest.fixture
+@pytest.fixture(scope='module')
 def job_name(request):
     return request.config.getoption("--name")
 
@@ -88,7 +88,7 @@ def test_data_dir():
     return data_dir
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope='module')
 def insar_tolerances(job_name):
     testing_parameters = util.render_template('insar_gamma_golden.json.j2', name=job_name)
     tolerance_names = ['_'.join(sorted(item['job_parameters']['granules'])) for item in testing_parameters]
@@ -97,7 +97,7 @@ def insar_tolerances(job_name):
     return tolerance_dict
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope='module')
 def rtc_tolerances(job_name):
     testing_parameters = util.render_template('rtc_gamma_golden.json.j2', name=job_name)
     tolerance_names = ['_'.join(sorted(item['job_parameters']['granules'])) for item in testing_parameters]
@@ -113,7 +113,7 @@ def rtc_tolerances(job_name):
     return tolerance_dict
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope='module')
 def jobs_info(comparison_environments, job_name, keep):
     (main_dir, main_api), (develop_dir, develop_api) = comparison_environments
     if job_name is None:
