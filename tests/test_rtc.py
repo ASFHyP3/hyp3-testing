@@ -15,11 +15,11 @@ pytestmark = pytest.mark.golden
 
 
 @pytest.mark.nameskip
-def test_golden_submission(comparison_environments, process):
+def test_golden_submission(comparison_environments):
     job_name = util.generate_job_name()
     print(f'Job name: {job_name}')
 
-    testing_parameters = util.render_template(f'{process}_gamma_golden.json.j2', name=job_name)
+    testing_parameters = util.render_template(f'rtc_gamma_golden.json.j2', name=job_name)
     submission_payload = [{k: item[k] for k in ['name', 'job_parameters', 'job_type']} for item in testing_parameters]
 
     for dir_, api in comparison_environments:

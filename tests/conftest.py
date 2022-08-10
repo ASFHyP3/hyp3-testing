@@ -11,9 +11,6 @@ from hyp3_testing import util
 
 def pytest_addoption(parser):
     parser.addoption(
-        "--process", choices=["rtc", "insar"], help="Submit this processes payload"
-    )
-    parser.addoption(
         "--keep", action='store_true', help="Do not remove downloaded test products"
     )
     parser.addoption(
@@ -48,11 +45,6 @@ def comparison_environments(tmp_path_factory, golden_dirs):
 
     comparison_apis = [hyp3_sdk.PROD_API, hyp3_sdk.TEST_API]
     return list(zip(comparison_dirs, comparison_apis))
-
-
-@pytest.fixture(scope='module')
-def process(request):
-    return request.config.getoption("--process")
 
 
 @pytest.fixture(scope='module')
