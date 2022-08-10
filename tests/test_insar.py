@@ -1,7 +1,6 @@
 import json
 import os
 from pathlib import Path
-from pprint import pformat
 
 import hyp3_sdk.util
 import pytest
