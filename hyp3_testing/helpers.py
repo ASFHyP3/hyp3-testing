@@ -1,11 +1,13 @@
 import os
+from contextlib import contextmanager
 from glob import glob
 from pathlib import Path
 from typing import List, Tuple
 from zipfile import ZipFile
 
-import hyp3_sdk
 from hyp3_sdk import Batch, HyP3, Job
+from hyp3_sdk.util import extract_zipped_product
+from remotezip import RemoteZip
 
 
 def freeze_job_parameters(job: Job) -> tuple:
@@ -76,14 +78,35 @@ def clarify_xr_message(message: str, left: str = 'reference', right: str = 'seco
     return message
 
 
-def download_jobs(job_instance, directory):
-    product_dir = directory / job_instance.to_dict()['files'][0]['filename'][:-4]
-    if not product_dir.is_dir():
-        product_archive = job_instance.download_files(directory)[0]
-        product_dir = hyp3_sdk.util.extract_zipped_product(product_archive)
-    hash_name = product_dir.name.split('_')[-1]
-    files = sorted(product_dir.glob('*'))
-    files_normalized = {f.name.replace(hash_name, 'HASH') for f in files}
-    tif_paths = sorted(product_dir.glob('*.tif'))
-    return product_dir, tif_paths, files_normalized
+def determine_product_files(job_instance):
+    product_archive = job_instance.files[0]['url']
 
+    with RemoteZip(product_archive) as z:
+        files = z.infolist()
+
+    product_name = files[0].filename.rstrip('/')
+
+    hash_name = product_name.split('_')[-1]
+    files_normalized = {f.filename.replace(hash_name, 'HASH') for f in files if not f.is_dir()}
+
+    return product_name, files_normalized
+
+
+@contextmanager
+def job_tifs(job_id, api, directory, keep=False):
+    hyp3 = HyP3(api, os.environ.get('EARTHDATA_LOGIN_USER'), os.environ.get('EARTHDATA_LOGIN_PASSWORD'))
+    job = hyp3.get_job_by_id(job_id)
+
+    product_dir = directory / job.files[0]['filename'].replace('.zip', '')
+    if not product_dir.exists():
+        product_archive = job.download_files(directory)[0]
+        product_dir = extract_zipped_product(product_archive)
+
+    tif_paths = sorted(product_dir.glob('*.tif'))
+    try:
+        yield tif_paths
+    finally:
+        if not keep:
+            for ff in product_dir.rglob('*'):
+                ff.unlink()
+            product_dir.rmdir()

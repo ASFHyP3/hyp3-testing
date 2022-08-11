@@ -1,7 +1,6 @@
 import json
 import os
 from pathlib import Path
-from pprint import pformat
 
 import hyp3_sdk.util
 import pytest
@@ -10,6 +9,7 @@ import xarray as xr
 
 from hyp3_testing import compare
 from hyp3_testing import util
+from hyp3_testing.helpers import job_tifs
 
 pytestmark = pytest.mark.golden
 
@@ -19,7 +19,7 @@ def test_golden_submission(comparison_environments):
     job_name = util.generate_job_name()
     print(f'Job name: {job_name}')
 
-    testing_parameters = util.render_template(f'insar_gamma_golden.json.j2', name=job_name)
+    testing_parameters = util.render_template('insar_gamma_golden.json.j2', name=job_name)
     submission_payload = [{k: item[k] for k in ['name', 'job_parameters', 'job_type']} for item in testing_parameters]
 
     for dir_, api in comparison_environments:
@@ -65,33 +65,35 @@ def test_golden_tif_names(jobs_info):
 
 
 @pytest.mark.dependency(depends=['test_golden_wait'])
-def test_golden_insar(jobs_info, insar_tolerances):
+def test_golden_insar(comparison_environments, jobs_info, insar_tolerances, keep):
+    (main_dir, main_api), (develop_dir, develop_api) = comparison_environments
+
     failure_count = 0
     messages = []
-    for pair in jobs_info:
-        pair_information = jobs_info[pair]
-        main_tifs = pair_information['main']['tifs']
-        develop_tifs = pair_information['develop']['tifs']
+    for pair, pair_information in jobs_info.items():
         pair_tolerances = insar_tolerances[pair]
 
-        for main_tif, develop_tif in zip(main_tifs, develop_tifs):
-            comparison_header = '\n'.join(['-' * 80, str(main_tif), str(develop_tif), '-' * 80])
+        with job_tifs(pair_information['main']['job_id'], main_api, main_dir, keep) as main_tifs, \
+                job_tifs(pair_information['develop']['job_id'], develop_api, develop_dir, keep) as develop_tifs:
 
-            main_ds = xr.open_dataset(main_tif, engine='rasterio').band_data.data[0]
-            develop_ds = xr.open_dataset(develop_tif, engine='rasterio').band_data.data[0]
+            for main_tif, develop_tif in zip(main_tifs, develop_tifs):
+                comparison_header = '\n'.join(['-' * 80, str(main_tif), str(develop_tif), '-' * 80])
 
-            try:
-                compare.compare_raster_info(main_tif, develop_tif)
-                if pair_tolerances != {}:
-                    file_type = '_'.join(Path(main_tif).name.split('_')[8:])[:-4]
-                    file_tolerance = pair_tolerances[file_type]
-                    threshold = file_tolerance['threshold']
-                    n_allowable = file_tolerance['n_allowable']
-                    compare.values_are_within_tolerance(main_ds, develop_ds, atol=threshold,
-                                                        n_allowable=n_allowable)
-            except compare.ComparisonFailure as e:
-                messages.append(f'{comparison_header}\n{e}')
-                failure_count += 1
+                main_ds = xr.open_dataset(main_tif, engine='rasterio').band_data.data[0]
+                develop_ds = xr.open_dataset(develop_tif, engine='rasterio').band_data.data[0]
+
+                try:
+                    compare.compare_raster_info(main_tif, develop_tif)
+                    if pair_tolerances != {}:
+                        file_type = '_'.join(Path(main_tif).name.split('_')[8:])[:-4]
+                        file_tolerance = pair_tolerances[file_type]
+                        threshold = file_tolerance['threshold']
+                        n_allowable = file_tolerance['n_allowable']
+                        compare.values_are_within_tolerance(main_ds, develop_ds, atol=threshold,
+                                                            n_allowable=n_allowable)
+                except compare.ComparisonFailure as e:
+                    messages.append(f'{comparison_header}\n{e}')
+                    failure_count += 1
 
     if messages:
         messages.insert(0, f'{failure_count} differences found!!')
