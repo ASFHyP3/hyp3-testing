@@ -32,9 +32,8 @@ def bit_for_bit(reference: Path, secondary: Path):
 
 
 def assert_within_tolerance(reference: XR, secondary: XR, atol: float, n_allowable: int):
-    reference_zeroed = np.ma.masked_invalid(reference).filled(0.0)
-    secondary_zeroed = np.ma.masked_invalid(secondary).filled(0.0)
-    n_exceed = (~np.isclose(reference_zeroed, secondary_zeroed, rtol=0.0, atol=atol)).sum()
+    diff = np.ma.masked_invalid(reference) - np.ma.masked_invalid(secondary)
+    n_exceed = (~np.isclose(diff.filled(0.0), 0.0, rtol=0.0, atol=atol)).sum()
     if n_exceed > n_allowable:
         raise AssertionError(
             f'Too many values are outside of the tolerance for ({n_exceed} vs {n_allowable})')
