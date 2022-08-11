@@ -31,7 +31,7 @@ def bit_for_bit(reference: Path, secondary: Path):
         raise ComparisonFailure('Files differ at the binary level')
 
 
-def assert_within_tolerance(reference: XR, secondary: XR, atol: float, n_allowable: int):
+def _assert_within_tolerance(reference: np.array, secondary: np.array, atol: float, n_allowable: int):
     diff = np.ma.masked_invalid(reference) - np.ma.masked_invalid(secondary)
     n_exceed = (~np.isclose(diff.filled(0.0), 0.0, rtol=0.0, atol=atol)).sum()
     if n_exceed > n_allowable:
@@ -39,9 +39,9 @@ def assert_within_tolerance(reference: XR, secondary: XR, atol: float, n_allowab
             f'Too many values are outside of the tolerance for ({n_exceed} vs {n_allowable})')
 
 
-def values_are_within_tolerance(reference: XR, secondary: XR, atol: float, n_allowable: int):
+def values_are_within_tolerance(reference: np.array, secondary: np.array, atol: float, n_allowable: int):
     try:
-        assert_within_tolerance(reference, secondary, atol=atol, n_allowable=n_allowable)
+        _assert_within_tolerance(reference, secondary, atol=atol, n_allowable=n_allowable)
     except AssertionError as e:
         detailed_failure_message = _compare_values_message(reference, secondary, rtol=0.0, atol=atol)
         raise ComparisonFailure(
