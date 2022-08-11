@@ -43,9 +43,8 @@ def values_are_within_tolerance(reference: np.array, secondary: np.array, atol: 
     try:
         _assert_within_tolerance(reference, secondary, atol=atol, n_allowable=n_allowable)
     except AssertionError as e:
-        detailed_failure_message = _compare_values_message(reference, secondary, rtol=0.0, atol=atol)
         raise ComparisonFailure(
-            '\n'.join(['Values are different.', detailed_failure_message, '', clarify_xr_message(str(e))])
+            '\n'.join(['Values are different.', '', clarify_xr_message(str(e))])
         )
 
 
