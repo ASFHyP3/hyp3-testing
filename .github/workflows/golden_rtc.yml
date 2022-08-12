@@ -1,12 +1,6 @@
-name: Golden TIFs
+name: Golden RTC
 
-on:
-  workflow_dispatch:
-    inputs:
-      process:
-        description: "Select a supported process: rtc, insar"
-        required: true
-
+on: workflow_dispatch
 
 jobs:
   golden:
@@ -28,4 +22,4 @@ jobs:
         shell: bash -l {0}
         run: |
           python -m pip install .[develop]
-          pytest -s --process ${{ github.event.inputs.process }} tests/test_tifs.py
+          pytest -s tests/test_rtc.py
