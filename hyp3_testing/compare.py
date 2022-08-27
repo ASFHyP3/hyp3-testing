@@ -154,6 +154,10 @@ def compare_raster_info(reference: Path, secondary: Path):
         sec_info.pop(key, None)
     ref_info['metadata'][''].pop('TIFFTAG_DATETIME', None)
     sec_info['metadata'][''].pop('TIFFTAG_DATETIME', None)
+    ref_info['metadata'][''].pop('TIFFTAG_SOFTWARE', None)
+    sec_info['metadata'][''].pop('TIFFTAG_SOFTWARE', None)
+    ref_info['metadata']['IMAGE_STRUCTURE'].pop('LAYOUT', None)
+    sec_info['metadata']['IMAGE_STRUCTURE'].pop('LAYOUT', None)
     if not ref_info == sec_info:
         raise ComparisonFailure(
             f'Raster info are not the same.\n  Reference: {ref_info}\n  Secondary: {sec_info}'
