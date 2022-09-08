@@ -100,7 +100,7 @@ you can run the the individual test you want by pointing directly to the test fi
 run the Golden RTC test like:
 
 ```
-pytest tests/test_rtc_gamma.py
+pytest tests/test_rtc.py
 ```
 
 You also can, if you really want to, run all the golden tests like
