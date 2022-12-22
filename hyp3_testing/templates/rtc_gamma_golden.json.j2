@@ -226,5 +226,43 @@
       "dem_name": "copernicus"
     },
     "job_type": "RTC_GAMMA"
+  },
+  {
+    "name": "{{ name }}",
+    "job_parameters": {
+      "granules": [
+        "S1B_IW_GRDH_1SDH_20180603T071934_20180603T071946_011205_014909_AF96"
+      ],
+      "resolution": 30.0,
+      "radiometry": "gamma0",
+      "scale": "decibel",
+      "speckle_filter": true,
+      "dem_matching": true,
+      "include_dem": true,
+      "include_inc_map": false,
+      "include_scattering_area": false,
+      "include_rgb": false,
+      "dem_name": "copernicus"
+    },
+    "job_type": "RTC_GAMMA"
+  },
+  {
+    "name": "{{ name }}",
+    "job_parameters": {
+      "granules": [
+        "S1A_IW_GRDH_1SDV_20170823T011304_20170823T011316_018044_01E4B6_3F53"
+      ],
+      "resolution": 30.0,
+      "radiometry": "sigma0",
+      "scale": "decibel",
+      "speckle_filter": false,
+      "dem_matching": false,
+      "include_dem": false,
+      "include_inc_map": true,
+      "include_scattering_area": true,
+      "include_rgb": false,
+      "dem_name": "copernicus"
+    },
+    "job_type": "RTC_GAMMA"
   }
 ]
