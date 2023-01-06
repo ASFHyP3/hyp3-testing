@@ -13,6 +13,7 @@ and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 * `insar_gamma_golden.json.j2` Add tolerance and allowable excedeances for each file and use new pairs
 * `test_tifs.py` update to parse new tolerance information and perform unique workflow for InSAR jobs
 * `compare.py` create new `assert_within_tolerance` function to use file-specific tolerances
+* `autorift_golden.json.j2` includes L5+5, L7+7, L7+8, and L8+7 pairs in different projections to test reprojection code
 
 ### Added
 * `test_autorift.py` golden test for the autoRIFT plugin
