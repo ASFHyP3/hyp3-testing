@@ -5,7 +5,7 @@
       "granules": [
         "S1A_IW_SLC__1SSV_20150621T120220_20150621T120232_006471_008934_72D8"
       ],
-      "resolution": 30.0,
+      "resolution": 10.0,
       "radiometry": "sigma0",
       "scale": "amplitude",
       "speckle_filter": true,
@@ -24,7 +24,7 @@
       "granules": [
         "S1A_IW_SLC__1SSH_20141227T173304_20141227T173318_003908_004B17_52D4"
       ],
-      "resolution": 30.0,
+      "resolution": 10.0,
       "radiometry": "gamma0",
       "scale": "power",
       "speckle_filter": false,
@@ -43,7 +43,7 @@
       "granules": [
         "S1A_IW_SLC__1SDV_20170525T025145_20170525T025157_016732_01BCA6_CEBE"
       ],
-      "resolution": 30.0,
+      "resolution": 10.0,
       "radiometry": "gamma0",
       "scale": "power",
       "speckle_filter": false,
@@ -60,9 +60,9 @@
     "name": "{{ name }}",
     "job_parameters": {
       "granules": [
-        "S1B_IW_SLC__1SDH_20180522T071932_20180522T071945_011030_01435E_092C"
+        "S1B_IW_SLC__1SDH_20180522T071932_20180522T071945_011010.01435E_092C"
       ],
-      "resolution": 30.0,
+      "resolution": 10.0,
       "radiometry": "sigma0",
       "scale": "amplitude",
       "speckle_filter": true,
@@ -81,7 +81,7 @@
       "granules": [
         "S1A_IW_GRDH_1SDV_20170823T011304_20170823T011316_018044_01E4B6_3F53"
       ],
-      "resolution": 30.0,
+      "resolution": 10.0,
       "radiometry": "sigma0",
       "scale": "power",
       "speckle_filter": false,
@@ -100,7 +100,7 @@
       "granules": [
         "S1B_IW_GRDH_1SDH_20180603T071934_20180603T071946_011205_014909_AF96"
       ],
-      "resolution": 30.0,
+      "resolution": 10.0,
       "radiometry": "gamma0",
       "scale": "amplitude",
       "speckle_filter": true,
@@ -119,7 +119,7 @@
       "granules": [
         "S1A_IW_SLC__1SSV_20150621T120220_20150621T120232_006471_008934_72D8"
       ],
-      "resolution": 30.0,
+      "resolution": 10.0,
       "radiometry": "sigma0",
       "scale": "amplitude",
       "speckle_filter": true,
@@ -138,7 +138,7 @@
       "granules": [
         "S1A_IW_SLC__1SSH_20141227T173304_20141227T173318_003908_004B17_52D4"
       ],
-      "resolution": 30.0,
+      "resolution": 10.0,
       "radiometry": "gamma0",
       "scale": "power",
       "speckle_filter": false,
@@ -157,7 +157,7 @@
       "granules": [
         "S1A_IW_SLC__1SDV_20170525T025145_20170525T025157_016732_01BCA6_CEBE"
       ],
-      "resolution": 30.0,
+      "resolution": 10.0,
       "radiometry": "gamma0",
       "scale": "power",
       "speckle_filter": false,
@@ -174,9 +174,9 @@
     "name": "{{ name }}",
     "job_parameters": {
       "granules": [
-        "S1B_IW_SLC__1SDH_20180522T071932_20180522T071945_011030_01435E_092C"
+        "S1B_IW_SLC__1SDH_20180522T071932_20180522T071945_011010.01435E_092C"
       ],
-      "resolution": 30.0,
+      "resolution": 10.0,
       "radiometry": "sigma0",
       "scale": "amplitude",
       "speckle_filter": true,
@@ -195,7 +195,7 @@
       "granules": [
         "S1A_IW_GRDH_1SDV_20170823T011304_20170823T011316_018044_01E4B6_3F53"
       ],
-      "resolution": 30.0,
+      "resolution": 10.0,
       "radiometry": "sigma0",
       "scale": "power",
       "speckle_filter": false,
@@ -233,7 +233,7 @@
       "granules": [
         "S1B_IW_GRDH_1SDH_20180603T071934_20180603T071946_011205_014909_AF96"
       ],
-      "resolution": 30.0,
+      "resolution": 10.0,
       "radiometry": "gamma0",
       "scale": "amplitude",
       "speckle_filter": true,
@@ -252,7 +252,7 @@
       "granules": [
         "S1B_IW_GRDH_1SDH_20180603T071934_20180603T071946_011205_014909_AF96"
       ],
-      "resolution": 30.0,
+      "resolution": 10.0,
       "radiometry": "gamma0",
       "scale": "decibel",
       "speckle_filter": true,
@@ -271,7 +271,291 @@
       "granules": [
         "S1A_IW_GRDH_1SDV_20170823T011304_20170823T011316_018044_01E4B6_3F53"
       ],
-      "resolution": 30.0,
+      "resolution": 10.0,
+      "radiometry": "sigma0",
+      "scale": "decibel",
+      "speckle_filter": false,
+      "dem_matching": false,
+      "include_dem": false,
+      "include_inc_map": true,
+      "include_scattering_area": true,
+      "include_rgb": false,
+      "dem_name": "copernicus"
+    },
+    "job_type": "RTC_GAMMA"
+  },  {
+    "name": "{{ name }}",
+    "job_parameters": {
+      "granules": [
+        "S1A_IW_SLC__1SSV_20150621T120220_20150621T120232_006471_008934_72D8"
+      ],
+      "resolution": 20.0,
+      "radiometry": "sigma0",
+      "scale": "amplitude",
+      "speckle_filter": true,
+      "dem_matching": true,
+      "include_dem": true,
+      "include_inc_map": true,
+      "include_scattering_area": true,
+      "include_rgb": true,
+      "dem_name": "legacy"
+    },
+    "job_type": "RTC_GAMMA"
+  },
+  {
+    "name": "{{ name }}",
+    "job_parameters": {
+      "granules": [
+        "S1A_IW_SLC__1SSH_20141227T173304_20141227T173318_003908_004B17_52D4"
+      ],
+      "resolution": 20.0,
+      "radiometry": "gamma0",
+      "scale": "power",
+      "speckle_filter": false,
+      "dem_matching": false,
+      "include_dem": false,
+      "include_inc_map": false,
+      "include_scattering_area": false,
+      "include_rgb": false,
+      "dem_name": "legacy"
+    },
+    "job_type": "RTC_GAMMA"
+  },
+  {
+    "name": "{{ name }}",
+    "job_parameters": {
+      "granules": [
+        "S1A_IW_SLC__1SDV_20170525T025145_20170525T025157_016732_01BCA6_CEBE"
+      ],
+      "resolution": 20.0,
+      "radiometry": "gamma0",
+      "scale": "power",
+      "speckle_filter": false,
+      "dem_matching": false,
+      "include_dem": false,
+      "include_inc_map": false,
+      "include_scattering_area": true,
+      "include_rgb": true,
+      "dem_name": "legacy"
+    },
+    "job_type": "RTC_GAMMA"
+  },
+  {
+    "name": "{{ name }}",
+    "job_parameters": {
+      "granules": [
+        "S1B_IW_SLC__1SDH_20180522T071932_20180522T071945_0120.0.01435E_092C"
+      ],
+      "resolution": 20.0,
+      "radiometry": "sigma0",
+      "scale": "amplitude",
+      "speckle_filter": true,
+      "dem_matching": true,
+      "include_dem": true,
+      "include_inc_map": true,
+      "include_scattering_area": false,
+      "include_rgb": true,
+      "dem_name": "legacy"
+    },
+    "job_type": "RTC_GAMMA"
+  },
+  {
+    "name": "{{ name }}",
+    "job_parameters": {
+      "granules": [
+        "S1A_IW_GRDH_1SDV_20170823T011304_20170823T011316_018044_01E4B6_3F53"
+      ],
+      "resolution": 20.0,
+      "radiometry": "sigma0",
+      "scale": "power",
+      "speckle_filter": false,
+      "dem_matching": false,
+      "include_dem": false,
+      "include_inc_map": true,
+      "include_scattering_area": true,
+      "include_rgb": false,
+      "dem_name": "legacy"
+    },
+    "job_type": "RTC_GAMMA"
+  },
+  {
+    "name": "{{ name }}",
+    "job_parameters": {
+      "granules": [
+        "S1B_IW_GRDH_1SDH_20180603T071934_20180603T071946_011205_014909_AF96"
+      ],
+      "resolution": 20.0,
+      "radiometry": "gamma0",
+      "scale": "amplitude",
+      "speckle_filter": true,
+      "dem_matching": true,
+      "include_dem": true,
+      "include_inc_map": false,
+      "include_scattering_area": false,
+      "include_rgb": false,
+      "dem_name": "legacy"
+    },
+    "job_type": "RTC_GAMMA"
+  },
+  {
+    "name": "{{ name }}",
+    "job_parameters": {
+      "granules": [
+        "S1A_IW_SLC__1SSV_20150621T120220_20150621T120232_006471_008934_72D8"
+      ],
+      "resolution": 20.0,
+      "radiometry": "sigma0",
+      "scale": "amplitude",
+      "speckle_filter": true,
+      "dem_matching": true,
+      "include_dem": true,
+      "include_inc_map": true,
+      "include_scattering_area": true,
+      "include_rgb": true,
+      "dem_name": "copernicus"
+    },
+    "job_type": "RTC_GAMMA"
+  },
+  {
+    "name": "{{ name }}",
+    "job_parameters": {
+      "granules": [
+        "S1A_IW_SLC__1SSH_20141227T173304_20141227T173318_003908_004B17_52D4"
+      ],
+      "resolution": 20.0,
+      "radiometry": "gamma0",
+      "scale": "power",
+      "speckle_filter": false,
+      "dem_matching": false,
+      "include_dem": false,
+      "include_inc_map": false,
+      "include_scattering_area": false,
+      "include_rgb": false,
+      "dem_name": "copernicus"
+    },
+    "job_type": "RTC_GAMMA"
+  },
+  {
+    "name": "{{ name }}",
+    "job_parameters": {
+      "granules": [
+        "S1A_IW_SLC__1SDV_20170525T025145_20170525T025157_016732_01BCA6_CEBE"
+      ],
+      "resolution": 20.0,
+      "radiometry": "gamma0",
+      "scale": "power",
+      "speckle_filter": false,
+      "dem_matching": false,
+      "include_dem": false,
+      "include_inc_map": false,
+      "include_scattering_area": true,
+      "include_rgb": true,
+      "dem_name": "copernicus"
+    },
+    "job_type": "RTC_GAMMA"
+  },
+  {
+    "name": "{{ name }}",
+    "job_parameters": {
+      "granules": [
+        "S1B_IW_SLC__1SDH_20180522T071932_20180522T071945_0120.0.01435E_092C"
+      ],
+      "resolution": 20.0,
+      "radiometry": "sigma0",
+      "scale": "amplitude",
+      "speckle_filter": true,
+      "dem_matching": true,
+      "include_dem": true,
+      "include_inc_map": true,
+      "include_scattering_area": false,
+      "include_rgb": true,
+      "dem_name": "copernicus"
+    },
+    "job_type": "RTC_GAMMA"
+  },
+  {
+    "name": "{{ name }}",
+    "job_parameters": {
+      "granules": [
+        "S1A_IW_GRDH_1SDV_20170823T011304_20170823T011316_018044_01E4B6_3F53"
+      ],
+      "resolution": 20.0,
+      "radiometry": "sigma0",
+      "scale": "power",
+      "speckle_filter": false,
+      "dem_matching": false,
+      "include_dem": false,
+      "include_inc_map": true,
+      "include_scattering_area": true,
+      "include_rgb": false,
+      "dem_name": "copernicus"
+    },
+    "job_type": "RTC_GAMMA"
+  },
+  {
+    "name": "{{ name }}",
+    "job_parameters": {
+      "granules": [
+        "S1A_IW_SLC__1SSV_20150621T120220_20150621T120232_006471_008934_72D8"
+      ],
+      "resolution": 20.0,
+      "scale": "power",
+      "speckle_filter": false,
+      "include_dem": false,
+      "include_inc_map": false,
+      "include_rgb": false,
+      "include_scattering_area": false,
+      "radiometry": "gamma0",
+      "dem_matching": false,
+      "dem_name": "copernicus"
+    },
+    "job_type": "RTC_GAMMA"
+  },
+  {
+    "name": "{{ name }}",
+    "job_parameters": {
+      "granules": [
+        "S1B_IW_GRDH_1SDH_20180603T071934_20180603T071946_011205_014909_AF96"
+      ],
+      "resolution": 20.0,
+      "radiometry": "gamma0",
+      "scale": "amplitude",
+      "speckle_filter": true,
+      "dem_matching": true,
+      "include_dem": true,
+      "include_inc_map": false,
+      "include_scattering_area": false,
+      "include_rgb": false,
+      "dem_name": "copernicus"
+    },
+    "job_type": "RTC_GAMMA"
+  },
+  {
+    "name": "{{ name }}",
+    "job_parameters": {
+      "granules": [
+        "S1B_IW_GRDH_1SDH_20180603T071934_20180603T071946_011205_014909_AF96"
+      ],
+      "resolution": 20.0,
+      "radiometry": "gamma0",
+      "scale": "decibel",
+      "speckle_filter": true,
+      "dem_matching": true,
+      "include_dem": true,
+      "include_inc_map": false,
+      "include_scattering_area": false,
+      "include_rgb": false,
+      "dem_name": "copernicus"
+    },
+    "job_type": "RTC_GAMMA"
+  },
+  {
+    "name": "{{ name }}",
+    "job_parameters": {
+      "granules": [
+        "S1A_IW_GRDH_1SDV_20170823T011304_20170823T011316_018044_01E4B6_3F53"
+      ],
+      "resolution": 20.0,
       "radiometry": "sigma0",
       "scale": "decibel",
       "speckle_filter": false,
