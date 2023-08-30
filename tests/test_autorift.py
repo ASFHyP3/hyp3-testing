@@ -48,7 +48,7 @@ def test_golden_wait(comparison_environments, job_name):
             job_name = submission_details['name']
 
         hyp3 = hyp3_sdk.HyP3(api, os.environ.get('EARTHDATA_LOGIN_USER'), os.environ.get('EARTHDATA_LOGIN_PASSWORD'))
-        jobs = hyp3.find_jobs(name=job_name)
+        jobs = hyp3.find_jobs(name=job_name, user_id=os.environ.get('HYP3_TESTING_USER'))
         _ = hyp3.watch(jobs)
 
 
