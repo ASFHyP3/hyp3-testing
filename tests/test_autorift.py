@@ -73,6 +73,9 @@ def test_golden_products(comparison_environments, job_name, keep):
                         f'    Develop: {develop_jobs}')
 
     for main_job, develop_job in zip(main_jobs, develop_jobs):
+        if main_job.failed() or develop_job.failed():
+            continue
+
         main_nc = main_job.download_files(main_dir)[0]
         main_hash = main_nc.stem
 
