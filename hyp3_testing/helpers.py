@@ -2,7 +2,7 @@ import os
 from contextlib import contextmanager
 from glob import glob
 from pathlib import Path
-from typing import List, Tuple, Optional
+from typing import List, Optional, Tuple
 from zipfile import ZipFile
 
 from hyp3_sdk import Batch, HyP3, Job
