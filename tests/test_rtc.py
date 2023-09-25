@@ -37,7 +37,7 @@ def test_golden_submission(comparison_environments):
 
 @pytest.mark.timeout(5400)  # 90 minutes as RTC jobs can take ~1.5 hr
 @pytest.mark.dependency()
-def test_golden_wait(comparison_environments, job_name):
+def test_golden_wait(comparison_environments, job_name, user_id):
     for dir_, api in comparison_environments:
         if job_name is None:
             submission_report = dir_ / f'{dir_.name}_submission.json'
@@ -45,7 +45,7 @@ def test_golden_wait(comparison_environments, job_name):
             job_name = submission_details['name']
 
         hyp3 = hyp3_sdk.HyP3(api, os.environ.get('EARTHDATA_LOGIN_USER'), os.environ.get('EARTHDATA_LOGIN_PASSWORD'))
-        jobs = hyp3.find_jobs(name=job_name)
+        jobs = hyp3.find_jobs(name=job_name, user_id=user_id)
         _ = hyp3.watch(jobs)
 
 
