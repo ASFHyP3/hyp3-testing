@@ -20,7 +20,7 @@ def pytest_addoption(parser):
         "--golden-dirs", nargs=2, help="Main and develop directories to use for comparison"
     )
     parser.addoption(
-        "--user", nargs='?', help="Find jobs submitted by this user to compare"
+        "--user-id", nargs='?', help="Find jobs submitted by this user to compare"
     )
 
 
@@ -67,7 +67,7 @@ def golden_dirs(request):
 
 @pytest.fixture(scope='session')
 def user_id(request):
-    return request.config.getoption("--user")
+    return request.config.getoption("--user-id")
 
 
 @pytest.fixture

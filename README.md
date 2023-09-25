@@ -132,7 +132,7 @@ a couple options to pytest to help.
 
 * You can also specify an alternate `user_id`
   ```
-  pytest --user [USER_ID]
+  pytest --user-id [USER_ID]
   ```
   which will find jobs submitted by `USER_ID` instead of defaulting to jobs submitted by the authorized user. This is
   particularly useful when re-running a comparison run by someone else, or by the GitHub Actions user.
