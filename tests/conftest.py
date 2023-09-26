@@ -14,10 +14,13 @@ def pytest_addoption(parser):
         "--keep", action='store_true', help="Do not remove downloaded test products"
     )
     parser.addoption(
-        "--name", nargs='?', help="Find jobs by this name to compare"
+        "--name", nargs='?', help="Find jobs with this name to compare"
     )
     parser.addoption(
         "--golden-dirs", nargs=2, help="Main and develop directories to use for comparison"
+    )
+    parser.addoption(
+        "--user-id", nargs='?', help="Find jobs submitted by this user to compare"
     )
 
 
@@ -60,6 +63,11 @@ def job_name(request):
 @pytest.fixture(scope='session')
 def golden_dirs(request):
     return request.config.getoption("--golden-dirs")
+
+
+@pytest.fixture(scope='session')
+def user_id(request):
+    return request.config.getoption("--user-id")
 
 
 @pytest.fixture
@@ -106,15 +114,15 @@ def rtc_tolerances(job_name):
 
 
 @pytest.fixture(scope='module')
-def jobs_info(comparison_environments, job_name):
+def jobs_info(comparison_environments, job_name, user_id):
     (main_dir, main_api), (develop_dir, develop_api) = comparison_environments
     if job_name is None:
         submission_report = main_dir / f'{main_dir.name}_submission.json'
         submission_details = json.loads(submission_report.read_text())
         job_name = submission_details['name']
 
-    main_jobs = helpers.get_jobs_in_environment(job_name, main_api)
-    develop_jobs = helpers.get_jobs_in_environment(job_name, develop_api)
+    main_jobs = helpers.get_jobs_in_environment(job_name, main_api, user_id=user_id)
+    develop_jobs = helpers.get_jobs_in_environment(job_name, develop_api, user_id=user_id)
 
     jobs_dict = {}
     for main_job, develop_job in zip(main_jobs, develop_jobs):

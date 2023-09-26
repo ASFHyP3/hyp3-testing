@@ -36,7 +36,7 @@ def test_golden_submission(comparison_environments):
 
 @pytest.mark.timeout(10800)  # 3 hours
 @pytest.mark.dependency()
-def test_golden_wait(comparison_environments, job_name):
+def test_golden_wait(comparison_environments, job_name, user_id):
     for dir_, api in comparison_environments:
         products = helpers.find_products(dir_, pattern='*.nc')
         if products:
@@ -48,7 +48,7 @@ def test_golden_wait(comparison_environments, job_name):
             job_name = submission_details['name']
 
         hyp3 = hyp3_sdk.HyP3(api, os.environ.get('EARTHDATA_LOGIN_USER'), os.environ.get('EARTHDATA_LOGIN_PASSWORD'))
-        jobs = hyp3.find_jobs(name=job_name)
+        jobs = hyp3.find_jobs(name=job_name, user_id=user_id)
         _ = hyp3.watch(jobs)
 
 
@@ -73,6 +73,9 @@ def test_golden_products(comparison_environments, job_name, keep):
                         f'    Develop: {develop_jobs}')
 
     for main_job, develop_job in zip(main_jobs, develop_jobs):
+        if main_job.failed() or develop_job.failed():
+            continue
+
         main_nc = main_job.download_files(main_dir)[0]
         main_hash = main_nc.stem
 

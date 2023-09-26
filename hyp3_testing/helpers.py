@@ -2,7 +2,7 @@ import os
 from contextlib import contextmanager
 from glob import glob
 from pathlib import Path
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 from zipfile import ZipFile
 
 from hyp3_sdk import Batch, HyP3, Job
@@ -20,9 +20,9 @@ def sort_jobs_by_parameters(jobs: Batch) -> Batch:
     return Batch(sorted_jobs)
 
 
-def get_jobs_in_environment(job_name, api):
+def get_jobs_in_environment(job_name: str, api: str, user_id: Optional[str] = None) -> Batch:
     hyp3 = HyP3(api, os.environ.get('EARTHDATA_LOGIN_USER'), os.environ.get('EARTHDATA_LOGIN_PASSWORD'))
-    jobs = hyp3.find_jobs(name=job_name)
+    jobs = hyp3.find_jobs(name=job_name, user_id=user_id)
     return sort_jobs_by_parameters(jobs)
 
 

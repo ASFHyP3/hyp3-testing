@@ -129,3 +129,10 @@ a couple options to pytest to help.
   which will use the products found inside those directories (with `DIR1` being considered the golden set)
   or, if no products found, download the appropriate products to that directory (either from the 
   submission or the specified name)
+
+* You can also specify an alternate `user_id`
+  ```
+  pytest --user-id [USER_ID]
+  ```
+  which will find jobs submitted by `USER_ID` instead of defaulting to jobs submitted by the authorized user. This is
+  particularly useful when re-running a comparison run by someone else, or by the GitHub Actions user.
