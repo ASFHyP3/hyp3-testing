@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Hashable, Optional, Union
 
 import numpy as np
+import numpy.ma as ma
 import xarray as xr
 from osgeo import gdal
 from rasterio.crs import CRS
@@ -47,6 +48,45 @@ def values_are_within_tolerance(reference: np.array, secondary: np.array, atol: 
             '\n'.join(['Values are different.', '', clarify_xr_message(str(e))])
         )
 
+
+def _read_as_maskeddata(tif):
+    ds = gdal.Open(tif)
+    band = ds.GetRasterBand(1)
+    mk_band = band.GetMaskBand()
+
+    # True in the mask means the element is valid
+    return ma.array(band.ReadAsArray(), mask = mk_band.ReadAsArray() == 0 )
+
+
+def _assert_within_statistic(main_tif, deve_tif, mask_rate, value_range_rate):
+    data_main = _read_as_maskeddata(main_tif)
+    data_deve = _read_as_maskeddata(deve_tif)
+
+    # compare mask
+    valid_mask_and = np.bitwise_and(~data_main.mask, ~data_deve.mask)
+    valid_mask_or = np.bitwise_or(~data_main.mask, ~data_deve.mask)
+    msk_rate = valid_mask_and.sum()/valid_mask_or.sum()
+
+    if msk_rate <= mask_rate:
+        raise AssertionError(
+            f'Two masks match with less than {mask_rate}')
+
+    # compare statistic of data
+    diff = data_main - data_deve
+
+    if diff.max() != diff.min() and 6*diff.std()/(diff.max() - diff.min()) > value_range_rate:
+        raise AssertionError(
+            f'Not all of 99.7% elements in the data has values within {value_range_rate*100} % of the range of the data'
+        )
+
+
+def values_are_within_statistic(main_tif: str, deve_tif: str, mask_rate: float = 0.95, value_range_rate: float = 0.05):
+    try:
+        _assert_within_statistic(main_tif, deve_tif, mask_rate=mask_rate, value_range_rate=value_range_rate)
+    except AssertionError as e:
+        raise ComparisonFailure(
+            '\n'.join(['Values are different.', '', clarify_xr_message(str(e))])
+        )
 
 def values_are_close(reference: XR, secondary: XR, rtol: float = 1e-05, atol: float = 1e-08):
     try:
