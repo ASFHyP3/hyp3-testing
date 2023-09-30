@@ -89,8 +89,8 @@ def test_golden_insar(comparison_environments, jobs_info, insar_tolerances, keep
                         file_tolerance = pair_tolerances[file_type]
                         threshold = file_tolerance['threshold']
                         n_allowable = file_tolerance['n_allowable']
-                        compare.values_are_within_statistic(main_tif, develop_tif, mask_rate=0.95,
-                                                            value_range_rate= 0.05)
+                        compare.values_are_within_statistic(main_tif, develop_tif,
+                                                            mask_rate=0.95, value_range_rate= 0.05)
                         compare.values_are_within_tolerance(main_ds, develop_ds, atol=threshold,
                                                             n_allowable=n_allowable)
                 except compare.ComparisonFailure as e:
