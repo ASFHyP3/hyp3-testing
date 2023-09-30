@@ -55,7 +55,7 @@ def _read_as_maskeddata(tif):
     mk_band = band.GetMaskBand()
 
     # True in the mask means the element is valid
-    return ma.array(band.ReadAsArray(), mask = mk_band.ReadAsArray() == 0 )
+    return ma.array(band.ReadAsArray(), mask=mk_band.ReadAsArray() == 0)
 
 
 def _assert_within_statistic(main_tif, deve_tif, mask_rate, value_range_rate):
@@ -88,7 +88,8 @@ def values_are_within_statistic(main_tif: str, deve_tif: str, mask_rate: float =
             '\n'.join(['Values are different.', '', clarify_xr_message(str(e))])
         )
 
-def values_are_close(reference: XR, secondary: XR, rtol: float = 1e-05, atol: float = 1e-08):
+
+def values_are_close(reference: XR, secondary: XR, rtol: float=1e-05, atol: float=1e-08):
     try:
         xr.testing.assert_allclose(reference, secondary, rtol=rtol, atol=atol)
     except AssertionError as e:
