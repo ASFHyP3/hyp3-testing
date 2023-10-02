@@ -49,15 +49,6 @@ def values_are_within_tolerance(reference: np.array, secondary: np.array, atol: 
         )
 
 
-def _read_as_maskeddata(tif):
-    ds = gdal.Open(tif)
-    band = ds.GetRasterBand(1)
-    mk_band = band.GetMaskBand()
-
-    # True in the mask means the element is valid
-    return ma.array(band.ReadAsArray(), mask=mk_band.ReadAsArray() == 0)
-
-
 def _assert_mask_similarity(reference: np.array, secondary: np.array, mask_rate: float = 0.95):
     data_main = np.ma.masked_invalid(reference)
     data_deve = np.ma.masked_invalid(secondary)
@@ -88,7 +79,7 @@ def _assert_within_statistic(reference: np.array, secondary: np.array, value_ran
         )
 
 
-def values_are_within_statistic(reference: np.array, secondary: np.array, mask_rate: float = 0.95, value_range_rate: float = 0.05):
+def values_are_within_statistic(reference: np.array, secondary: np.array, value_range_rate: float = 0.05):
     try:
         _assert_within_statistic(reference=reference, secondary=secondary, value_range_rate=value_range_rate)
     except AssertionError as e:
