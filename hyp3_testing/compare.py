@@ -7,7 +7,6 @@ from pathlib import Path
 from typing import Hashable, Optional, Union
 
 import numpy as np
-import numpy.ma as ma
 import xarray as xr
 from osgeo import gdal
 from rasterio.crs import CRS
@@ -68,6 +67,7 @@ def mask_are_within_similarity(reference: np.array, secondary: np.array, mask_ra
         raise ComparisonFailure(
             '\n'.join(['Values are different.', '', clarify_xr_message(str(e))])
         )
+
 
 def _assert_within_statistic(reference: np.array, secondary: np.array, value_range_rate: float):
     data_main = np.ma.masked_invalid(reference)
