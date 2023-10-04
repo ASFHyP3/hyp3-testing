@@ -6,6 +6,7 @@ from functools import singledispatch
 from pathlib import Path
 from typing import Hashable, Optional, Union
 
+import cv2
 import numpy as np
 import xarray as xr
 from osgeo import gdal
@@ -85,6 +86,27 @@ def values_are_within_statistic(reference: np.array, secondary: np.array, value_
     except AssertionError as e:
         raise ComparisonFailure(
             '\n'.join(['Values are different.', '', clarify_xr_message(str(e))])
+        )
+
+
+def _assert_within_offset_distance(reference: np.array, secondary: np.array, pixel_size: int, offset_threshold: float):
+    mgs_obj = cv2.reg_MapperGradShift()
+    result = mgs_obj.calculate(reference, secondary)
+    x_shift, y_shift = cv2.reg.MapTypeCaster.toShift(result).getShift().flatten()
+    distance_pixels = np.sqrt((x_shift**2) + (y_shift**2))
+    distance = distance_pixels * pixel_size
+    if distance >= offset_threshold:
+        raise AssertionError(
+            f'Calculated offset distance ({distance:.2f} m) is greater than the {offset_threshold} m threshold'
+        )
+
+
+def images_are_within_offset_threshold(reference: np.array, secondary: np.array, offset_threshold: float = 0.05):
+    try:
+        _assert_within_offset_distance(reference=reference, secondary=secondary, offset_threshold=offset_threshold)
+    except AssertionError as e:
+        raise ComparisonFailure(
+            '\n'.join(['Images are not coregistered.', '', clarify_xr_message(str(e))])
         )
 
 
