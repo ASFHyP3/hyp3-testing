@@ -84,13 +84,27 @@ def test_golden_insar(comparison_environments, jobs_info, insar_tolerances, keep
 
                 try:
                     compare.compare_raster_info(main_tif, develop_tif)
+
+                    pixel_size = gdal.Info(main_tif, format='json')['geoTransform'][1]
+                    compare.images_are_within_offset_threshold(main_ds, develop_ds, pixel_size=pixel_size,
+                                                               offset_threshold=5.0)
+
+                    compare.maskes_are_within_similarity_threshold(main_ds, develop_ds, mask_rate=0.95)
+
+                    compare.values_are_within_statistic(main_ds, develop_ds, confidence_level=0.95)
+
+                    if '_unw_phase.tif' in str(main_tif):
+                        compare.nodata_count_change_are_within_threshold(main_ds, develop_ds, threshold=0.01)
+
+                    if '_corr.tif' in str(main_tif):
+                        compare.corr_average_decrease_within_threshold(main_ds, develop_ds, threshold=0.05)
+
                     if pair_tolerances != {}:
                         file_type = '_'.join(Path(main_tif).name.split('_')[8:])[:-4]
                         file_tolerance = pair_tolerances[file_type]
                         threshold = file_tolerance['threshold']
                         n_allowable = file_tolerance['n_allowable']
-                        compare.mask_are_within_similarity(main_ds, develop_ds, mask_rate=0.95)
-                        compare.values_are_within_statistic(main_ds, develop_ds, value_range_rate=0.05)
+
                         compare.values_are_within_tolerance(main_ds, develop_ds, atol=threshold,
                                                             n_allowable=n_allowable)
                 except compare.ComparisonFailure as e:
