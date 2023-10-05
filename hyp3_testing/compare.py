@@ -9,8 +9,8 @@ from typing import Hashable, Optional, Union
 import cv2
 import numpy as np
 import xarray as xr
-from osgeo import gdal
 import scipy
+from osgeo import gdal
 from rasterio.crs import CRS
 from rasterio.errors import CRSError
 
