@@ -12,6 +12,7 @@ import xarray as xr
 from osgeo import gdal
 from rasterio.crs import CRS
 from rasterio.errors import CRSError
+import scipy
 
 from hyp3_testing.helpers import clarify_xr_message
 
@@ -70,19 +71,29 @@ def mask_are_within_similarity(reference: np.array, secondary: np.array, mask_ra
         )
 
 
-def _assert_within_statistic(reference: np.array, secondary: np.array, value_range_rate: float):
+def _assert_within_statistic(reference: np.array, secondary: np.array, confidence_level: float = 0.95):
     data_main = np.ma.masked_invalid(reference)
     data_deve = np.ma.masked_invalid(secondary)
-    diff = data_main - data_deve
-    if diff.max() != diff.min() and 6*diff.std()/(diff.max() - diff.min()) > value_range_rate:
-        raise AssertionError(
-            f'Not all of 99.7% elements in the data has values within {value_range_rate*100} % of the range of the data'
-        )
+
+    # diff = data_main - data_deve
+    #if diff.max() != diff.min() and 6*diff.std()/(diff.max() - diff.min()) > value_range_rate:
+    #    raise AssertionError(
+    #        f'Not all of 99.7% elements in the data has values within {value_range_rate*100} % of the range of the data'
+    #    )
+
+    valid_mask = np.bitwise_and(~data_main.mask, ~data_deve.mask)
+
+    results = scipy.stats.ks_2samp(data_main.data[valid_mask], data_deve.data[valid_mask], alternative='two-sided', method='auto')
+
+    if results.pvalue < 1-confidence_level:
+         raise AssertionError(
+            f'Two data are not similar with confidence level {confidence_level*100} %'
+         )
 
 
-def values_are_within_statistic(reference: np.array, secondary: np.array, value_range_rate: float = 0.05):
+def values_are_within_statistic(reference: np.array, secondary: np.array, confidence_level: float = 0.05):
     try:
-        _assert_within_statistic(reference=reference, secondary=secondary, value_range_rate=value_range_rate)
+        _assert_within_statistic(reference=reference, secondary=secondary, confidence_level=confidence_level)
     except AssertionError as e:
         raise ComparisonFailure(
             '\n'.join(['Values are different.', '', clarify_xr_message(str(e))])
@@ -90,8 +101,12 @@ def values_are_within_statistic(reference: np.array, secondary: np.array, value_
 
 
 def _assert_within_offset_distance(reference: np.array, secondary: np.array, pixel_size: int, offset_threshold: float):
+    data_main = np.ma.masked_invalid(reference)
+    data_deve = np.ma.masked_invalid(secondary)
+    data_main.data[data_main.mask]=0
+    data_deve.data[data_deve.mask]=0
     mgs_obj = cv2.reg_MapperGradShift()
-    result = mgs_obj.calculate(reference, secondary)
+    result = mgs_obj.calculate(data_main.data, data_deve.data)
     x_shift, y_shift = cv2.reg.MapTypeCaster.toShift(result).getShift().flatten()
     distance_pixels = np.sqrt((x_shift**2) + (y_shift**2))
     distance = distance_pixels * pixel_size
@@ -101,9 +116,9 @@ def _assert_within_offset_distance(reference: np.array, secondary: np.array, pix
         )
 
 
-def images_are_within_offset_threshold(reference: np.array, secondary: np.array, offset_threshold: float = 0.05):
+def images_are_within_offset_threshold(reference: np.array, secondary: np.array, pixel_size: int = 80, offset_threshold: float = 0.05):
     try:
-        _assert_within_offset_distance(reference=reference, secondary=secondary, offset_threshold=offset_threshold)
+        _assert_within_offset_distance(reference=reference, secondary=secondary, pixel_size=pixel_size, offset_threshold=offset_threshold)
     except AssertionError as e:
         raise ComparisonFailure(
             '\n'.join(['Images are not coregistered.', '', clarify_xr_message(str(e))])
