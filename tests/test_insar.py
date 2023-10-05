@@ -6,6 +6,7 @@ import hyp3_sdk.util
 import pytest
 import rioxarray  # noqa: F401
 import xarray as xr
+from osgeo import gdal
 
 from hyp3_testing import compare
 from hyp3_testing import util

@@ -10,9 +10,10 @@ import cv2
 import numpy as np
 import xarray as xr
 from osgeo import gdal
+import scipy
 from rasterio.crs import CRS
 from rasterio.errors import CRSError
-import scipy
+
 
 from hyp3_testing.helpers import clarify_xr_message
 
@@ -77,12 +78,11 @@ def _assert_within_statistic(reference: np.array, secondary: np.array, confidenc
 
     valid_mask = np.bitwise_and(~data_main.mask, ~data_deve.mask)
 
-    results = scipy.stats.ks_2samp(data_main.data[valid_mask], data_deve.data[valid_mask], alternative='two-sided', method='auto')
+    results = scipy.stats.ks_2samp(data_main.data[valid_mask], data_deve.data[valid_mask],
+                                   alternative='two-sided', method='auto')
 
     if results.pvalue < confidence_level:
-         raise AssertionError(
-            f'Two data are not similar with confidence level {confidence_level*100} %'
-         )
+        raise AssertionError(f'Two data are not similar with confidence level {confidence_level*100} %')
 
 
 def values_are_within_statistic(reference: np.array, secondary: np.array, confidence_level: float = 0.95):
@@ -98,8 +98,8 @@ def _assert_within_offset_distance(reference: np.array, secondary: np.array, pix
     data_main = np.ma.masked_invalid(reference)
     data_deve = np.ma.masked_invalid(secondary)
     mask = np.bitwise_or(data_main.mask, data_deve.mask)
-    data_main.data[mask]=0
-    data_deve.data[mask]=0
+    data_main.data[mask] = 0
+    data_deve.data[mask] = 0
     mgs_obj = cv2.reg_MapperGradShift()
     result = mgs_obj.calculate(data_main.data, data_deve.data)
     x_shift, y_shift = cv2.reg.MapTypeCaster.toShift(result).getShift().flatten()
@@ -111,9 +111,11 @@ def _assert_within_offset_distance(reference: np.array, secondary: np.array, pix
         )
 
 
-def images_are_within_offset_threshold(reference: np.array, secondary: np.array, pixel_size: int = 80, offset_threshold: float = 5.0):
+def images_are_within_offset_threshold(reference: np.array, secondary: np.array, pixel_size: int = 80,
+                                       offset_threshold: float = 5.0):
     try:
-        _assert_within_offset_distance(reference=reference, secondary=secondary, pixel_size=pixel_size, offset_threshold=offset_threshold)
+        _assert_within_offset_distance(reference=reference, secondary=secondary, pixel_size=pixel_size,
+                                       offset_threshold=offset_threshold)
     except AssertionError as e:
         raise ComparisonFailure(
             '\n'.join(['Images are not coregistered.', '', clarify_xr_message(str(e))])
