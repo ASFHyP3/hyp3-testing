@@ -86,7 +86,7 @@ def test_golden_insar(comparison_environments, jobs_info, insar_tolerances, keep
                 try:
                     compare.compare_raster_info(main_tif, develop_tif)
 
-                    pixel_size = gdal.Info(main_tif, format='json')['geoTransform'][1]
+                    pixel_size = gdal.Info(str(main_tif), format='json')['geoTransform'][1]
                     compare.images_are_within_offset_threshold(main_ds, develop_ds, pixel_size=pixel_size,
                                                                offset_threshold=5.0)
 
