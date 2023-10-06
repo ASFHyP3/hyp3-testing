@@ -90,9 +90,9 @@ def test_golden_insar(comparison_environments, jobs_info, insar_tolerances, keep
                     compare.images_are_within_offset_threshold(main_ds, develop_ds, pixel_size=pixel_size,
                                                                offset_threshold=5.0)
 
-                    compare.maskes_are_within_similarity_threshold(main_ds, develop_ds, mask_rate=0.95)
+                    compare.maskes_are_within_similarity_threshold(main_ds, develop_ds, mask_rate=0.98)
 
-                    compare.values_are_within_statistic(main_ds, develop_ds, confidence_level=0.95)
+                    compare.values_are_within_statistic(main_ds, develop_ds, confidence_level=0.99)
 
                     if '_unw_phase.tif' in str(main_tif):
                         compare.nodata_count_change_are_within_threshold(main_ds, develop_ds, threshold=0.01)
