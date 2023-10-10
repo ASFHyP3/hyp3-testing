@@ -94,7 +94,8 @@ def values_are_within_statistic(reference: np.array, secondary: np.array, confid
         )
 
 
-def _assert_within_offset_distance(reference: np.array, secondary: np.array, pixel_size: int, offset_threshold: float):
+def _assert_within_offset_distance(reference: np.array, secondary: np.array, pixel_size: int,
+                                   offset_threshold: float = 5.0):
     data_main = np.ma.masked_invalid(reference)
     data_deve = np.ma.masked_invalid(secondary)
     mask = np.bitwise_or(data_main.mask, data_deve.mask)
