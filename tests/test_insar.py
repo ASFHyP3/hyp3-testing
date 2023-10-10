@@ -6,11 +6,13 @@ import hyp3_sdk.util
 import pytest
 import rioxarray  # noqa: F401
 import xarray as xr
+from osgeo import gdal
 
 from hyp3_testing import compare
 from hyp3_testing import util
 from hyp3_testing.helpers import job_tifs
 
+gdal.UseExceptions()
 pytestmark = pytest.mark.golden
 
 
@@ -84,11 +86,27 @@ def test_golden_insar(comparison_environments, jobs_info, insar_tolerances, keep
 
                 try:
                     compare.compare_raster_info(main_tif, develop_tif)
+
+                    pixel_size = gdal.Info(str(main_tif), format='json')['geoTransform'][1]
+                    compare.images_are_within_offset_threshold(main_ds, develop_ds, pixel_size=pixel_size,
+                                                               offset_threshold=5.0)
+
+                    compare.maskes_are_within_similarity_threshold(main_ds, develop_ds, mask_rate=0.98)
+
+                    compare.values_are_within_statistic(main_ds, develop_ds, confidence_level=0.99)
+
+                    if '_unw_phase.tif' in str(main_tif):
+                        compare.nodata_count_change_are_within_threshold(main_ds, develop_ds, threshold=0.01)
+
+                    if '_corr.tif' in str(main_tif):
+                        compare.corr_average_decrease_within_threshold(main_ds, develop_ds, threshold=0.05)
+
                     if pair_tolerances != {}:
                         file_type = '_'.join(Path(main_tif).name.split('_')[8:])[:-4]
                         file_tolerance = pair_tolerances[file_type]
                         threshold = file_tolerance['threshold']
                         n_allowable = file_tolerance['n_allowable']
+
                         compare.values_are_within_tolerance(main_ds, develop_ds, atol=threshold,
                                                             n_allowable=n_allowable)
                 except compare.ComparisonFailure as e:

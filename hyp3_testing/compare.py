@@ -6,11 +6,14 @@ from functools import singledispatch
 from pathlib import Path
 from typing import Hashable, Optional, Union
 
+import cv2
 import numpy as np
+import scipy
 import xarray as xr
 from osgeo import gdal
 from rasterio.crs import CRS
 from rasterio.errors import CRSError
+
 
 from hyp3_testing.helpers import clarify_xr_message
 
@@ -45,6 +48,116 @@ def values_are_within_tolerance(reference: np.array, secondary: np.array, atol: 
     except AssertionError as e:
         raise ComparisonFailure(
             '\n'.join(['Values are different.', '', clarify_xr_message(str(e))])
+        )
+
+
+def _assert_mask_similarity(reference: np.array, secondary: np.array, mask_rate: float = 0.95):
+    data_main = np.ma.masked_invalid(reference)
+    data_deve = np.ma.masked_invalid(secondary)
+    # compare mask
+    valid_mask_and = np.bitwise_and(~data_main.mask, ~data_deve.mask)
+    valid_mask_or = np.bitwise_or(~data_main.mask, ~data_deve.mask)
+    msk_rate = valid_mask_and.sum()/valid_mask_or.sum()
+    if msk_rate <= mask_rate:
+        raise AssertionError(
+            f'Two masks match with less than {mask_rate}')
+
+
+def maskes_are_within_similarity_threshold(reference: np.array, secondary: np.array, mask_rate: float = 0.95):
+    try:
+        _assert_mask_similarity(reference=reference, secondary=secondary, mask_rate=mask_rate)
+    except AssertionError as e:
+        raise ComparisonFailure(
+            '\n'.join(['Values are different.', '', clarify_xr_message(str(e))])
+        )
+
+
+def _assert_within_statistic(reference: np.array, secondary: np.array, confidence_level: float = 0.99):
+    data_main = np.ma.masked_invalid(reference)
+    data_deve = np.ma.masked_invalid(secondary)
+
+    valid_mask = np.bitwise_and(~data_main.mask, ~data_deve.mask)
+
+    results = scipy.stats.ks_2samp(data_main.data[valid_mask], data_deve.data[valid_mask],
+                                   alternative='two-sided', method='auto')
+
+    if results.pvalue < confidence_level:
+        raise AssertionError(f'Two data are not similar with confidence level {confidence_level*100} %')
+
+
+def values_are_within_statistic(reference: np.array, secondary: np.array, confidence_level: float = 0.95):
+    try:
+        _assert_within_statistic(reference=reference, secondary=secondary, confidence_level=confidence_level)
+    except AssertionError as e:
+        raise ComparisonFailure(
+            '\n'.join(['Values are different.', '', clarify_xr_message(str(e))])
+        )
+
+
+def _assert_within_offset_distance(reference: np.array, secondary: np.array, pixel_size: int,
+                                   offset_threshold: float = 5.0):
+    data_main = np.ma.masked_invalid(reference)
+    data_deve = np.ma.masked_invalid(secondary)
+    mask = np.bitwise_or(data_main.mask, data_deve.mask)
+    data_main.data[mask] = 0
+    data_deve.data[mask] = 0
+    mgs_obj = cv2.reg_MapperGradShift()
+    result = mgs_obj.calculate(data_main.data, data_deve.data)
+    x_shift, y_shift = cv2.reg.MapTypeCaster.toShift(result).getShift().flatten()
+    distance_pixels = np.sqrt((x_shift**2) + (y_shift**2))
+    distance = distance_pixels * pixel_size
+    if distance >= offset_threshold:
+        raise AssertionError(
+            f'Calculated offset distance ({distance:.2f} m) is greater than the {offset_threshold} m threshold'
+        )
+
+
+def images_are_within_offset_threshold(reference: np.array, secondary: np.array, pixel_size: int = 80,
+                                       offset_threshold: float = 5.0):
+    try:
+        _assert_within_offset_distance(reference=reference, secondary=secondary, pixel_size=pixel_size,
+                                       offset_threshold=offset_threshold)
+    except AssertionError as e:
+        raise ComparisonFailure(
+            '\n'.join(['Images are not coregistered.', '', clarify_xr_message(str(e))])
+        )
+
+
+def _nodata_count_change(reference: np.array, secondary: np.array, threshold: float = 0.01):
+    data_main = np.ma.masked_invalid(reference)
+    data_deve = np.ma.masked_invalid(secondary)
+
+    if (data_deve.mask.sum() - data_main.mask.sum())/data_main.mask.sum() > threshold:
+        raise AssertionError(
+            f'Number of nodata pixels in develop data is {threshold*100} % larger than those in main data'
+        )
+
+
+def nodata_count_change_are_within_threshold(reference: np.array, secondary: np.array, threshold: float = 0.01):
+    try:
+        _nodata_count_change(reference=reference, secondary=secondary, threshold=threshold)
+    except AssertionError as e:
+        raise ComparisonFailure(
+            '\n'.join(['Images have differnt nodata pixles.', '', clarify_xr_message(str(e))])
+        )
+
+
+def _corr_average_decrease(reference: np.array, secondary: np.array, threshold: float = 0.05):
+    data_main = np.ma.masked_invalid(reference)
+    data_deve = np.ma.masked_invalid(secondary)
+
+    if (data_main.mean() - data_deve.mean())/data_main.mean() > threshold:
+        raise AssertionError(
+            f'Average spatial coherence has decreased by more than {threshold * 100} %'
+        )
+
+
+def corr_average_decrease_within_threshold(reference: np.array, secondary: np.array, threshold: float = 0.05):
+    try:
+        _corr_average_decrease(reference=reference, secondary=secondary, threshold=threshold)
+    except AssertionError as e:
+        raise ComparisonFailure(
+            '\n'.join(['Average correlation decreases.', '', clarify_xr_message(str(e))])
         )
 
 
