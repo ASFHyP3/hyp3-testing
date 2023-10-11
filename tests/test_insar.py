@@ -66,7 +66,7 @@ def test_golden_tif_names(jobs_info):
 
 
 @pytest.mark.dependency(depends=['test_golden_wait'])
-def test_golden_insar(comparison_environments, jobs_info, insar_tolerances, keep):
+def test_golden_insar(comparison_environments, jobs_info, keep):
     (main_dir, main_api), (develop_dir, develop_api) = comparison_environments
 
     failure_count = 0
