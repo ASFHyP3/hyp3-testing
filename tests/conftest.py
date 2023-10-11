@@ -8,6 +8,7 @@ import pytest
 from hyp3_testing import helpers
 from hyp3_testing import util
 
+
 def pytest_addoption(parser):
     parser.addoption(
         "--keep", action='store_true', help="Do not remove downloaded test products"
