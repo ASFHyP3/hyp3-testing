@@ -89,15 +89,6 @@ def test_data_dir():
 
 
 @pytest.fixture(scope='module')
-def insar_tolerances(job_name):
-    testing_parameters = util.render_template('insar_gamma_golden.json.j2', name=job_name)
-    tolerance_names = ['_'.join(sorted(item['job_parameters']['granules'])) for item in testing_parameters]
-    tolerances = [item['tolerance_parameters'] for item in testing_parameters]
-    tolerance_dict = {k: v for k, v in zip(tolerance_names, tolerances)}
-    return tolerance_dict
-
-
-@pytest.fixture(scope='module')
 def rtc_tolerances(job_name):
     testing_parameters = util.render_template('rtc_gamma_golden.json.j2', name=job_name)
     tolerance_names = ['_'.join(sorted(item['job_parameters']['granules'])) for item in testing_parameters]

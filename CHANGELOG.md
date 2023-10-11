@@ -9,6 +9,7 @@ and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [unreleased]
 
 ### Added
+* Functions to compare.py for testing the coregistration, nodata masks, and information content of pairs
 * Add functionality to use file and pair specific tolerances for `INSAR_GAMMA` jobs
 * `insar_gamma_golden.json.j2` Add tolerance and allowable excedeances for each file and use new pairs
 * `test_tifs.py` update to parse new tolerance information and perform unique workflow for InSAR jobs
@@ -20,6 +21,7 @@ and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 * `test_autorift.py` golden test for the autoRIFT plugin
 
 ### Changed
+* InSAR Gamma tests so that they do not use per-image threshold and instead analyze metadata, coregistration, nodata coverage, and dataproduct quality
 * RTC and autoRIFT golden tests now sleep for 60 seconds between requests for job status
 * `conda-env.yml` has been renamed to `environment.yml` to follow standard naming conventions 
 

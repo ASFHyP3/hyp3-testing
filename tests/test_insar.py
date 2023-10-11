@@ -1,6 +1,5 @@
 import json
 import os
-from pathlib import Path
 
 import hyp3_sdk.util
 import pytest
@@ -67,14 +66,12 @@ def test_golden_tif_names(jobs_info):
 
 
 @pytest.mark.dependency(depends=['test_golden_wait'])
-def test_golden_insar(comparison_environments, jobs_info, insar_tolerances, keep):
+def test_golden_insar(comparison_environments, jobs_info, keep):
     (main_dir, main_api), (develop_dir, develop_api) = comparison_environments
 
     failure_count = 0
     messages = []
     for pair, pair_information in jobs_info.items():
-        pair_tolerances = insar_tolerances[pair]
-
         with job_tifs(pair_information['main']['job_id'], main_api, main_dir, keep) as main_tifs, \
                 job_tifs(pair_information['develop']['job_id'], develop_api, develop_dir, keep) as develop_tifs:
 
@@ -101,14 +98,6 @@ def test_golden_insar(comparison_environments, jobs_info, insar_tolerances, keep
                     if '_corr.tif' in str(main_tif):
                         compare.corr_average_decrease_within_threshold(main_ds, develop_ds, threshold=0.05)
 
-                    if pair_tolerances != {}:
-                        file_type = '_'.join(Path(main_tif).name.split('_')[8:])[:-4]
-                        file_tolerance = pair_tolerances[file_type]
-                        threshold = file_tolerance['threshold']
-                        n_allowable = file_tolerance['n_allowable']
-
-                        compare.values_are_within_tolerance(main_ds, develop_ds, atol=threshold,
-                                                            n_allowable=n_allowable)
                 except compare.ComparisonFailure as e:
                     messages.append(f'{comparison_header}\n{e}')
                     failure_count += 1
