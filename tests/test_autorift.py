@@ -89,16 +89,16 @@ def test_golden_products(comparison_environments, job_name, user_id, keep):
             continue
 
         main_nc = main_job.download_files(main_dir)[0]
-        main_hash = main_nc.stem
-
         develop_nc = develop_job.download_files(develop_dir)[0]
-        develop_hash = develop_nc.stem
+        if keep:  # always used in local testing
+            _ = hyp3_sdk.util.download_file(main_job.browse_images[0], main_nc.with_suffix('.png'))
+            _ = hyp3_sdk.util.download_file(develop_job.browse_images[0], develop_nc.with_suffix('.png'))
 
-        if main_hash != develop_hash:
+        if main_nc.name != develop_nc.name:
             failure_count += 1
             messages.append(f'File names are different!\n'
-                            f'    Main:\n{pformat(main_hash)}\n'
-                            f'    develop:\n{pformat(develop_hash)}\n')
+                            f'    Main:\n{pformat(main_nc.name)}\n'
+                            f'    develop:\n{pformat(develop_nc.name)}\n')
 
         comparison_header = '\n'.join(['-' * 80, str(main_nc), str(develop_nc), '-' * 80])
 
