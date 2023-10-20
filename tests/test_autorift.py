@@ -56,7 +56,7 @@ def test_golden_wait(comparison_environments, job_name, user_id):
 
 
 @pytest.mark.dependency(depends=['test_golden_wait'])
-def test_golden_products(comparison_environments, job_name, keep):
+def test_golden_products(comparison_environments, job_name, user_id, keep):
     (main_dir, main_api), (develop_dir, develop_api) = comparison_environments
     if job_name is None:
         submission_report = main_dir / f'{main_dir.name}_submission.json'
@@ -66,8 +66,8 @@ def test_golden_products(comparison_environments, job_name, keep):
     failure_count = 0
     messages = []
 
-    main_jobs = helpers.get_jobs_in_environment(job_name, main_api)
-    develop_jobs = helpers.get_jobs_in_environment(job_name, develop_api)
+    main_jobs = helpers.get_jobs_in_environment(job_name, main_api, user_id)
+    develop_jobs = helpers.get_jobs_in_environment(job_name, develop_api, user_id)
 
     main_succeeded = main_jobs._count_statuses()['SUCCEEDED']
     develop_succeeded = develop_jobs._count_statuses()['SUCCEEDED']
