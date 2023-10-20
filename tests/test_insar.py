@@ -57,6 +57,8 @@ def test_golden_wait(comparison_environments, job_name, user_id):
 def test_golden_job_succeeds(jobs_info):
     main_succeeds = sum([value['main']['succeeded'] for value in jobs_info.values()])
     develop_succeeds = sum([value['develop']['succeeded'] for value in jobs_info.values()])
+    assert main_succeeds != 0
+    assert develop_succeeds != 0
     assert main_succeeds == develop_succeeds
 
 
