@@ -49,6 +49,9 @@ def test_golden_wait(comparison_environments, job_name, user_id):
 
         hyp3 = hyp3_sdk.HyP3(api, os.environ.get('EARTHDATA_LOGIN_USER'), os.environ.get('EARTHDATA_LOGIN_PASSWORD'))
         jobs = hyp3.find_jobs(name=job_name, user_id=user_id)
+
+        assert len(jobs) > 0  # will throw if job_name not associated with user_id
+
         _ = hyp3.watch(jobs)
 
 
@@ -66,11 +69,20 @@ def test_golden_products(comparison_environments, job_name, keep):
     main_jobs = helpers.get_jobs_in_environment(job_name, main_api)
     develop_jobs = helpers.get_jobs_in_environment(job_name, develop_api)
 
-    if main_jobs._count_statuses()['SUCCEEDED'] != develop_jobs._count_statuses()['SUCCEEDED']:
+    main_succeeded = main_jobs._count_statuses()['SUCCEEDED']
+    develop_succeeded = develop_jobs._count_statuses()['SUCCEEDED']
+
+    if main_succeeded == 0 or develop_succeeded == 0:
+        failure_count += 1
+        messages.append(f'No jobs SUCCEEDED in a deployment!\n'
+                        f'    Main: {main_jobs}\n'
+                        f'    Develop: {develop_jobs}\n')
+
+    if main_succeeded != develop_succeeded:
         failure_count += 1
         messages.append(f'Number of jobs that SUCCEEDED is different!\n'
-                        f'    Main: {main_jobs}'
-                        f'    Develop: {develop_jobs}')
+                        f'    Main: {main_jobs}\n'
+                        f'    Develop: {develop_jobs}\n')
 
     for main_job, develop_job in zip(main_jobs, develop_jobs):
         if main_job.failed() or develop_job.failed():
