@@ -88,25 +88,25 @@ def test_golden_products(comparison_environments, job_name, user_id, keep):
         if main_job.failed() or develop_job.failed():
             continue
 
-        main_nc = main_job.download_files(main_dir)[0]
-        main_hash = main_nc.stem
+        main_product = main_job.download_files(main_dir)[0]
+        develop_product = develop_job.download_files(develop_dir)[0]
+        if keep:  # always used in local testing
+            _ = hyp3_sdk.util.download_file(main_job.browse_images[0], main_product.with_suffix('.png'))
+            _ = hyp3_sdk.util.download_file(develop_job.browse_images[0], develop_product.with_suffix('.png'))
 
-        develop_nc = develop_job.download_files(develop_dir)[0]
-        develop_hash = develop_nc.stem
-
-        if main_hash != develop_hash:
+        if main_product.name != develop_product.name:
             failure_count += 1
             messages.append(f'File names are different!\n'
-                            f'    Main:\n{pformat(main_hash)}\n'
-                            f'    develop:\n{pformat(develop_hash)}\n')
+                            f'    Main:\n{pformat(main_product.name)}\n'
+                            f'    develop:\n{pformat(develop_product.name)}\n')
 
-        comparison_header = '\n'.join(['-' * 80, str(main_nc), str(develop_nc), '-' * 80])
+        comparison_header = '\n'.join(['-' * 80, str(main_product), str(develop_product), '-' * 80])
 
         try:
-            compare.bit_for_bit(main_nc, develop_nc)
+            compare.bit_for_bit(main_product, develop_product)
         except compare.ComparisonFailure as b4b_failure:
-            main_ds = xr.load_dataset(main_nc)
-            develop_ds = xr.load_dataset(develop_nc)
+            main_ds = xr.load_dataset(main_product)
+            develop_ds = xr.load_dataset(develop_product)
             try:
                 xr.testing.assert_identical(main_ds, develop_ds)
             except AssertionError as identical_failure:
@@ -129,7 +129,7 @@ def test_golden_products(comparison_environments, job_name, user_id, keep):
             messages.append(f'{comparison_header}\n{b4b_failure}')  # not b4b, but identical
 
         if not keep:
-            for product_file in (main_nc, develop_nc):
+            for product_file in (main_product, develop_product):
                 Path(product_file).unlink()
 
     if messages:
