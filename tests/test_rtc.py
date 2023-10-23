@@ -46,6 +46,9 @@ def test_golden_wait(comparison_environments, job_name, user_id):
 
         hyp3 = hyp3_sdk.HyP3(api, os.environ.get('EARTHDATA_LOGIN_USER'), os.environ.get('EARTHDATA_LOGIN_PASSWORD'))
         jobs = hyp3.find_jobs(name=job_name, user_id=user_id)
+
+        assert len(jobs) > 0  # will throw if job_name not associated with user_id
+
         _ = hyp3.watch(jobs)
 
 
@@ -53,6 +56,8 @@ def test_golden_wait(comparison_environments, job_name, user_id):
 def test_golden_job_succeeds(jobs_info):
     main_succeeds = sum([value['main']['succeeded'] for value in jobs_info.values()])
     develop_succeeds = sum([value['develop']['succeeded'] for value in jobs_info.values()])
+    assert main_succeeds != 0
+    assert develop_succeeds != 0
     assert main_succeeds == develop_succeeds
 
 
