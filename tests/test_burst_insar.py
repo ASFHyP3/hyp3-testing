@@ -9,7 +9,7 @@ from osgeo import gdal
 
 from hyp3_testing import compare
 from hyp3_testing import util
-from hyp3_testing.helpers import job_tifs
+from hyp3_testing.helpers import job_tifs, find_files_in_products
 
 gdal.UseExceptions()
 pytestmark = pytest.mark.golden
@@ -79,6 +79,12 @@ def test_golden_burst_insar(comparison_environments, jobs_info, keep):
     for pair, pair_information in jobs_info.items():
         with job_tifs(pair_information['main']['job_id'], main_api, main_dir, keep) as main_tifs, \
                 job_tifs(pair_information['develop']['job_id'], develop_api, develop_dir, keep) as develop_tifs:
+
+            compare.compare_product_files(main_dir, develop_dir)
+
+            for (main_file, dev_file) in find_files_in_products(main_dir, develop_dir, pattern='*.txt'):
+                if 'README' not in str(main_file):
+                    compare.compare_parameter_files(main_file, dev_file)
 
             for main_tif, develop_tif in zip(main_tifs, develop_tifs):
                 comparison_header = '\n'.join(['-' * 80, str(main_tif), str(develop_tif), '-' * 80])
