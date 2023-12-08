@@ -9,7 +9,7 @@ from osgeo import gdal
 
 from hyp3_testing import compare
 from hyp3_testing import util
-from hyp3_testing.helpers import job_tifs
+from hyp3_testing.helpers import job_tifs, find_files_in_products
 
 gdal.UseExceptions()
 pytestmark = pytest.mark.golden
@@ -20,7 +20,7 @@ def test_golden_submission(comparison_environments):
     job_name = util.generate_job_name()
     print(f'Job name: {job_name}')
 
-    testing_parameters = util.render_template('insar_gamma_golden.json.j2', name=job_name)
+    testing_parameters = util.render_template('insar_isce_burst_golden.json.j2', name=job_name) 
     submission_payload = [{k: item[k] for k in ['name', 'job_parameters', 'job_type']} for item in testing_parameters]
 
     for dir_, api in comparison_environments:
@@ -71,7 +71,7 @@ def test_golden_tif_names(jobs_info):
 
 
 @pytest.mark.dependency(depends=['test_golden_wait'])
-def test_golden_insar(comparison_environments, jobs_info, keep):
+def test_golden_burst_insar(comparison_environments, jobs_info, keep):
     (main_dir, main_api), (develop_dir, develop_api) = comparison_environments
 
     failure_count = 0
@@ -79,6 +79,12 @@ def test_golden_insar(comparison_environments, jobs_info, keep):
     for pair, pair_information in jobs_info.items():
         with job_tifs(pair_information['main']['job_id'], main_api, main_dir, keep) as main_tifs, \
                 job_tifs(pair_information['develop']['job_id'], develop_api, develop_dir, keep) as develop_tifs:
+
+            compare.compare_product_files(main_dir, develop_dir)
+
+            for (main_file, dev_file) in find_files_in_products(main_dir, develop_dir, pattern='*.txt'):
+                if 'README' not in str(main_file):
+                    compare.compare_parameter_files(str(main_file), str(dev_file))
 
             for main_tif, develop_tif in zip(main_tifs, develop_tifs):
                 comparison_header = '\n'.join(['-' * 80, str(main_tif), str(develop_tif), '-' * 80])
