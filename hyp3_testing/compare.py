@@ -3,6 +3,7 @@
 import filecmp
 import warnings
 from functools import singledispatch
+from os import listdir
 from pathlib import Path
 from typing import Hashable, Optional, Union
 
@@ -272,8 +273,8 @@ def _find_wkt(variable: xr.Variable) -> Optional[str]:
 
 
 def compare_product_files(main_dir: str, develop_dir: str):
-    main_files = set(Path(main_dir).iterdir())
-    develop_files = set(Path(develop_dir).iterdir())
+    main_files = listdir(main_dir)
+    develop_files = listdir(develop_dir)
 
     if main_files != develop_files:
         raise ComparisonFailure(
@@ -281,13 +282,20 @@ def compare_product_files(main_dir: str, develop_dir: str):
         )
 
 
-def compare_parameter_files(main_parameter_file, develop_parameter_file):
+def compare_parameter_files(main_parameter_file: str, develop_parameter_file: str):
+    is_same = False
+    main_parameters = ""
+    develop_parameters = ""
+
     with open(str(main_parameter_file), 'r') as main_parameters:
         main_parameters = main_parameters.read()
         with open(str(develop_parameter_file), 'r') as develop_parameters:
             develop_parameters = develop_parameters.read()
+            is_same = main_parameters == develop_parameters
 
-            if main_parameters != develop_parameters:
-                raise ComparisonFailure(
-                    f'Parameter files are not the same.\n  Ref: {main_parameters}\n  Sec: {develop_parameters}'
-                )
+    if not is_same:
+        raise ComparisonFailure(
+            f'Product files are not the same.\n  Reference: {main_parameters}\n  Secondary: {develop_parameters}'
+        )
+
+
