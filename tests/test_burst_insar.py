@@ -9,7 +9,7 @@ from osgeo import gdal
 
 from hyp3_testing import compare
 from hyp3_testing import util
-from hyp3_testing.helpers import job_tifs, find_files_in_products
+from hyp3_testing.helpers import find_files_in_products, job_tifs
 
 gdal.UseExceptions()
 pytestmark = pytest.mark.golden
@@ -20,7 +20,7 @@ def test_golden_submission(comparison_environments):
     job_name = util.generate_job_name()
     print(f'Job name: {job_name}')
 
-    testing_parameters = util.render_template('insar_isce_burst_golden.json.j2', name=job_name) 
+    testing_parameters = util.render_template('insar_isce_burst_golden.json.j2', name=job_name)
     submission_payload = [{k: item[k] for k in ['name', 'job_parameters', 'job_type']} for item in testing_parameters]
 
     for dir_, api in comparison_environments:
