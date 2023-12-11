@@ -9,7 +9,7 @@ from osgeo import gdal
 
 from hyp3_testing import compare
 from hyp3_testing import util
-from hyp3_testing.helpers import find_files_in_products, job_tifs
+from hyp3_testing.helpers import job_tifs
 
 gdal.UseExceptions()
 pytestmark = pytest.mark.golden
