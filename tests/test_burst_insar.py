@@ -80,15 +80,16 @@ def test_golden_burst_insar(comparison_environments, jobs_info, keep):
         with job_tifs(pair_information['main']['job_id'], main_api, main_dir, keep) as main_tifs, \
                 job_tifs(pair_information['develop']['job_id'], develop_api, develop_dir, keep) as develop_tifs:
 
-            compare.compare_product_files(main_dir, develop_dir)
+            main_file_dir = main_dir / pair_information['main']['dir']
+            develop_file_dir = develop_dir / pair_information['develop']['dir']
 
-            for (main_file, dev_file) in find_files_in_products(main_dir, develop_dir, pattern='*.txt'):
+            compare.compare_product_files(main_file_dir, develop_file_dir)
+
+            for (main_file, dev_file) in find_files_in_products(main_file_dir, develop_file_dir, pattern='*.txt'):
                 main_file = str(main_file)
                 dev_file = str(dev_file)
                 if 'README' not in main_file:
                     compare.compare_parameter_files(main_file, dev_file)
-                else:
-                    compare.compare_readme_files(main_file, dev_file)
 
             for main_tif, develop_tif in zip(main_tifs, develop_tifs):
                 comparison_header = '\n'.join(['-' * 80, str(main_tif), str(develop_tif), '-' * 80])
