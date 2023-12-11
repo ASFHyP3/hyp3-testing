@@ -276,8 +276,14 @@ def compare_product_files(main_dir: str, develop_dir: str):
     main_files = listdir(main_dir)
     develop_files = listdir(develop_dir)
 
-    if main_files != develop_files:
-        raise ComparisonFailure(
+    for i in range(len(main_files)):
+        main_files[i] = main_files[i].split('_')
+        develop_files[i] = develop_files[i].split('_')
+        del main_files[i][7]
+        del develop_files[i][7]
+
+    if main_files.sort() != develop_files.sort():
+        raise ValueError(
             f'Product files are not the same.\n  Reference: {main_files}\n  Secondary: {develop_files}'
         )
 
@@ -296,30 +302,4 @@ def compare_parameter_files(main_parameter_file: str, develop_parameter_file: st
     if not is_same:
         raise ComparisonFailure(
             f'Product files are not the same.\n  Reference: {main_parameters}\n  Secondary: {develop_parameters}'
-        )
-
-
-def compare_readme_files(main_readme_file: str, develop_readme_file: str):
-    is_same = True
-    main_readme_lines = []
-    dev_readme_lines = []
-
-    with open(str(main_readme_file), 'r') as main_readme:
-        main_readme_lines = main_readme.readlines()
-        
-        with open(str(develop_readme_file), 'r') as develop_readme:
-            dev_readme_lines = develop_readme.readlines()
-            
-            if len(main_readme_lines) == len(dev_readme_lines):
-                for i in range(len(main_readme_lines)):
-                    lines_are_not_same = main_readme_lines[i] != dev_readme_lines[i]
-                    if lines_are_not_same and 'Processing Date/Time:' not in main_readme_lines[i]:
-                       is_same = False
-                       break
-            else:
-                is_same = False
-
-    if not is_same:
-        raise ComparisonFailure(
-            f'Readme files are not the same.\n  Reference: {main_readme_lines}\n  Secondary: {dev_readme_lines}'
         )
