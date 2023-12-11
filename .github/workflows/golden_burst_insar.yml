@@ -1,0 +1,22 @@
+name: Golden Burst InSAR
+
+on: workflow_dispatch
+
+jobs:
+  golden:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: mamba-org/setup-micromamba@v1
+        with:
+          environment-file: environment.yml
+
+      - name: Pytest in conda environment
+        env:
+          EARTHDATA_LOGIN_USER: ${{ secrets.EARTHDATA_LOGIN_USER }}
+          EARTHDATA_LOGIN_PASSWORD: ${{ secrets.EARTHDATA_LOGIN_PASSWORD }}
+        shell: bash -l {0}
+        run: |
+          python -m pip install .[develop]
+          pytest -s tests/test_burst_insar.py

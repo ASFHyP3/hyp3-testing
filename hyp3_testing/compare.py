@@ -3,6 +3,7 @@
 import filecmp
 import warnings
 from functools import singledispatch
+from os import listdir
 from pathlib import Path
 from typing import Hashable, Optional, Union
 
@@ -269,3 +270,32 @@ def _find_wkt(variable: xr.Variable) -> Optional[str]:
     if wkt is None:
         wkt = variable.attrs.get('spatial_ref')
     return wkt
+
+
+def compare_product_files(main_dir: str, develop_dir: str):
+    main_files = listdir(main_dir)
+    develop_files = listdir(develop_dir)
+
+    for i in range(len(main_files)):
+        main_files[i] = main_files[i].split('_')
+        develop_files[i] = develop_files[i].split('_')
+        # remove the unique ids before comparison
+        del main_files[i][7]
+        del develop_files[i][7]
+
+    if main_files.sort() != develop_files.sort():
+        raise ValueError(
+            f'Product files are not the same.\n  Reference: {main_files}\n  Secondary: {develop_files}'
+        )
+
+
+def compare_parameter_files(main_parameter_file: str, develop_parameter_file: str):
+    with open(str(main_parameter_file), 'r') as main_parameters:
+        main_parameters = main_parameters.read()
+        with open(str(develop_parameter_file), 'r') as develop_parameters:
+            develop_parameters = develop_parameters.read()
+            if main_parameters != develop_parameters:
+                err = 'Parameter files are not the same.\n'
+                raise ComparisonFailure(
+                    err + f'  Reference: {main_parameters}\n  Secondary: {develop_parameters}'
+                )
