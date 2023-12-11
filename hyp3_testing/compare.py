@@ -295,7 +295,7 @@ def compare_parameter_files(main_parameter_file: str, develop_parameter_file: st
         with open(str(develop_parameter_file), 'r') as develop_parameters:
             develop_parameters = develop_parameters.read()
             if main_parameters != develop_parameters:
-                err = f'Parameter files are not the same.\n'
+                err = 'Parameter files are not the same.\n'
                 raise ComparisonFailure(
                     err + f'  Reference: {main_parameters}\n  Secondary: {develop_parameters}'
                 )
