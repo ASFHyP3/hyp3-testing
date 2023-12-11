@@ -3,6 +3,18 @@
     "name": "{{ name }}",
     "job_parameters": {
       "granules": [
+        "S1_136231_IW2_20200604T022312_VV_7C85-BURST",
+        "S1_136231_IW2_20200616T022313_VV_5D11-BURST"
+      ],
+      "looks": "5x1",
+      "apply_water_mask": false
+    },
+    "job_type": "INSAR_ISCE_BURST"
+  },
+  {
+    "name": "{{ name }}",
+    "job_parameters": {
+      "granules": [
         "S1_217165_IW2_20201115T162315_VV_5C54-BURST",
         "S1_217165_IW2_20201203T162356_VV_6D5C-BURST"
       ],
