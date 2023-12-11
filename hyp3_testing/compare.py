@@ -279,6 +279,7 @@ def compare_product_files(main_dir: str, develop_dir: str):
     for i in range(len(main_files)):
         main_files[i] = main_files[i].split('_')
         develop_files[i] = develop_files[i].split('_')
+        # remove the unique ids before comparison
         del main_files[i][7]
         del develop_files[i][7]
 
