@@ -96,7 +96,7 @@ pytest -m "not golden"
 ### manually running the system tests
 
 Because the system tests are particularly lon running, it is preferred to not run them all at once.
-you can run the the individual test you want by pointing directly to the test file. For example,
+you can run the individual test you want by pointing directly to the test file. For example,
 run the Golden RTC test like:
 
 ```

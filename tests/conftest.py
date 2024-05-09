@@ -33,7 +33,7 @@ def pytest_collection_modifyitems(config, items):
 
 
 @pytest.fixture(scope='session')
-def comparison_environments(tmp_path_factory, golden_dirs):
+def comparison_dirs(tmp_path_factory, golden_dirs):
     if golden_dirs is None:
         comparison_dirs = [
             tmp_path_factory.mktemp('main', numbered=False),
@@ -46,7 +46,18 @@ def comparison_environments(tmp_path_factory, golden_dirs):
             path.mkdir(exist_ok=True, parents=True)
             comparison_dirs.append(path)
 
+    return comparison_dirs
+
+
+@pytest.fixture(scope='session')
+def comparison_environments(comparison_dirs):
     comparison_apis = [hyp3_sdk.PROD_API, hyp3_sdk.TEST_API]
+    return list(zip(comparison_dirs, comparison_apis))
+
+
+@pytest.fixture(scope='session')
+def its_live_environments(comparison_dirs):
+    comparison_apis = ['https://hyp3-its-live.asf.alaska.edu', 'https://hyp3-its-live-test.asf.alaska.edu']
     return list(zip(comparison_dirs, comparison_apis))
 
 
