@@ -99,13 +99,19 @@ def test_golden_burst_insar(comparison_environments, jobs_info, keep):
                 try:
                     compare.compare_raster_info(main_tif, develop_tif)
 
+                    def comparisons(main_ds, develop_ds, pixel_size):
+                        compare.images_are_within_offset_threshold(main_ds, develop_ds, pixel_size=pixel_size,
+                                                                    offset_threshold=5.0)
+                        compare.maskes_are_within_similarity_threshold(main_ds, develop_ds, mask_rate=0.98)
+                        compare.values_are_within_statistic(main_ds, develop_ds, confidence_level=0.99)
+
                     pixel_size = gdal.Info(str(main_tif), format='json')['geoTransform'][1]
-                    compare.images_are_within_offset_threshold(main_ds, develop_ds, pixel_size=pixel_size,
-                                                               offset_threshold=5.0)
-
-                    compare.maskes_are_within_similarity_threshold(main_ds, develop_ds, mask_rate=0.98)
-
-                    compare.values_are_within_statistic(main_ds, develop_ds, confidence_level=0.99)
+                    # OpenCV does not support complex data, so we must compare each component as real values.
+                    if main_ds.dtype == 'complex64':
+                        comparisons(main_ds.real, develop_ds.real, pixel_size)
+                        comparisons(main_ds.imag, develop_ds.imag, pixel_size)
+                    else:
+                        comparisons(main_ds, develop_ds, pixel_size)
 
                     if '_unw_phase.tif' in str(main_tif):
                         compare.nodata_count_change_are_within_threshold(main_ds, develop_ds, threshold=0.01)
