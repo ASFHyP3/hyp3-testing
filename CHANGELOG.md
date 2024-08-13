@@ -21,6 +21,7 @@ and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 * `test_autorift.py` golden test for the autoRIFT plugin
 
 ### Changed
+* Burst InSAR now tests complex datasets by separating the real and imaginary components and then testing them separately.
 * InSAR Gamma tests so that they do not use per-image threshold and instead analyze metadata, coregistration, nodata coverage, and dataproduct quality
 * RTC and autoRIFT golden tests now sleep for 60 seconds between requests for job status
 * `conda-env.yml` has been renamed to `environment.yml` to follow standard naming conventions 
