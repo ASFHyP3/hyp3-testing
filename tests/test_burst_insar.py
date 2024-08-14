@@ -72,7 +72,7 @@ def test_golden_tif_names(jobs_info):
 
 def _comparisons(main_ds, develop_ds, pixel_size):
     compare.images_are_within_offset_threshold(main_ds, develop_ds, pixel_size=pixel_size,
-                                                offset_threshold=5.0)
+                                               offset_threshold=5.0)
     compare.maskes_are_within_similarity_threshold(main_ds, develop_ds, mask_rate=0.98)
     compare.values_are_within_statistic(main_ds, develop_ds, confidence_level=0.99)
 
