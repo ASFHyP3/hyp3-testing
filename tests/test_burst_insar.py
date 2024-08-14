@@ -70,6 +70,13 @@ def test_golden_tif_names(jobs_info):
         assert main_normalized_files == develop_normalized_files
 
 
+def comparisons(main_ds, develop_ds, pixel_size):
+    compare.images_are_within_offset_threshold(main_ds, develop_ds, pixel_size=pixel_size,
+                                                offset_threshold=5.0)
+    compare.maskes_are_within_similarity_threshold(main_ds, develop_ds, mask_rate=0.98)
+    compare.values_are_within_statistic(main_ds, develop_ds, confidence_level=0.99)
+
+
 @pytest.mark.dependency(depends=['test_golden_wait'])
 def test_golden_burst_insar(comparison_environments, jobs_info, keep):
     (main_dir, main_api), (develop_dir, develop_api) = comparison_environments
@@ -98,12 +105,6 @@ def test_golden_burst_insar(comparison_environments, jobs_info, keep):
 
                 try:
                     compare.compare_raster_info(main_tif, develop_tif)
-
-                    def comparisons(main_ds, develop_ds, pixel_size):
-                        compare.images_are_within_offset_threshold(main_ds, develop_ds, pixel_size=pixel_size,
-                                                                   offset_threshold=5.0)
-                        compare.maskes_are_within_similarity_threshold(main_ds, develop_ds, mask_rate=0.98)
-                        compare.values_are_within_statistic(main_ds, develop_ds, confidence_level=0.99)
 
                     pixel_size = gdal.Info(str(main_tif), format='json')['geoTransform'][1]
                     # OpenCV does not support complex data, so we must compare each component as real values.
