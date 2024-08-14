@@ -107,7 +107,7 @@ def test_golden_burst_insar(comparison_environments, jobs_info, keep):
 
                     pixel_size = gdal.Info(str(main_tif), format='json')['geoTransform'][1]
                     # OpenCV does not support complex data, so we must compare each component as real values.
-                    if main_ds.dtype == 'complex64' or main_ds.dtype == 'complex32':
+                    if main_ds.dtype in ('complex32', 'complex64'):
                         comparisons(main_ds.real, develop_ds.real, pixel_size)
                         comparisons(main_ds.imag, develop_ds.imag, pixel_size)
                     else:
