@@ -74,15 +74,15 @@ def test_golden_products(its_live_environments, job_name, user_id, keep):
 
     if main_succeeded == 0 or develop_succeeded == 0:
         failure_count += 1
-        messages.append(f'No jobs SUCCEEDED in a deployment!\n'
-                        f'    Main: {main_jobs}\n'
-                        f'    Develop: {develop_jobs}\n')
+        messages.append(
+            f'No jobs SUCCEEDED in a deployment!\n' f'    Main: {main_jobs}\n' f'    Develop: {develop_jobs}\n'
+        )
 
     if main_succeeded != develop_succeeded:
         failure_count += 1
-        messages.append(f'Number of jobs that SUCCEEDED is different!\n'
-                        f'    Main: {main_jobs}\n'
-                        f'    Develop: {develop_jobs}\n')
+        messages.append(
+            f'Number of jobs that SUCCEEDED is different!\n' f'    Main: {main_jobs}\n' f'    Develop: {develop_jobs}\n'
+        )
 
     for main_job, develop_job in zip(main_jobs, develop_jobs):
         if main_job.failed() or develop_job.failed():
@@ -96,9 +96,11 @@ def test_golden_products(its_live_environments, job_name, user_id, keep):
 
         if main_product.name != develop_product.name:
             failure_count += 1
-            messages.append(f'File names are different!\n'
-                            f'    Main:\n{pformat(main_product.name)}\n'
-                            f'    develop:\n{pformat(develop_product.name)}\n')
+            messages.append(
+                f'File names are different!\n'
+                f'    Main:\n{pformat(main_product.name)}\n'
+                f'    develop:\n{pformat(develop_product.name)}\n'
+            )
 
         comparison_header = '\n'.join(['-' * 80, str(main_product), str(develop_product), '-' * 80])
 

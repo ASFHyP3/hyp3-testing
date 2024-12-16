@@ -48,9 +48,7 @@ def find_files_in_products(main_dir: Path, develop_dir: Path, pattern: str = '*.
     develop_base_path = develop_dir.parent
     develop_hash = develop_dir.name.split('_')[-1]
 
-    main_set = {
-        Path(f.replace(main_hash, 'HASH')).relative_to(main_base_path) for f in glob(str(main_dir / pattern))
-    }
+    main_set = {Path(f.replace(main_hash, 'HASH')).relative_to(main_base_path) for f in glob(str(main_dir / pattern))}
     develop_set = {
         Path(f.replace(develop_hash, 'HASH')).relative_to(develop_base_path) for f in glob(str(develop_dir / pattern))
     }

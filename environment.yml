@@ -16,6 +16,7 @@ dependencies:
   - pytest-cov
   - pytest-dependency
   - pytest-timeout
+  - ruff
   - rasterio
   - wheel
   - xarray

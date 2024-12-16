@@ -78,9 +78,10 @@ def test_golden_rtc(comparison_environments, jobs_info, rtc_tolerances, keep):
     for pair, pair_information in jobs_info.items():
         pair_tolerances = rtc_tolerances[pair]
 
-        with job_tifs(pair_information['main']['job_id'], main_api, main_dir, keep) as main_tifs, \
-                job_tifs(pair_information['develop']['job_id'], develop_api, develop_dir, keep) as develop_tifs:
-
+        with (
+            job_tifs(pair_information['main']['job_id'], main_api, main_dir, keep) as main_tifs,
+            job_tifs(pair_information['develop']['job_id'], develop_api, develop_dir, keep) as develop_tifs,
+        ):
             for main_tif, develop_tif in zip(main_tifs, develop_tifs):
                 file_type = '_'.join(Path(main_tif).name.split('_')[8:])[:-4]
 

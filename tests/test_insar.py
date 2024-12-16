@@ -77,9 +77,10 @@ def test_golden_insar(comparison_environments, jobs_info, keep):
     failure_count = 0
     messages = []
     for pair, pair_information in jobs_info.items():
-        with job_tifs(pair_information['main']['job_id'], main_api, main_dir, keep) as main_tifs, \
-                job_tifs(pair_information['develop']['job_id'], develop_api, develop_dir, keep) as develop_tifs:
-
+        with (
+            job_tifs(pair_information['main']['job_id'], main_api, main_dir, keep) as main_tifs,
+            job_tifs(pair_information['develop']['job_id'], develop_api, develop_dir, keep) as develop_tifs,
+        ):
             for main_tif, develop_tif in zip(main_tifs, develop_tifs):
                 comparison_header = '\n'.join(['-' * 80, str(main_tif), str(develop_tif), '-' * 80])
 
@@ -90,8 +91,9 @@ def test_golden_insar(comparison_environments, jobs_info, keep):
                     compare.compare_raster_info(main_tif, develop_tif)
 
                     pixel_size = gdal.Info(str(main_tif), format='json')['geoTransform'][1]
-                    compare.images_are_within_offset_threshold(main_ds, develop_ds, pixel_size=pixel_size,
-                                                               offset_threshold=5.0)
+                    compare.images_are_within_offset_threshold(
+                        main_ds, develop_ds, pixel_size=pixel_size, offset_threshold=5.0
+                    )
 
                     compare.maskes_are_within_similarity_threshold(main_ds, develop_ds, mask_rate=0.98)
 
