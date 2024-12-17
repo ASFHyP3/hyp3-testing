@@ -7,9 +7,9 @@ import rioxarray  # noqa: F401
 import xarray as xr
 from osgeo import gdal
 
-from hyp3_testing import compare
-from hyp3_testing import util
+from hyp3_testing import compare, util
 from hyp3_testing.helpers import job_tifs
+
 
 gdal.UseExceptions()
 pytestmark = pytest.mark.golden

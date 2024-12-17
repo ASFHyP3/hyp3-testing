@@ -2,8 +2,9 @@ import os
 
 from setuptools import find_packages, setup
 
+
 _HERE = os.path.abspath(os.path.dirname(__file__))
-with open(os.path.join(_HERE, 'README.md'), 'r') as f:
+with open(os.path.join(_HERE, 'README.md')) as f:
     long_desc = f.read()
 
 setup(
