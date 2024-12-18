@@ -1,3 +1,12 @@
+[build-system]
+requires = ["setuptools>=42", "wheel", "setuptools_scm[toml]>=3.4"]
+
+[tool.pytest.ini_options]
+markers = [
+    "nameskip: skip these tests when name provided",
+    "golden: golden comparison tests"
+]
+
 [project]
 name = "hyp3_testing"
 requires-python = ">=3.10"
@@ -32,13 +41,13 @@ develop = [
     "pytest-timeout",
 ]
 
-[tool.setuptools]
-include-package-data = true
-zip-safe = false
-
 [project.urls]
 Homepage = "https://github.com/ASFHyP3/hyp3-testing"
 Documentation = "https://hyp3-docs.asf.alaska.edu"
+
+[tool.setuptools]
+include-package-data = true
+zip-safe = false
 
 [tool.setuptools.dynamic]
 readme = {file = ["README.md"], content-type = "text/markdown"}
@@ -47,15 +56,6 @@ readme = {file = ["README.md"], content-type = "text/markdown"}
 where = ["hyp3_testing"]
 
 [tool.setuptools_scm]
-
-[build-system]
-requires = ["setuptools>=42", "wheel", "setuptools_scm[toml]>=3.4"]
-
-[tool.pytest.ini_options]
-markers = [
-    "nameskip: skip these tests when name provided",
-    "golden: golden comparison tests"
-]
 
 [tool.ruff]
 line-length = 120
