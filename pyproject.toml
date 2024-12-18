@@ -2,7 +2,7 @@
 name = "hyp3_testing"
 requires-python = ">=3.10"
 description = "HyP3 plugin for testing processing"
-license = "BSD"
+license = {text = "BSD-3-Clause"}
 authors = [
     {name="ASF Tools Team", email="UAF-asf-apd@alaska.edu"}
 ]
@@ -22,6 +22,7 @@ dependencies = [
     "rasterio",
     "xarray",
 ]
+dynamic = ["version", "readme"]
 
 [project.optional-dependencies]
 develop = [
@@ -31,13 +32,21 @@ develop = [
     "pytest-timeout",
 ]
 
-[tools.setuptools]
+[tool.setuptools]
 include-package-data = true
-zip_safe = false
+zip-safe = false
 
 [project.urls]
 Homepage = "https://github.com/ASFHyP3/hyp3-testing"
 Documentation = "https://hyp3-docs.asf.alaska.edu"
+
+[tool.setuptools.dynamic]
+readme = {file = ["README.md"], content-type = "text/markdown"}
+
+[tool.setuptools.packages.find]
+where = ["hyp3_testing"]
+
+[tool.setuptools_scm]
 
 [build-system]
 requires = ["setuptools>=42", "wheel", "setuptools_scm[toml]>=3.4"]
