@@ -2,10 +2,10 @@
 
 import filecmp
 import warnings
+from collections.abc import Hashable
 from functools import singledispatch
 from os import listdir
 from pathlib import Path
-from typing import Hashable, Optional, Union
 
 import cv2
 import numpy as np
@@ -18,7 +18,7 @@ from rasterio.errors import CRSError
 from hyp3_testing.helpers import clarify_xr_message
 
 
-XR = Union[xr.Dataset, xr.DataArray, xr.Variable]
+XR = xr.Dataset | xr.DataArray | xr.Variable
 
 
 class ComparisonFailure(Exception):
@@ -244,7 +244,7 @@ def compare_raster_info(reference: Path, secondary: Path):
         raise ComparisonFailure(f'Raster info are not the same.\n  Reference: {ref_info}\n  Secondary: {sec_info}')
 
 
-def _find_grid_mapping_variable_name(dataset: xr.Dataset) -> Optional[Hashable]:
+def _find_grid_mapping_variable_name(dataset: xr.Dataset) -> Hashable | None:
     for var in dataset.variables:
         if dataset.variables[var].attrs.get('grid_mapping_name') is not None:
             return var
@@ -252,7 +252,7 @@ def _find_grid_mapping_variable_name(dataset: xr.Dataset) -> Optional[Hashable]:
     return None
 
 
-def _find_wkt(variable: xr.Variable) -> Optional[str]:
+def _find_wkt(variable: xr.Variable) -> str | None:
     wkt = variable.attrs.get('crs_wkt')
     if wkt is None:
         wkt = variable.attrs.get('spatial_ref')
@@ -275,9 +275,9 @@ def compare_product_files(main_dir: str, develop_dir: str):
 
 
 def compare_parameter_files(main_parameter_file: str, develop_parameter_file: str):
-    with open(str(main_parameter_file), 'r') as main_parameters:
+    with open(str(main_parameter_file)) as main_parameters:
         main_parameters = main_parameters.read()
-        with open(str(develop_parameter_file), 'r') as develop_parameters:
+        with open(str(develop_parameter_file)) as develop_parameters:
             develop_parameters = develop_parameters.read()
             if main_parameters != develop_parameters:
                 err = 'Parameter files are not the same.\n'

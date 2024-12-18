@@ -10,6 +10,7 @@ from hyp3_testing.helpers import job_tifs
 from osgeo import gdal
 
 
+
 gdal.UseExceptions()
 pytestmark = pytest.mark.golden
 
