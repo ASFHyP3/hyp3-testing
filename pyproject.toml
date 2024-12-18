@@ -1,3 +1,44 @@
+[project]
+name = "hyp3_testing"
+requires-python = ">=3.10"
+description = "HyP3 plugin for testing processing"
+license = "BSD"
+authors = [
+    {name="ASF Tools Team", email="UAF-asf-apd@alaska.edu"}
+]
+classifiers = [
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: BSD License",
+    "Natural Language :: English",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+]
+dependencies = [
+    "hyp3_sdk>=2.1.1",
+    "jinja2",
+    "numpy",
+    "netCDF4",  # provides xarray netCDF IO backend
+    "rasterio",
+    "xarray",
+]
+
+[project.optional-dependencies]
+develop = [
+    "pytest",
+    "pytest-cov",
+    "pytest-dependency",
+    "pytest-timeout",
+]
+
+[tools.setuptools]
+include-package-data = true
+zip_safe = false
+
+[project.urls]
+Homepage = "https://github.com/ASFHyP3/hyp3-testing"
+Documentation = "https://hyp3-docs.asf.alaska.edu"
+
 [build-system]
 requires = ["setuptools>=42", "wheel", "setuptools_scm[toml]>=3.4"]
 
@@ -6,3 +47,29 @@ markers = [
     "nameskip: skip these tests when name provided",
     "golden: golden comparison tests"
 ]
+
+[tool.ruff]
+line-length = 120
+src = ["src", "tests"]
+
+[tool.ruff.format]
+indent-style = "space"
+quote-style = "single"
+
+[tool.ruff.lint]
+extend-select = [
+    "I",   # isort: https://docs.astral.sh/ruff/rules/#isort-i
+
+    # TODO: uncomment the following extensions and address their warnings:
+    #"UP",  # pyupgrade: https://docs.astral.sh/ruff/rules/#pyupgrade-up
+    #"D",   # pydocstyle: https://docs.astral.sh/ruff/rules/#pydocstyle-d
+    #"ANN", # annotations: https://docs.astral.sh/ruff/rules/#flake8-annotations-ann
+    #"PTH", # use-pathlib-pth: https://docs.astral.sh/ruff/rules/#flake8-use-pathlib-pth
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.isort]
+case-sensitive = true
+lines-after-imports = 2

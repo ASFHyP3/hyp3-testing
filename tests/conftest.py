@@ -4,9 +4,7 @@ from pathlib import Path
 
 import hyp3_sdk
 import pytest
-
-from hyp3_testing import helpers
-from hyp3_testing import util
+from hyp3_testing import helpers, util
 
 
 def pytest_addoption(parser):

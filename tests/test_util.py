@@ -1,7 +1,6 @@
 import pytest
-from jinja2.exceptions import UndefinedError
-
 from hyp3_testing import util
+from jinja2.exceptions import UndefinedError
 
 
 def test_get_job_name():

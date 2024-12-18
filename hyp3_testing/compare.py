@@ -15,8 +15,8 @@ from osgeo import gdal
 from rasterio.crs import CRS
 from rasterio.errors import CRSError
 
-
 from hyp3_testing.helpers import clarify_xr_message
+
 
 XR = Union[xr.Dataset, xr.DataArray, xr.Variable]
 

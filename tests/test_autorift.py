@@ -6,10 +6,8 @@ from pprint import pformat
 import hyp3_sdk
 import pytest
 import xarray as xr
+from hyp3_testing import compare, helpers, util
 
-from hyp3_testing import compare
-from hyp3_testing import helpers
-from hyp3_testing import util
 
 pytestmark = pytest.mark.golden
 

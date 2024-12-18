@@ -6,10 +6,9 @@ import hyp3_sdk.util
 import pytest
 import rioxarray  # noqa: F401
 import xarray as xr
-
-from hyp3_testing import compare
-from hyp3_testing import util
+from hyp3_testing import compare, util
 from hyp3_testing.helpers import job_tifs
+
 
 pytestmark = pytest.mark.golden
 
