@@ -2,7 +2,6 @@ import os
 from contextlib import contextmanager
 from glob import glob
 from pathlib import Path
-from typing import List, Optional, Tuple
 from zipfile import ZipFile
 
 from hyp3_sdk import Batch, HyP3, Job
@@ -20,13 +19,13 @@ def sort_jobs_by_parameters(jobs: Batch) -> Batch:
     return Batch(sorted_jobs)
 
 
-def get_jobs_in_environment(job_name: str, api: str, user_id: Optional[str] = None) -> Batch:
+def get_jobs_in_environment(job_name: str, api: str, user_id: str | None = None) -> Batch:
     hyp3 = HyP3(api, os.environ.get('EARTHDATA_LOGIN_USER'), os.environ.get('EARTHDATA_LOGIN_PASSWORD'))
     jobs = hyp3.find_jobs(name=job_name, user_id=user_id)
     return sort_jobs_by_parameters(jobs)
 
 
-def extract_zip_files(zip_files: List[Path]):
+def extract_zip_files(zip_files: list[Path]):
     for product_file in zip_files:
         with ZipFile(product_file) as zip_:
             zip_.extractall(path=product_file.parent)
@@ -41,16 +40,14 @@ def find_products(directory: Path, pattern: str = '*.zip') -> dict:
     return products
 
 
-def find_files_in_products(main_dir: Path, develop_dir: Path, pattern: str = '*.tif') -> List[Tuple[Path, Path]]:
+def find_files_in_products(main_dir: Path, develop_dir: Path, pattern: str = '*.tif') -> list[tuple[Path, Path]]:
     main_base_path = main_dir.parent
     main_hash = main_dir.name.split('_')[-1]
 
     develop_base_path = develop_dir.parent
     develop_hash = develop_dir.name.split('_')[-1]
 
-    main_set = {
-        Path(f.replace(main_hash, 'HASH')).relative_to(main_base_path) for f in glob(str(main_dir / pattern))
-    }
+    main_set = {Path(f.replace(main_hash, 'HASH')).relative_to(main_base_path) for f in glob(str(main_dir / pattern))}
     develop_set = {
         Path(f.replace(develop_hash, 'HASH')).relative_to(develop_base_path) for f in glob(str(develop_dir / pattern))
     }

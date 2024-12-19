@@ -5,30 +5,21 @@ from pathlib import Path
 import hyp3_sdk
 import pytest
 
-from hyp3_testing import helpers
-from hyp3_testing import util
+from hyp3_testing import helpers, util
 
 
 def pytest_addoption(parser):
-    parser.addoption(
-        "--keep", action='store_true', help="Do not remove downloaded test products"
-    )
-    parser.addoption(
-        "--name", nargs='?', help="Find jobs with this name to compare"
-    )
-    parser.addoption(
-        "--golden-dirs", nargs=2, help="Main and develop directories to use for comparison"
-    )
-    parser.addoption(
-        "--user-id", nargs='?', help="Find jobs submitted by this user to compare"
-    )
+    parser.addoption('--keep', action='store_true', help='Do not remove downloaded test products')
+    parser.addoption('--name', nargs='?', help='Find jobs with this name to compare')
+    parser.addoption('--golden-dirs', nargs=2, help='Main and develop directories to use for comparison')
+    parser.addoption('--user-id', nargs='?', help='Find jobs submitted by this user to compare')
 
 
 def pytest_collection_modifyitems(config, items):
-    if config.getoption("--name"):
-        name_skip = pytest.mark.skip(reason="Provided name; no need to submit")
+    if config.getoption('--name'):
+        name_skip = pytest.mark.skip(reason='Provided name; no need to submit')
         for item in items:
-            if "nameskip" in item.keywords:
+            if 'nameskip' in item.keywords:
                 item.add_marker(name_skip)
 
 
@@ -37,7 +28,7 @@ def comparison_dirs(tmp_path_factory, golden_dirs):
     if golden_dirs is None:
         comparison_dirs = [
             tmp_path_factory.mktemp('main', numbered=False),
-            tmp_path_factory.mktemp('develop', numbered=False)
+            tmp_path_factory.mktemp('develop', numbered=False),
         ]
     else:
         comparison_dirs = []
@@ -63,22 +54,22 @@ def its_live_environments(comparison_dirs):
 
 @pytest.fixture(scope='module')
 def keep(request):
-    return request.config.getoption("--keep")
+    return request.config.getoption('--keep')
 
 
 @pytest.fixture(scope='module')
 def job_name(request):
-    return request.config.getoption("--name")
+    return request.config.getoption('--name')
 
 
 @pytest.fixture(scope='session')
 def golden_dirs(request):
-    return request.config.getoption("--golden-dirs")
+    return request.config.getoption('--golden-dirs')
 
 
 @pytest.fixture(scope='session')
 def user_id(request):
-    return request.config.getoption("--user-id")
+    return request.config.getoption('--user-id')
 
 
 @pytest.fixture
@@ -135,12 +126,16 @@ def jobs_info(comparison_environments, job_name, user_id):
 
         jobs_dict[pair_name] = {
             'main': {
-                'job_id': main_job.job_id, 'succeeded': main_job.succeeded(),
-                'dir': job_main_dir, 'normalized_files': main_normalized_files,
+                'job_id': main_job.job_id,
+                'succeeded': main_job.succeeded(),
+                'dir': job_main_dir,
+                'normalized_files': main_normalized_files,
             },
             'develop': {
-                'job_id': develop_job.job_id, 'succeeded': develop_job.succeeded(),
-                'dir': job_develop_dir, 'normalized_files': develop_normalized_files,
+                'job_id': develop_job.job_id,
+                'succeeded': develop_job.succeeded(),
+                'dir': job_develop_dir,
+                'normalized_files': develop_normalized_files,
             },
         }
 

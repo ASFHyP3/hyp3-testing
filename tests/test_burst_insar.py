@@ -7,9 +7,9 @@ import rioxarray  # noqa: F401
 import xarray as xr
 from osgeo import gdal
 
-from hyp3_testing import compare
-from hyp3_testing import util
+from hyp3_testing import compare, util
 from hyp3_testing.helpers import job_tifs
+
 
 gdal.UseExceptions()
 pytestmark = pytest.mark.golden
@@ -71,8 +71,7 @@ def test_golden_tif_names(jobs_info):
 
 
 def _comparisons(main_ds, develop_ds, pixel_size):
-    compare.images_are_within_offset_threshold(main_ds, develop_ds, pixel_size=pixel_size,
-                                               offset_threshold=5.0)
+    compare.images_are_within_offset_threshold(main_ds, develop_ds, pixel_size=pixel_size, offset_threshold=5.0)
     compare.maskes_are_within_similarity_threshold(main_ds, develop_ds, mask_rate=0.98)
     compare.values_are_within_statistic(main_ds, develop_ds, confidence_level=0.99)
 
@@ -84,9 +83,10 @@ def test_golden_burst_insar(comparison_environments, jobs_info, keep):
     failure_count = 0
     messages = []
     for pair, pair_information in jobs_info.items():
-        with job_tifs(pair_information['main']['job_id'], main_api, main_dir, keep) as main_tifs, \
-                job_tifs(pair_information['develop']['job_id'], develop_api, develop_dir, keep) as develop_tifs:
-
+        with (
+            job_tifs(pair_information['main']['job_id'], main_api, main_dir, keep) as main_tifs,
+            job_tifs(pair_information['develop']['job_id'], develop_api, develop_dir, keep) as develop_tifs,
+        ):
             main_file_dir = main_dir / (main_product_name := pair_information['main']['dir'])
             develop_file_dir = develop_dir / (develop_product_name := pair_information['develop']['dir'])
 

@@ -2,10 +2,10 @@
 
 import filecmp
 import warnings
+from collections.abc import Hashable
 from functools import singledispatch
 from os import listdir
 from pathlib import Path
-from typing import Hashable, Optional, Union
 
 import cv2
 import numpy as np
@@ -15,10 +15,10 @@ from osgeo import gdal
 from rasterio.crs import CRS
 from rasterio.errors import CRSError
 
-
 from hyp3_testing.helpers import clarify_xr_message
 
-XR = Union[xr.Dataset, xr.DataArray, xr.Variable]
+
+XR = xr.Dataset | xr.DataArray | xr.Variable
 
 
 class ComparisonFailure(Exception):
@@ -41,19 +41,16 @@ def _assert_mask_similarity(reference: np.array, secondary: np.array, mask_rate:
     # compare mask
     valid_mask_and = np.bitwise_and(~data_main.mask, ~data_deve.mask)
     valid_mask_or = np.bitwise_or(~data_main.mask, ~data_deve.mask)
-    msk_rate = valid_mask_and.sum()/valid_mask_or.sum()
+    msk_rate = valid_mask_and.sum() / valid_mask_or.sum()
     if msk_rate <= mask_rate:
-        raise AssertionError(
-            f'Two masks match with less than {mask_rate}')
+        raise AssertionError(f'Two masks match with less than {mask_rate}')
 
 
 def maskes_are_within_similarity_threshold(reference: np.array, secondary: np.array, mask_rate: float = 0.95):
     try:
         _assert_mask_similarity(reference=reference, secondary=secondary, mask_rate=mask_rate)
     except AssertionError as e:
-        raise ComparisonFailure(
-            '\n'.join(['Values are different.', '', clarify_xr_message(str(e))])
-        )
+        raise ComparisonFailure('\n'.join(['Values are different.', '', clarify_xr_message(str(e))]))
 
 
 def _assert_within_statistic(reference: np.array, secondary: np.array, confidence_level: float = 0.99):
@@ -62,8 +59,9 @@ def _assert_within_statistic(reference: np.array, secondary: np.array, confidenc
 
     valid_mask = np.bitwise_and(~data_main.mask, ~data_deve.mask)
 
-    results = scipy.stats.ks_2samp(data_main.data[valid_mask], data_deve.data[valid_mask],
-                                   alternative='two-sided', method='auto')
+    results = scipy.stats.ks_2samp(
+        data_main.data[valid_mask], data_deve.data[valid_mask], alternative='two-sided', method='auto'
+    )
 
     if results.pvalue < confidence_level:
         raise AssertionError(f'Two data are not similar with confidence level {confidence_level*100} %')
@@ -73,13 +71,12 @@ def values_are_within_statistic(reference: np.array, secondary: np.array, confid
     try:
         _assert_within_statistic(reference=reference, secondary=secondary, confidence_level=confidence_level)
     except AssertionError as e:
-        raise ComparisonFailure(
-            '\n'.join(['Values are different.', '', clarify_xr_message(str(e))])
-        )
+        raise ComparisonFailure('\n'.join(['Values are different.', '', clarify_xr_message(str(e))]))
 
 
-def _assert_within_offset_distance(reference: np.array, secondary: np.array, pixel_size: int,
-                                   offset_threshold: float = 5.0):
+def _assert_within_offset_distance(
+    reference: np.array, secondary: np.array, pixel_size: int, offset_threshold: float = 5.0
+):
     data_main = np.ma.masked_invalid(reference)
     data_deve = np.ma.masked_invalid(secondary)
     mask = np.bitwise_or(data_main.mask, data_deve.mask)
@@ -96,22 +93,22 @@ def _assert_within_offset_distance(reference: np.array, secondary: np.array, pix
         )
 
 
-def images_are_within_offset_threshold(reference: np.array, secondary: np.array, pixel_size: int = 80,
-                                       offset_threshold: float = 5.0):
+def images_are_within_offset_threshold(
+    reference: np.array, secondary: np.array, pixel_size: int = 80, offset_threshold: float = 5.0
+):
     try:
-        _assert_within_offset_distance(reference=reference, secondary=secondary, pixel_size=pixel_size,
-                                       offset_threshold=offset_threshold)
-    except AssertionError as e:
-        raise ComparisonFailure(
-            '\n'.join(['Images are not coregistered.', '', clarify_xr_message(str(e))])
+        _assert_within_offset_distance(
+            reference=reference, secondary=secondary, pixel_size=pixel_size, offset_threshold=offset_threshold
         )
+    except AssertionError as e:
+        raise ComparisonFailure('\n'.join(['Images are not coregistered.', '', clarify_xr_message(str(e))]))
 
 
 def _nodata_count_change(reference: np.array, secondary: np.array, threshold: float = 0.01):
     data_main = np.ma.masked_invalid(reference)
     data_deve = np.ma.masked_invalid(secondary)
 
-    if (data_deve.mask.sum() - data_main.mask.sum())/data_main.mask.sum() > threshold:
+    if (data_deve.mask.sum() - data_main.mask.sum()) / data_main.mask.sum() > threshold:
         raise AssertionError(
             f'Number of nodata pixels in develop data is {threshold*100} % larger than those in main data'
         )
@@ -121,28 +118,22 @@ def nodata_count_change_are_within_threshold(reference: np.array, secondary: np.
     try:
         _nodata_count_change(reference=reference, secondary=secondary, threshold=threshold)
     except AssertionError as e:
-        raise ComparisonFailure(
-            '\n'.join(['Images have differnt nodata pixles.', '', clarify_xr_message(str(e))])
-        )
+        raise ComparisonFailure('\n'.join(['Images have differnt nodata pixles.', '', clarify_xr_message(str(e))]))
 
 
 def _corr_average_decrease(reference: np.array, secondary: np.array, threshold: float = 0.05):
     data_main = np.ma.masked_invalid(reference)
     data_deve = np.ma.masked_invalid(secondary)
 
-    if (data_main.mean() - data_deve.mean())/data_main.mean() > threshold:
-        raise AssertionError(
-            f'Average spatial coherence has decreased by more than {threshold * 100} %'
-        )
+    if (data_main.mean() - data_deve.mean()) / data_main.mean() > threshold:
+        raise AssertionError(f'Average spatial coherence has decreased by more than {threshold * 100} %')
 
 
 def corr_average_decrease_within_threshold(reference: np.array, secondary: np.array, threshold: float = 0.05):
     try:
         _corr_average_decrease(reference=reference, secondary=secondary, threshold=threshold)
     except AssertionError as e:
-        raise ComparisonFailure(
-            '\n'.join(['Average correlation decreases.', '', clarify_xr_message(str(e))])
-        )
+        raise ComparisonFailure('\n'.join(['Average correlation decreases.', '', clarify_xr_message(str(e))]))
 
 
 def values_are_close(reference: XR, secondary: XR, rtol: float = 1e-05, atol: float = 1e-08):
@@ -165,7 +156,7 @@ def _compare_values_message(reference, secondary, rtol=1e-05, atol=1e-08):
 @_compare_values_message.register(xr.DataArray)
 def _array_message(reference, secondary, rtol=1e-05, atol=1e-08):
     # https://numpy.org/doc/stable/reference/generated/numpy.dtype.kind.html#numpy.dtype.kind
-    exact_dtypes = ["M", "m", "O", "S", "U"]
+    exact_dtypes = ['M', 'm', 'O', 'S', 'U']
     if reference.dtype.kind in exact_dtypes or secondary.dtype.kind in exact_dtypes:
         if reference.values != secondary.values:
             return f'Values are different.\n    Reference: {reference.values}\n    Secondary: {secondary.values}'
@@ -238,9 +229,7 @@ def compare_cf_spatial_reference(reference: xr.Dataset, secondary: xr.Dataset):
         raise ComparisonFailure(f'WKT could not be parsed:\n  Reference: {ref_wkt}\n  secondary {sec_wkt}')
 
     if not ref_crs == sec_crs:
-        raise ComparisonFailure(
-            f'Spatial references are not the same.\n  Reference: {ref_wkt}\n  secondary {sec_wkt}'
-        )
+        raise ComparisonFailure(f'Spatial references are not the same.\n  Reference: {ref_wkt}\n  secondary {sec_wkt}')
 
 
 def compare_raster_info(reference: Path, secondary: Path):
@@ -252,12 +241,10 @@ def compare_raster_info(reference: Path, secondary: Path):
     ref_info['metadata'][''].pop('TIFFTAG_DATETIME', None)
     sec_info['metadata'][''].pop('TIFFTAG_DATETIME', None)
     if not ref_info == sec_info:
-        raise ComparisonFailure(
-            f'Raster info are not the same.\n  Reference: {ref_info}\n  Secondary: {sec_info}'
-        )
+        raise ComparisonFailure(f'Raster info are not the same.\n  Reference: {ref_info}\n  Secondary: {sec_info}')
 
 
-def _find_grid_mapping_variable_name(dataset: xr.Dataset) -> Optional[Hashable]:
+def _find_grid_mapping_variable_name(dataset: xr.Dataset) -> Hashable | None:
     for var in dataset.variables:
         if dataset.variables[var].attrs.get('grid_mapping_name') is not None:
             return var
@@ -265,7 +252,7 @@ def _find_grid_mapping_variable_name(dataset: xr.Dataset) -> Optional[Hashable]:
     return None
 
 
-def _find_wkt(variable: xr.Variable) -> Optional[str]:
+def _find_wkt(variable: xr.Variable) -> str | None:
     wkt = variable.attrs.get('crs_wkt')
     if wkt is None:
         wkt = variable.attrs.get('spatial_ref')
@@ -284,18 +271,14 @@ def compare_product_files(main_dir: str, develop_dir: str):
         del develop_files[i][7]
 
     if main_files.sort() != develop_files.sort():
-        raise ValueError(
-            f'Product files are not the same.\n  Reference: {main_files}\n  Secondary: {develop_files}'
-        )
+        raise ValueError(f'Product files are not the same.\n  Reference: {main_files}\n  Secondary: {develop_files}')
 
 
 def compare_parameter_files(main_parameter_file: str, develop_parameter_file: str):
-    with open(str(main_parameter_file), 'r') as main_parameters:
+    with open(str(main_parameter_file)) as main_parameters:
         main_parameters = main_parameters.read()
-        with open(str(develop_parameter_file), 'r') as develop_parameters:
+        with open(str(develop_parameter_file)) as develop_parameters:
             develop_parameters = develop_parameters.read()
             if main_parameters != develop_parameters:
                 err = 'Parameter files are not the same.\n'
-                raise ComparisonFailure(
-                    err + f'  Reference: {main_parameters}\n  Secondary: {develop_parameters}'
-                )
+                raise ComparisonFailure(err + f'  Reference: {main_parameters}\n  Secondary: {develop_parameters}')
