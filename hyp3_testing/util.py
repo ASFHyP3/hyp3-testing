@@ -24,6 +24,6 @@ def get_environment() -> Environment:
 
 def render_template(template_file: str, **kwargs) -> dict:
     env = get_environment()
-    template_file = env.get_template(template_file)
-    rendered = template_file.render(**kwargs)
+    template_data = env.get_template(template_file)
+    rendered = template_data.render(**kwargs)
     return json.loads(rendered)
