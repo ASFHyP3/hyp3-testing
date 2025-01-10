@@ -64,7 +64,7 @@ def _assert_within_statistic(reference: np.ndarray, secondary: np.ndarray, confi
     )
 
     if results.pvalue < confidence_level:
-        raise AssertionError(f'Two data are not similar with confidence level {confidence_level*100} %')
+        raise AssertionError(f'Two data are not similar with confidence level {confidence_level * 100} %')
 
 
 def values_are_within_statistic(reference: np.ndarray, secondary: np.ndarray, confidence_level: float = 0.95):
@@ -110,7 +110,7 @@ def _nodata_count_change(reference: np.ndarray, secondary: np.ndarray, threshold
 
     if (data_deve.mask.sum() - data_main.mask.sum()) / data_main.mask.sum() > threshold:
         raise AssertionError(
-            f'Number of nodata pixels in develop data is {threshold*100} % larger than those in main data'
+            f'Number of nodata pixels in develop data is {threshold * 100} % larger than those in main data'
         )
 
 
