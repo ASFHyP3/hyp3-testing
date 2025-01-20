@@ -7,7 +7,8 @@ from functools import singledispatch
 from os import listdir
 from pathlib import Path
 
-import cv2
+# cv2 is a .so file, so mypy can't find it
+import cv2  # type: ignore[import-not-found]
 import numpy as np
 import scipy
 import xarray as xr
