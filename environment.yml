@@ -16,11 +16,11 @@ dependencies:
   - pytest-cov
   - pytest-dependency
   - pytest-timeout
-  - ruff
-  - mypy
   - rasterio
   - wheel
   - xarray
   - remotezip
   - rioxarray
   - opencv<4.9.0  # https://github.com/conda-forge/opencv-feedstock/issues/400
+  - pip:
+    - -r requirements-static.txt
