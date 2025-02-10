@@ -70,7 +70,7 @@ quote-style = "single"
 [tool.ruff.lint]
 extend-select = [
     "I",   # isort: https://docs.astral.sh/ruff/rules/#isort-i
-    
+
     # TODO: uncomment the following extensions and address their warnings:
     #"UP",  # pyupgrade: https://docs.astral.sh/ruff/rules/#pyupgrade-up
     #"D",   # pydocstyle: https://docs.astral.sh/ruff/rules/#pydocstyle-d
