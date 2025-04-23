@@ -1,3 +1,4 @@
+import json
 import os
 from contextlib import contextmanager
 from glob import glob
@@ -7,6 +8,8 @@ from zipfile import ZipFile
 from hyp3_sdk import Batch, HyP3, Job
 from hyp3_sdk.util import extract_zipped_product
 from remotezip import RemoteZip
+
+from hyp3_testing import util
 
 
 def freeze_job_parameters(job: Job) -> tuple:
@@ -107,3 +110,53 @@ def job_tifs(job_id, api, directory, keep=False):
             for ff in product_dir.rglob('*'):
                 ff.unlink()
             product_dir.rmdir()
+
+
+def golden_submission(comparison_environments, job_template):
+    job_name = util.generate_job_name()
+    print(f'Job name: {job_name}')
+
+    testing_parameters = util.render_template('insar_isce_multi_burst_golden.json.j2', name=job_name)
+    submission_payload = [{k: item[k] for k in ['name', 'job_parameters', 'job_type']} for item in testing_parameters]
+
+    for dir_, api in comparison_environments:
+        dir_.mkdir(parents=True, exist_ok=True)
+
+        hyp3 = HyP3(api, os.environ.get('EARTHDATA_LOGIN_USER'), os.environ.get('EARTHDATA_LOGIN_PASSWORD'))
+        jobs = hyp3.submit_prepared_jobs(submission_payload)
+        request_time = jobs.jobs[0].request_time.isoformat(timespec='seconds')
+        print(f'{dir_.name} request time: {request_time}')
+
+        submission_details = {'name': job_name, 'request_time': request_time}
+        submission_report = dir_ / f'{dir_.name}_submission.json'
+        submission_report.write_text(json.dumps(submission_details))
+
+
+def golden_wait(comparison_environments, job_name, user_id):
+    for dir_, api in comparison_environments:
+        if job_name is None:
+            submission_report = dir_ / f'{dir_.name}_submission.json'
+            submission_details = json.loads(submission_report.read_text())
+            job_name = submission_details['name']
+
+        hyp3 = HyP3(api, os.environ.get('EARTHDATA_LOGIN_USER'), os.environ.get('EARTHDATA_LOGIN_PASSWORD'))
+        jobs = hyp3.find_jobs(name=job_name, user_id=user_id)
+
+        assert len(jobs) > 0  # will throw if job_name not associated with user_id
+
+        _ = hyp3.watch(jobs)
+
+
+def golden_job_succeeds(jobs_info):
+    main_succeeds = sum([value['main']['succeeded'] for value in jobs_info.values()])
+    develop_succeeds = sum([value['develop']['succeeded'] for value in jobs_info.values()])
+    assert main_succeeds != 0
+    assert develop_succeeds != 0
+    assert main_succeeds == develop_succeeds
+
+
+def golden_tif_names(jobs_info):
+    for pair_information in jobs_info.values():
+        main_normalized_files = pair_information['main']['normalized_files']
+        develop_normalized_files = pair_information['develop']['normalized_files']
+        assert main_normalized_files == develop_normalized_files
