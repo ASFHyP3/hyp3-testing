@@ -132,7 +132,7 @@ def golden_submission(comparison_environments: tuple[tuple[Path, str], tuple[Pat
         submission_report.write_text(json.dumps(submission_details))
 
 
-def golden_wait(comparison_environments: tuple[tuple[Path, str], tuple[Path, str]], job_name: str, user_id: str):
+def golden_wait(comparison_environments: tuple[tuple[Path, str], tuple[Path, str]], job_name: str | None, user_id: str):
     for dir_, api in comparison_environments:
         if job_name is None:
             submission_report = dir_ / f'{dir_.name}_submission.json'
