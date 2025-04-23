@@ -1,6 +1,6 @@
 name: Golden Multiburst InSAR
 
-on: push
+on: workflow_dispatch
 
 jobs:
   golden:
