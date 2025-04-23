@@ -17,8 +17,6 @@ and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 * `compare.py` create new `assert_within_tolerance` function to use file-specific tolerances
 * `autorift_golden.json.j2` includes L5+5, L7+7, L7+8, and L8+7 pairs in different projections to test reprojection code
 * `--user-id` pytest CLI argument to allow finding products submitted by a different user than the authorized user
-
-### Added
 * `test_autorift.py` golden test for the autoRIFT plugin
 
 ### Changed
@@ -28,6 +26,7 @@ and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 * InSAR Gamma tests so that they do not use per-image threshold and instead analyze metadata, coregistration, nodata coverage, and dataproduct quality
 * RTC and autoRIFT golden tests now sleep for 60 seconds between requests for job status
 * `conda-env.yml` has been renamed to `environment.yml` to follow standard naming conventions 
+* Refactored golden tests to move shared `golden_submission`, `golden_wait`, `golden_jobs_succeeds`, and `golden_tif_names` to `helpers.py`
 
 ## [0.1.0](https://github.com/ASFHyP3/hyp3-testing/compare/v0.0.0...v0.1.0)
 
