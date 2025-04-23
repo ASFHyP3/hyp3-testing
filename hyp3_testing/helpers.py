@@ -112,7 +112,7 @@ def job_tifs(job_id, api, directory, keep=False):
             product_dir.rmdir()
 
 
-def golden_submission(comparison_environments, job_template):
+def golden_submission(comparison_environments: tuple[tuple[Path, str], tuple[Path, str]], job_template: str):
     job_name = util.generate_job_name()
     print(f'Job name: {job_name}')
 
@@ -132,7 +132,7 @@ def golden_submission(comparison_environments, job_template):
         submission_report.write_text(json.dumps(submission_details))
 
 
-def golden_wait(comparison_environments, job_name, user_id):
+def golden_wait(comparison_environments: tuple[tuple[Path, str], tuple[Path, str]], job_name: str, user_id: str):
     for dir_, api in comparison_environments:
         if job_name is None:
             submission_report = dir_ / f'{dir_.name}_submission.json'
@@ -147,15 +147,15 @@ def golden_wait(comparison_environments, job_name, user_id):
         _ = hyp3.watch(jobs)
 
 
-def golden_job_succeeds(jobs_info):
+def golden_job_succeeds(jobs_info: dict):
     main_succeeds = sum([value['main']['succeeded'] for value in jobs_info.values()])
     develop_succeeds = sum([value['develop']['succeeded'] for value in jobs_info.values()])
-    assert main_succeeds != 0
-    assert develop_succeeds != 0
-    assert main_succeeds == develop_succeeds
+    assert main_succeeds != 0, 'Main jobs did not succeed'
+    assert develop_succeeds != 0, 'Develop jobs did not succeed'
+    assert main_succeeds == develop_succeeds, 'Main and develop job success counts do not match'
 
 
-def golden_tif_names(jobs_info):
+def golden_tif_names(jobs_info: dict):
     for pair_information in jobs_info.values():
         main_normalized_files = pair_information['main']['normalized_files']
         develop_normalized_files = pair_information['develop']['normalized_files']
