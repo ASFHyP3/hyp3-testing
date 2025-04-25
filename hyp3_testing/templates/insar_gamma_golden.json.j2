@@ -37,6 +37,23 @@
     "name": "{{ name }}",
     "job_parameters": {
       "granules": [
+        "S1C_IW_SLC__1SDV_20250412T152431_20250412T152458_001862_00385D_FC00",
+        "S1C_IW_SLC__1SDV_20250424T152431_20250424T152458_002037_0042CE_B6FA"
+      ],
+      "looks": "20x4",
+      "apply_water_mask": true,
+      "include_look_vectors": true,
+      "include_los_displacement": true,
+      "include_dem": true,
+      "include_wrapped_phase": true,
+      "include_displacement_maps": true
+    },
+    "job_type": "INSAR_GAMMA"
+  },
+  {
+    "name": "{{ name }}",
+    "job_parameters": {
+      "granules": [
         "S1B_IW_SLC__1SDV_20170330T165506_20170330T165534_004940_008A32_DD40",
         "S1B_IW_SLC__1SDV_20170411T165507_20170411T165535_005115_008F39_5E31"
       ],
