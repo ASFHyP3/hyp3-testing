@@ -16,14 +16,17 @@ gdal.UseExceptions()
 
 RTC_S1_PRODUCTS_ERROR_REL_TOLERANCE = 1e-03
 RTC_S1_PRODUCTS_ERROR_ABS_TOLERANCE = 1e-04
-
+ALL_CLOSE_ARGS = dict(
+    rtol=RTC_S1_PRODUCTS_ERROR_REL_TOLERANCE,
+    atol=RTC_S1_PRODUCTS_ERROR_ABS_TOLERANCE,
+    equal_nan=True,
+)
 LIST_EXCLUDE_COMPARISON = [
     '//identification/productID',
     '//metadata/processingInformation/inputs/annotationFiles',
     '//identification/processingDateTime',
     '//metadata/processingInformation/inputs/l1SlcGranules',
 ]
-
 LIST_EXCLUDE_COMPARISON_PRODUCT = [
     'FILENAME',
     'PRODUCT_ID',
@@ -189,15 +192,9 @@ def compare_hdf5_elements(
     assert shape_val_1 == shape_val_2
     assert val_1.dtype == val_2.dtype
 
-    all_close_args = dict(
-        rtol=RTC_S1_PRODUCTS_ERROR_REL_TOLERANCE,
-        atol=RTC_S1_PRODUCTS_ERROR_ABS_TOLERANCE,
-        equal_nan=True,
-    )
-
     if len(shape_val_1) == 0:
         if issubclass(val_1.dtype.type, np.number):
-            assert np.allclose(val_1, val_2, **all_close_args)
+            assert np.allclose(val_1, val_2, **ALL_CLOSE_ARGS)
             return
         # All other non-numerical cases, including the npy array with bytes
         assert np.array_equal(val_1, val_2)
@@ -205,13 +202,13 @@ def compare_hdf5_elements(
 
     if len(shape_val_1) == 1:
         if issubclass(val_1.dtype.type, np.number):
-            assert np.allclose(val_1, val_2, **all_close_args)
+            assert np.allclose(val_1, val_2, **ALL_CLOSE_ARGS)
             return
         assert np.array_equal(val_1, val_2)
         return
 
     if len(shape_val_1) >= 2:
-        assert np.allclose(val_1, val_2, **all_close_args)
+        assert np.allclose(val_1, val_2, **ALL_CLOSE_ARGS)
         return
 
     # Unexpected failure to compare `val_1` and `val_2`
@@ -313,14 +310,7 @@ def compare_rtc_s1_products(file_1, file_2):
 
         assert image_1.shape == image_2.shape
         assert image_1.dtype == image_2.dtype
-
-        assert np.allclose(
-            image_1,
-            image_2,
-            atol=RTC_S1_PRODUCTS_ERROR_ABS_TOLERANCE,
-            rtol=RTC_S1_PRODUCTS_ERROR_REL_TOLERANCE,
-            equal_nan=True,
-        )
+        assert np.allclose(image_1, image_2, **ALL_CLOSE_ARGS)
 
     _compare_rtc_s1_metadata(metadata_1, metadata_2)
 
