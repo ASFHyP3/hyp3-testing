@@ -6,6 +6,7 @@ dependencies:
   - python>=3.10
   - pip
   - gdal
+  - h5py
   - hyp3_sdk>=2.1.1
   - jinja2
   - numpy

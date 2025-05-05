@@ -307,7 +307,6 @@ def compare_rtc_s1_products(file_1, file_2):
         gdal_band_2 = layer_gdal_dataset_2.GetRasterBand(band_index)
         image_1 = gdal_band_1.ReadAsArray()
         image_2 = gdal_band_2.ReadAsArray()
-
         assert image_1.shape == image_2.shape
         assert image_1.dtype == image_2.dtype
         assert np.allclose(image_1, image_2, **ALL_CLOSE_ARGS)
@@ -320,7 +319,6 @@ def _compare_rtc_s1_metadata(metadata_1, metadata_2):
     assert set_1_m_2 == set()
     set_2_m_1 = set(metadata_2.keys()) - set(metadata_1.keys())
     assert set_2_m_1 == set()
-
     for k1, v1 in metadata_1.items():
         exclude_keys = LIST_EXCLUDE_COMPARISON_PRODUCT + ['PROCESSING_DATE_TIME']
         if k1 in exclude_keys:

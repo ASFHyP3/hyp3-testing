@@ -27,6 +27,7 @@ dependencies = [
     "hyp3_sdk>=2.1.1",
     "jinja2",
     "numpy",
+    "h5py",
     "netCDF4",  # provides xarray netCDF IO backend
     "rasterio",
     "xarray",
