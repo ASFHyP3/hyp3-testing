@@ -2,9 +2,7 @@
 Source: https://github.com/opera-adt/RTC/blob/main/app/rtc_compare.py
 """
 
-import argparse
 import itertools
-from pathlib import Path
 
 import h5py
 import numpy as np
@@ -17,17 +15,15 @@ gdal.UseExceptions()
 RTC_S1_PRODUCTS_ERROR_REL_TOLERANCE = 1e-03
 RTC_S1_PRODUCTS_ERROR_ABS_TOLERANCE = 1e-04
 ALL_CLOSE_ARGS = dict(
-    rtol=RTC_S1_PRODUCTS_ERROR_REL_TOLERANCE,
-    atol=RTC_S1_PRODUCTS_ERROR_ABS_TOLERANCE,
-    equal_nan=True,
+    rtol=RTC_S1_PRODUCTS_ERROR_REL_TOLERANCE, atol=RTC_S1_PRODUCTS_ERROR_ABS_TOLERANCE, equal_nan=True
 )
-LIST_EXCLUDE_COMPARISON = [
+LIST_EXCLUDE_COMPARISON_HDF5 = [
     '//identification/productID',
     '//metadata/processingInformation/inputs/annotationFiles',
     '//identification/processingDateTime',
     '//metadata/processingInformation/inputs/l1SlcGranules',
 ]
-LIST_EXCLUDE_COMPARISON_PRODUCT = [
+LIST_EXCLUDE_COMPARISON_IMAGE = [
     'FILENAME',
     'PRODUCT_ID',
     'INPUTS_ANNOTATION_FILES',
@@ -36,17 +32,6 @@ LIST_EXCLUDE_COMPARISON_PRODUCT = [
     'INPUT_ANNOTATION_FILES',
     'INPUT_L1_SLC_GRANULES',
 ]
-
-
-def _get_parser():
-    parser = argparse.ArgumentParser(
-        description='Compare two RTC products', formatter_class=argparse.ArgumentDefaultsHelpFormatter
-    )
-
-    # Inputs
-    parser.add_argument('input_dirs', type=str, nargs=2, help='Input RTC products` directories')
-
-    return parser
 
 
 def _unpack_array(val_in, hdf5_obj_in):
@@ -123,9 +108,6 @@ def compare_hdf5_elements(
     hdf5_obj_2,
     str_key,
     is_attr=False,
-    id_key=None,
-    total_key=None,
-    list_exclude: list = None,
 ):
     """
     Compare the dataset or attribute defined by `str_key`
@@ -137,23 +119,14 @@ def compare_hdf5_elements(
         hdf5_obj_2: The 2nd HDF5 object to compare
         str_key: Key to the dataset or attribute
         is_attr: Designate if `str_key` is for dataset or attribute
-        id_key: index of the key in the list. Optional for printout purpose.
-        total_key: total number of the list. Optional for printout purpose.
-        list_exclude: Absolute paths of the elements to be excluded from the comparison
     """
-
-    if id_key is None or total_key is None:
-        str_order = ''
-    else:
-        str_order = f'{id_key + 1} of {total_key}'
-
     # Prepare to comapre the data in the HDF objects
     if is_attr:
         # str_key is for attribute
         path_attr, key_attr = str_key.split('\n')
         val_1 = hdf5_obj_1[path_attr].attrs[key_attr]
         val_2 = hdf5_obj_2[path_attr].attrs[key_attr]
-        str_message_data_location = f'Attribute {str_order}. path: {path_attr} ; key: {key_attr}'
+        str_message_data_location = f'Attribute path: {path_attr} ; key: {key_attr}'
         # Force the types of the values to np.ndarray to utulize numpy features
         if not isinstance(val_1, np.ndarray):
             val_1 = np.array(val_1)
@@ -161,7 +134,7 @@ def compare_hdf5_elements(
             val_2 = np.array(val_2)
     else:
         # str_key is for dataset
-        str_message_data_location = f'Dataset {str_order}: {str_key}'
+        str_message_data_location = f'Dataset: {str_key}'
         val_1 = np.array(hdf5_obj_1[str_key])
         val_2 = np.array(hdf5_obj_2[str_key])
 
@@ -184,7 +157,7 @@ def compare_hdf5_elements(
         if is_void or is_reference:
             val_2 = _unpack_array(val_2, hdf5_obj_2)
 
-    if list_exclude is not None and str_key in list_exclude:
+    if str_key in LIST_EXCLUDE_COMPARISON_HDF5:
         return
 
     shape_val_1 = val_1.shape
@@ -197,18 +170,18 @@ def compare_hdf5_elements(
             assert np.allclose(val_1, val_2, **ALL_CLOSE_ARGS)
             return
         # All other non-numerical cases, including the npy array with bytes
-        assert np.array_equal(val_1, val_2)
+        assert np.array_equal(val_1, val_2), f'Values for key {str_key} do not match'
         return
 
     if len(shape_val_1) == 1:
         if issubclass(val_1.dtype.type, np.number):
-            assert np.allclose(val_1, val_2, **ALL_CLOSE_ARGS)
+            assert np.allclose(val_1, val_2, **ALL_CLOSE_ARGS), f'Values for key {str_key} do not match'
             return
         assert np.array_equal(val_1, val_2)
         return
 
     if len(shape_val_1) >= 2:
-        assert np.allclose(val_1, val_2, **ALL_CLOSE_ARGS)
+        assert np.allclose(val_1, val_2, **ALL_CLOSE_ARGS), f'Values for key {str_key} do not match'
         return
 
     # Unexpected failure to compare `val_1` and `val_2`
@@ -219,25 +192,15 @@ def compare_hdf5_elements(
     )
 
 
-def compare_rtc_hdf5_files(file_1: str, file_2: str, list_elements_to_exclude: list = None):
+def compare_rtc_hdf5_files(file_1: str, file_2: str):
     """
     Compare the two RTC products (in HDF5) if they are equivalent
     within acceptable difference
 
-    Parameters
-    -----------
-    file_1, file_2: str
-        Path to the RTC products (in HDF5)
-    list_elements_to_exclude: list(str)
-        Absolute paths to the elements to be excluded from the comparison
-
-    Return:
-    -------
-    _: bool
-        `True` if the two products are equivalent; `False` otherwise
-
+    Args:
+        file_1: Path to the first HDF5 file
+        file_2: Path to the second HDF5 file
     """
-
     with h5py.File(file_1, 'r') as hdf5_in_1, h5py.File(file_2, 'r') as hdf5_in_2:
         list_dataset_1, list_attrs_1 = get_list_dataset_attrs_keys(hdf5_in_1)
         set_dataset_1 = set(list_dataset_1)
@@ -257,31 +220,24 @@ def compare_rtc_hdf5_files(file_1: str, file_2: str, list_elements_to_exclude: l
 
         # Proceed with checking the values in dataset,
         # regardless of the agreement of their structure.
-        list_flag_identical_dataset = [None] * len(intersection_set_dataset)
-        for id_flag, key_dataset in enumerate(intersection_set_dataset):
-            list_flag_identical_dataset[id_flag] = compare_hdf5_elements(
-                hdf5_in_1,
-                hdf5_in_2,
-                key_dataset,
-                is_attr=False,
-                id_key=id_flag,
-                total_key=len(intersection_set_dataset),
-                list_exclude=list_elements_to_exclude,
-            )
+        for key_dataset in intersection_set_dataset:
+            compare_hdf5_elements(hdf5_in_1, hdf5_in_2, key_dataset, is_attr=False)
 
         # Proceed with checking the values in attributes,
         # regardless of the agreement of their structure.
-        list_flag_identical_attrs = [None] * len(intersection_set_attrs)
-        for id_flag, key_attr in enumerate(intersection_set_attrs):
-            list_flag_identical_attrs[id_flag] = compare_hdf5_elements(
-                hdf5_in_1,
-                hdf5_in_2,
-                key_attr,
-                is_attr=True,
-                id_key=id_flag,
-                total_key=len(intersection_set_attrs),
-                list_exclude=list_elements_to_exclude,
-            )
+        for key_attr in intersection_set_attrs:
+            compare_hdf5_elements(hdf5_in_1, hdf5_in_2, key_attr, is_attr=True)
+
+
+def _compare_rtc_s1_metadata(metadata_1, metadata_2):
+    set_1_m_2 = set(metadata_1.keys()) - set(metadata_2.keys())
+    assert set_1_m_2 == set()
+    set_2_m_1 = set(metadata_2.keys()) - set(metadata_1.keys())
+    assert set_2_m_1 == set()
+    for k1, v1 in metadata_1.items():
+        if k1 in LIST_EXCLUDE_COMPARISON_IMAGE:
+            continue
+        assert metadata_2[k1] == v1, f'Values for key {k1} do not match'
 
 
 def compare_rtc_s1_products(file_1, file_2):
@@ -312,51 +268,3 @@ def compare_rtc_s1_products(file_1, file_2):
         assert np.allclose(image_1, image_2, **ALL_CLOSE_ARGS)
 
     _compare_rtc_s1_metadata(metadata_1, metadata_2)
-
-
-def _compare_rtc_s1_metadata(metadata_1, metadata_2):
-    set_1_m_2 = set(metadata_1.keys()) - set(metadata_2.keys())
-    assert set_1_m_2 == set()
-    set_2_m_1 = set(metadata_2.keys()) - set(metadata_1.keys())
-    assert set_2_m_1 == set()
-    for k1, v1 in metadata_1.items():
-        exclude_keys = LIST_EXCLUDE_COMPARISON_PRODUCT + ['PROCESSING_DATE_TIME']
-        if k1 in exclude_keys:
-            continue
-        assert metadata_2[k1] == v1
-
-
-def check_file_types(file_list_1, file_list_2):
-    assert len(file_list_1) == len(file_list_2)
-    suffixes_1 = sorted([s.name.split('.')[-1] for s in file_list_1])
-    suffixes_2 = sorted([s.name.split('.')[-1] for s in file_list_2])
-    assert suffixes_1 == suffixes_2
-    assert sorted(list(set(suffixes_1))) == ['h5', 'tif']
-
-
-def main():
-    """
-    main function of the RTC product comparison script
-    """
-    parser = _get_parser()
-
-    args = parser.parse_args()
-
-    file_list_1 = list(Path(args.input_dirs[0]).glob('*tif'))
-    file_list_1 += list(Path(args.input_dirs[0]).glob('*h5'))
-
-    file_list_2 = list(Path(args.input_dirs[1]).glob('*tif'))
-    file_list_2 += list(Path(args.input_dirs[1]).glob('*h5'))
-    check_file_types(file_list_1, file_list_2)
-
-    for file_1 in file_list_1:
-        layer_suffix = file_1.name.split('_')[-1]
-        file_2 = [s for s in file_list_2 if s.name.endswith(layer_suffix)][0]
-        if file_1.name.endswith('h5'):
-            compare_rtc_hdf5_files(file_1, file_2, LIST_EXCLUDE_COMPARISON)
-        elif file_1.name.endswith('tif'):
-            compare_rtc_s1_products(file_1, file_2)
-
-
-if __name__ == '__main__':
-    main()

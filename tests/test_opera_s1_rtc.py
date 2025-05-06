@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from hyp3_testing.opera_compare import LIST_EXCLUDE_COMPARISON, compare_rtc_hdf5_files, compare_rtc_s1_products
+from hyp3_testing.opera_compare import compare_rtc_hdf5_files, compare_rtc_s1_products
 
 
 main = Path('hyp3_testing/main2023')
@@ -29,6 +29,6 @@ def test_compare_files(file_1, file_2):
     layer_suffix = file_1.name.split('_')[-1]
     file_2 = [s for s in file_list_2 if s.name.endswith(layer_suffix)][0]
     if file_1.name.endswith('h5'):
-        compare_rtc_hdf5_files(file_1, file_2, LIST_EXCLUDE_COMPARISON)
+        compare_rtc_hdf5_files(file_1, file_2)
     elif file_1.name.endswith('tif'):
         compare_rtc_s1_products(file_1, file_2)
