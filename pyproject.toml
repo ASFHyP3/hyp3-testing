@@ -31,6 +31,7 @@ dependencies = [
     "netCDF4",  # provides xarray netCDF IO backend
     "rasterio",
     "xarray",
+    "hyp3lib",
 ]
 dynamic = ["version", "readme"]
 

@@ -23,5 +23,6 @@ dependencies:
   - remotezip
   - rioxarray
   - opencv<4.9.0  # https://github.com/conda-forge/opencv-feedstock/issues/400
+  - hyp3lib
   - pip:
     - -r requirements-static.txt

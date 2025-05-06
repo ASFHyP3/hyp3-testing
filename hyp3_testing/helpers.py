@@ -6,6 +6,7 @@ from zipfile import ZipFile
 
 from hyp3_sdk import Batch, HyP3, Job
 from hyp3_sdk.util import extract_zipped_product
+from hyp3lib.fetch import download_file
 from remotezip import RemoteZip
 
 
@@ -99,6 +100,22 @@ def job_tifs(job_id, api, directory, keep=False):
         product_archive = job.download_files(directory)[0]
         product_dir = extract_zipped_product(product_archive)
 
+    tif_paths = sorted(product_dir.glob('*.tif'))
+    try:
+        yield tif_paths
+    finally:
+        if not keep:
+            for ff in product_dir.rglob('*'):
+                ff.unlink()
+            product_dir.rmdir()
+
+
+@contextmanager
+def archive_tifs(product_name, product_urls, directory, keep=False):
+    product_dir = directory / product_name
+    if not product_dir.exists():
+        product_dir.mkdir(parents=True)
+        [download_file(url, product_dir) for url in product_urls]
     tif_paths = sorted(product_dir.glob('*.tif'))
     try:
         yield tif_paths
