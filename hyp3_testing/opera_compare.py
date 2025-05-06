@@ -19,18 +19,13 @@ ALL_CLOSE_ARGS = dict(
 )
 LIST_EXCLUDE_COMPARISON_HDF5 = [
     '//identification/productID',
-    '//metadata/processingInformation/inputs/annotationFiles',
     '//identification/processingDateTime',
-    '//metadata/processingInformation/inputs/l1SlcGranules',
 ]
 LIST_EXCLUDE_COMPARISON_IMAGE = [
     'FILENAME',
     'PRODUCT_ID',
-    'INPUTS_ANNOTATION_FILES',
     'INPUTS_CONFIG_FILES',
     'PROCESSING_DATETIME',
-    'INPUT_ANNOTATION_FILES',
-    'INPUT_L1_SLC_GRANULES',
 ]
 
 
