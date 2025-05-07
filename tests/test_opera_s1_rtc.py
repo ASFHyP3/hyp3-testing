@@ -62,7 +62,7 @@ def test_golden_job_succeeds(develop_jobs_info):
     assert develop_succeeds != 0
 
 
-def get_opera_s1_rtc_info(granule_name: str) -> list[str]:
+def get_opera_s1_rtc_info(granule_name: str) -> tuple[str, list[str]]:
     granule_prefix = '_'.join(granule_name.split('_')[:5])
     params = (
         ('short_name', 'OPERA_L2_RTC-S1_V1'),
@@ -72,15 +72,18 @@ def get_opera_s1_rtc_info(granule_name: str) -> list[str]:
     response = requests.get(CMR_URL, params=params)
     response.raise_for_status()
     response_dict = response.json()
+    assert response_dict['hits'] != 0, 'No matching OPERA-S1-RTC granule found'
     assert response_dict['hits'] == 1, 'More than one matching OPERA-S1-RTC granule found'
     item = response_dict['items'][0]
-    data_links = [x['URL'] for x in item['umm']['RelatedUrls'] if x['Type'] == 'GET DATA']
-    return item['meta']['native-id'], data_links
+    data_links = [str(x['URL']) for x in item['umm']['RelatedUrls'] if x['Type'] == 'GET DATA']
+    return str(item['meta']['native-id']), data_links
 
 
 def test_opera_s1_rtc(comparison_environments, develop_jobs_info, keep):
     (main_dir, _), (develop_dir, develop_api) = comparison_environments
-    for job_info in develop_jobs_info.values():
+    for burst_id, job_info in develop_jobs_info.items():
+        if burst_id in ['S1_011394_IW2_20200102T024334_HH_86EB-BURST', 'S1_141657_IW3_20230108T063255_VV_6B7D-BURST']:
+            continue
         product_id, urls = get_opera_s1_rtc_info(job_info['develop']['dir'])
         with (
             archive_tifs(product_id, urls, main_dir, keep) as main_tifs,

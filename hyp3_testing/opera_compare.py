@@ -3,6 +3,7 @@ Source: https://github.com/opera-adt/RTC/blob/main/app/rtc_compare.py
 """
 
 import itertools
+from typing import TypedDict
 
 import h5py
 import numpy as np
@@ -14,9 +15,6 @@ gdal.UseExceptions()
 
 RTC_S1_PRODUCTS_ERROR_REL_TOLERANCE = 1e-03
 RTC_S1_PRODUCTS_ERROR_ABS_TOLERANCE = 1e-04
-ALL_CLOSE_ARGS = dict(
-    rtol=RTC_S1_PRODUCTS_ERROR_REL_TOLERANCE, atol=RTC_S1_PRODUCTS_ERROR_ABS_TOLERANCE, equal_nan=True
-)
 LIST_EXCLUDE_COMPARISON_HDF5 = [
     '//identification/productID',
     '//identification/processingDateTime',
@@ -27,6 +25,17 @@ LIST_EXCLUDE_COMPARISON_IMAGE = [
     'INPUTS_CONFIG_FILES',
     'PROCESSING_DATETIME',
 ]
+
+
+class AllCloseArgs(TypedDict):
+    rtol: float
+    atol: float
+    equal_nan: bool
+
+
+ALL_CLOSE_ARGS: AllCloseArgs = dict(
+    rtol=RTC_S1_PRODUCTS_ERROR_REL_TOLERANCE, atol=RTC_S1_PRODUCTS_ERROR_ABS_TOLERANCE, equal_nan=True
+)
 
 
 def _unpack_array(val_in, hdf5_obj_in):
@@ -45,19 +54,20 @@ def _unpack_array(val_in, hdf5_obj_in):
     """
     list_val_in = list(itertools.chain.from_iterable(val_in))
 
-    list_val_out = [None] * len(list_val_in)
+    list_val_out = ['placeholder'] * len(list_val_in)
     for i_val, element_in in enumerate(list_val_in):
         if isinstance(element_in, h5py.h5r.Reference):
-            list_val_out[i_val] = np.str_(hdf5_obj_in[element_in].name)
+            list_val_out[i_val] = str(hdf5_obj_in[element_in].name)
         else:
             list_val_out[i_val] = element_in
-    val_out = np.array(list_val_out)
 
+    assert 'placeholder' not in list_val_out, 'Unpacking failed'
+    val_out = np.array(list_val_out)
     return val_out
 
 
 def get_list_dataset_attrs_keys(
-    hdf_obj_1: h5py.Group, key_in: str = '/', list_dataset_so_far: list = None, list_attrs_so_far: list = None
+    hdf_obj_1: h5py.Group, key_in: str = '/', list_dataset_so_far: list = [], list_attrs_so_far: list = []
 ):
     """
     Recursively traverse the datasets and attributes within the input HDF5 group.
@@ -76,12 +86,6 @@ def get_list_dataset_attrs_keys(
     Returns:
         Lists of dataset keys and attribute path/keys
     """
-    # default values for the lists
-    if list_dataset_so_far is None:
-        list_dataset_so_far = []
-    if list_attrs_so_far is None:
-        list_attrs_so_far = []
-
     if isinstance(hdf_obj_1[key_in], h5py.Group):
         # Append the attributes keys if there are any
         for key_attr_1 in hdf_obj_1[key_in].attrs:
@@ -165,18 +169,18 @@ def compare_hdf5_elements(
             assert np.allclose(val_1, val_2, **ALL_CLOSE_ARGS)
             return
         # All other non-numerical cases, including the npy array with bytes
-        assert np.array_equal(val_1, val_2), f'Values for key {str_key} do not match'
+        assert np.array_equal(val_1, val_2), f'Values for key {str_key} do not match ({val_1} | {val_2})'
         return
 
     if len(shape_val_1) == 1:
         if issubclass(val_1.dtype.type, np.number):
-            assert np.allclose(val_1, val_2, **ALL_CLOSE_ARGS), f'Values for key {str_key} do not match'
+            assert np.allclose(val_1, val_2, **ALL_CLOSE_ARGS), f'Values for key {str_key} do not match ({val_1} | {val_2})'
             return
         assert np.array_equal(val_1, val_2)
         return
 
     if len(shape_val_1) >= 2:
-        assert np.allclose(val_1, val_2, **ALL_CLOSE_ARGS), f'Values for key {str_key} do not match'
+        assert np.allclose(val_1, val_2, **ALL_CLOSE_ARGS), f'Values for key {str_key} do not match ({val_1} | {val_2})'
         return
 
     # Unexpected failure to compare `val_1` and `val_2`
@@ -232,7 +236,8 @@ def _compare_rtc_s1_metadata(metadata_1, metadata_2):
     for k1, v1 in metadata_1.items():
         if k1 in LIST_EXCLUDE_COMPARISON_IMAGE:
             continue
-        assert metadata_2[k1] == v1, f'Values for key {k1} do not match'
+        v2 = metadata_2[k1]
+        assert v2 == v1, f'Values for key {k1} do not match ({v1} | {v2})'
 
 
 def compare_rtc_s1_products(file_1, file_2):
