@@ -174,7 +174,9 @@ def compare_hdf5_elements(
 
     if len(shape_val_1) == 1:
         if issubclass(val_1.dtype.type, np.number):
-            assert np.allclose(val_1, val_2, **ALL_CLOSE_ARGS), f'Values for key {str_key} do not match ({val_1} | {val_2})'
+            assert np.allclose(val_1, val_2, **ALL_CLOSE_ARGS), (
+                f'Values for key {str_key} do not match ({val_1} | {val_2})'
+            )
             return
         assert np.array_equal(val_1, val_2)
         return
@@ -255,6 +257,8 @@ def compare_rtc_s1_products(file_1, file_2):
     metadata_2 = layer_gdal_dataset_2.GetMetadata()
     nbands_2 = layer_gdal_dataset_2.RasterCount
 
+    _compare_rtc_s1_metadata(metadata_1, metadata_2)
+
     assert nbands_1 == nbands_2
     assert np.array_equal(geotransform_1, geotransform_2)
 
@@ -266,5 +270,3 @@ def compare_rtc_s1_products(file_1, file_2):
         assert image_1.shape == image_2.shape
         assert image_1.dtype == image_2.dtype
         assert np.allclose(image_1, image_2, **ALL_CLOSE_ARGS)
-
-    _compare_rtc_s1_metadata(metadata_1, metadata_2)

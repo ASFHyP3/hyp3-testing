@@ -81,9 +81,7 @@ def get_opera_s1_rtc_info(granule_name: str) -> tuple[str, list[str]]:
 
 def test_opera_s1_rtc(comparison_environments, develop_jobs_info, keep):
     (main_dir, _), (develop_dir, develop_api) = comparison_environments
-    for burst_id, job_info in develop_jobs_info.items():
-        if burst_id in ['S1_011394_IW2_20200102T024334_HH_86EB-BURST', 'S1_141657_IW3_20230108T063255_VV_6B7D-BURST']:
-            continue
+    for job_info in develop_jobs_info.values():
         product_id, urls = get_opera_s1_rtc_info(job_info['develop']['dir'])
         with (
             archive_tifs(product_id, urls, main_dir, keep) as main_tifs,
