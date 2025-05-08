@@ -14,6 +14,7 @@ def freeze_job_parameters(job: Job) -> tuple:
     return tuple((key, job_parameters[key]) for key in sorted(job_parameters.keys()))
 
 
+# TODO: remove comment
 def sort_jobs_by_parameters(jobs: Batch) -> Batch:
     sorted_jobs = sorted(jobs, key=freeze_job_parameters)
     return Batch(sorted_jobs)
