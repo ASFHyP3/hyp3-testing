@@ -7,7 +7,7 @@ import hyp3_sdk
 import pytest
 import xarray as xr
 
-from hyp3_testing import compare, helpers, util
+from hyp3_testing import compare, helpers
 
 
 pytestmark = pytest.mark.golden
@@ -15,22 +15,7 @@ pytestmark = pytest.mark.golden
 
 @pytest.mark.nameskip
 def test_golden_submission(its_live_environments):
-    job_name = util.generate_job_name()
-    print(f'Job name: {job_name}')
-
-    submission_payload = util.render_template('autorift_golden.json.j2', name=job_name)
-
-    for dir_, api in its_live_environments:
-        dir_.mkdir(parents=True, exist_ok=True)
-
-        hyp3 = hyp3_sdk.HyP3(api, os.environ.get('EARTHDATA_LOGIN_USER'), os.environ.get('EARTHDATA_LOGIN_PASSWORD'))
-        jobs = hyp3.submit_prepared_jobs(submission_payload)
-        request_time = jobs.jobs[0].request_time.isoformat(timespec='seconds')
-        print(f'{dir_.name} request time: {request_time}')
-
-        submission_details = {'name': job_name, 'request_time': request_time}
-        submission_report = dir_ / f'{dir_.name}_submission.json'
-        submission_report.write_text(json.dumps(submission_details))
+    helpers.golden_submission(its_live_environments, 'autorift_golden.json.j2')
 
 
 @pytest.mark.timeout(10800)  # 3 hours
