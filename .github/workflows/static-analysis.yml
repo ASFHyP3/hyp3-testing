@@ -13,7 +13,7 @@ jobs:
     permissions:
       contents: read
     with:
-      runner: ubuntu-24.04-arm
+      runner: ubuntu-24.04-arm # TODO: remove after fixing https://github.com/ASFHyP3/hyp3-testing/issues/128
 
   call-mypy-workflow:
     # Docs: https://github.com/ASFHyP3/actions
@@ -21,4 +21,4 @@ jobs:
     permissions:
       contents: read
     with:
-      runner: ubuntu-24.04-arm
+      runner: ubuntu-24.04-arm # TODO: remove after fixing https://github.com/ASFHyP3/hyp3-testing/issues/128
