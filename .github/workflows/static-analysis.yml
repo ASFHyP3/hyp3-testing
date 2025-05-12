@@ -9,7 +9,7 @@ jobs:
 
   call-ruff-workflow:
     # Docs: https://github.com/ASFHyP3/actions
-    uses: ASFHyP3/actions/.github/workflows/reusable-ruff.yml@arm-runner # TODO: pin to latest release
+    uses: ASFHyP3/actions/.github/workflows/reusable-ruff.yml@v0.19.0
     permissions:
       contents: read
     with:
@@ -17,7 +17,7 @@ jobs:
 
   call-mypy-workflow:
     # Docs: https://github.com/ASFHyP3/actions
-    uses: ASFHyP3/actions/.github/workflows/reusable-mypy.yml@arm-runner # TODO: pin to latest release
+    uses: ASFHyP3/actions/.github/workflows/reusable-mypy.yml@v0.19.0
     permissions:
       contents: read
     with:
