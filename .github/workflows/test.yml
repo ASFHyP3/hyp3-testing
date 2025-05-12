@@ -12,7 +12,7 @@ on:
 
 jobs:
   pytest:
-    runs-on: ubuntu-24.04-arm # TODO: remove after fixing https://github.com/ASFHyP3/hyp3-testing/issues/128
+    runs-on: ubuntu-24.04-arm # TODO: revert to ubuntu-latest after fixing https://github.com/ASFHyP3/hyp3-testing/issues/128
     steps:
       - uses: actions/checkout@v4
 
