@@ -8,10 +8,12 @@ jobs:
     uses: ASFHyP3/actions/.github/workflows/reusable-secrets-analysis.yml@v0.18.1
 
   call-ruff-workflow:
-    runs-on: ubuntu-24.04-arm
-    steps:
-      # Docs: https://github.com/ASFHyP3/actions
-      - uses: ASFHyP3/actions/.github/workflows/reusable-ruff.yml@v0.18.1
+    # Docs: https://github.com/ASFHyP3/actions
+    uses: ASFHyP3/actions/.github/workflows/reusable-ruff.yml@arm-runner
+    permissions:
+      contents: read
+    with:
+      runner: ubuntu-24.04-arm
 
   call-mypy-workflow:
     # Docs: https://github.com/ASFHyP3/actions
