@@ -3,10 +3,12 @@ https://github.com/opera-adt/RTC/blob/main/app/rtc_compare.py
 """
 
 import itertools
+from pathlib import Path
 from typing import TypedDict
 
 import h5py
 import numpy as np
+from lxml import etree
 from osgeo import gdal
 
 
@@ -18,6 +20,20 @@ RTC_S1_PRODUCTS_ERROR_ABS_TOLERANCE = 1e-04
 LIST_EXCLUDE_COMPARISON_HDF5 = [
     '//identification/productID',
     '//identification/processingDateTime',
+]
+LIST_EXCLUDE_COMPARISON_XML = [
+    '/gmi:MI_Metadata/gmd:fileIdentifier/gco:CharacterString',
+    '/gmi:MI_Metadata/gmd:dateStamp/gco:DateTime',
+    '/gmi:MI_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification/gmd:citation/gmd:CI_Citation/gmd:title/gmx:FileName',
+    '/gmi:MI_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification/gmd:citation/gmd:CI_Citation/gmd:date/gmd:CI_Date/gmd:date/gco:DateTime',
+    '/gmi:MI_Metadata/gmd:contentInfo/gmd:MD_CoverageDescription/gmd:dimension/gmd:MD_Band/gmd:otherProperty/gco:Record/eos:AdditionalAttributes/eos:AdditionalAttribute[24]/eos:value/gco:CharacterString',
+    '/gmi:MI_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification/gmd:citation/gmd:CI_Citation/gmd:identifier[1]/gmd:MD_Identifier/gmd:code/gco:CharacterString',
+    '/gmi:MI_Metadata/gmd:dataQualityInfo/gmd:DQ_DataQuality/gmd:lineage/gmd:LI_Lineage/gmd:processStep[2]/gmi:LE_ProcessStep/gmd:dateTime/gco:DateTime',
+    '/gmi:MI_Metadata/gmd:dataQualityInfo/gmd:DQ_DataQuality/gmd:lineage/gmd:LI_Lineage/gmd:source[2]/gmd:LI_Source/gmd:description/gco:CharacterString',
+    '/gmi:MI_Metadata/gmd:dataQualityInfo/gmd:DQ_DataQuality/gmd:lineage/gmd:LI_Lineage/gmd:source[4]/gmd:LI_Source/gmd:description/gco:CharacterString'
+    '/gmi:MI_Metadata/gmd:dataQualityInfo/gmd:DQ_DataQuality/gmd:lineage/gmd:LI_Lineage/gmd:processStep[1]/gmi:LE_ProcessStep/gmi:output/gmd:LI_Source/gmd:description/gco:CharacterString',
+    '/gmi:MI_Metadata/gmd:dataQualityInfo/gmd:DQ_DataQuality/gmd:lineage/gmd:LI_Lineage/gmd:processStep[1]/gmi:LE_ProcessStep/gmi:output/gmd:LI_Source/gmd:description/gco:CharacterString',
+    '/gmi:MI_Metadata/gmd:dataQualityInfo/gmd:DQ_DataQuality/gmd:lineage/gmd:LI_Lineage/gmd:source[4]/gmd:LI_Source/gmd:description/gco:CharacterString',
 ]
 LIST_EXCLUDE_COMPARISON_IMAGE = [
     'FILENAME',
@@ -193,7 +209,7 @@ def compare_hdf5_elements(
     )
 
 
-def compare_rtc_hdf5_files(file_1: str, file_2: str):
+def compare_rtc_hdf5_files(file_1: Path, file_2: Path):
     """
     Compare the two RTC products (in HDF5) if they are equivalent
     within acceptable difference
@@ -202,7 +218,9 @@ def compare_rtc_hdf5_files(file_1: str, file_2: str):
         file_1: Path to the first HDF5 file
         file_2: Path to the second HDF5 file
     """
-    with h5py.File(file_1, 'r') as hdf5_in_1, h5py.File(file_2, 'r') as hdf5_in_2:
+    assert file_1.exists()
+    assert file_2.exists()
+    with h5py.File(str(file_1), 'r') as hdf5_in_1, h5py.File(str(file_2), 'r') as hdf5_in_2:
         list_dataset_1, list_attrs_1 = get_list_dataset_attrs_keys(hdf5_in_1)
         set_dataset_1 = set(list_dataset_1)
         set_attrs_1 = set(list_attrs_1)
@@ -230,6 +248,31 @@ def compare_rtc_hdf5_files(file_1: str, file_2: str):
             compare_hdf5_elements(hdf5_in_1, hdf5_in_2, key_attr, is_attr=True)
 
 
+def elements_equal(root, e1, e2):
+    nested = ['{http://earthdata.nasa.gov/schema/eos}value']
+    assert e1.tag == e2.tag, f'Tag mismatch at {e1.tag}: {e1.tag} != {e2.tag}'
+    assert len(e1) == len(e2), f'Children count mismatch at {e1.tag}: {len(e1)} != {len(e2)}'
+    assert e1.attrib == e2.attrib, f'Attribute mismatch at {e1.tag}: {e1.attrib} != {e2.attrib}'
+    assert e1.nsmap == e2.nsmap, f'Namespace mismatch at {e1.tag}: {e1.nsmap} != {e2.nsmap}'
+
+    full_path = root.getroottree().getpath(e1)
+    if full_path not in LIST_EXCLUDE_COMPARISON_XML:
+        # if not (e1.text or '').strip() == (e2.text or '').strip():
+        assert (e1.text or '').strip() == (e2.text or '').strip(), (
+            f'Text mismatch at {full_path}: {e1.text} != {e2.text}'
+        )
+
+    # Recursively compare children
+    for c1, c2 in zip(e1, e2):
+        elements_equal(root, c1, c2)
+
+
+def compare_rtc_iso_xmls(file1, file2):
+    root1 = etree.parse(file1).getroot()
+    root2 = etree.parse(file2).getroot()
+    elements_equal(root1, root1, root2)
+
+
 def _compare_rtc_s1_metadata(metadata_1, metadata_2):
     set_1_m_2 = set(metadata_1.keys()) - set(metadata_2.keys())
     assert set_1_m_2 == set()
@@ -242,7 +285,7 @@ def _compare_rtc_s1_metadata(metadata_1, metadata_2):
         assert v2 == v1, f'Values for key {k1} do not match ({v1} | {v2})'
 
 
-def compare_rtc_s1_products(file_1, file_2):
+def compare_rtc_s1_products(file_1: Path, file_2: Path):
     assert file_1.exists()
     assert file_2.exists()
 
@@ -270,3 +313,13 @@ def compare_rtc_s1_products(file_1, file_2):
         assert image_1.shape == image_2.shape
         assert image_1.dtype == image_2.dtype
         assert np.allclose(image_1, image_2, **ALL_CLOSE_ARGS)
+
+
+if __name__ == '__main__':
+    file1 = Path(
+        'main2/OPERA_L2_RTC-S1_T035-073251-IW2_20220111T020806Z_20241218T153135Z_S1A_30_v1.0/OPERA_L2_RTC-S1_T035-073251-IW2_20220111T020806Z_20241218T153135Z_S1A_30_v1.0.iso.xml'
+    )
+    file2 = Path(
+        'dev2/OPERA_L2_RTC-S1_T035-073251-IW2_20220111T020806Z_20250513T175138Z_S1A_30_v1.0/OPERA_L2_RTC-S1_T035-073251-IW2_20220111T020806Z_20250513T175138Z_S1A_30_v1.0.iso.xml'
+    )
+    compare_rtc_iso_xmls(file1, file2)

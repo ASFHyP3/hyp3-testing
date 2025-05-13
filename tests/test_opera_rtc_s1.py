@@ -8,7 +8,7 @@ from osgeo import gdal
 
 from hyp3_testing import util
 from hyp3_testing.helpers import archive_tifs, job_tifs
-from hyp3_testing.opera_compare import compare_rtc_hdf5_files, compare_rtc_s1_products
+from hyp3_testing.opera_compare import compare_rtc_hdf5_files, compare_rtc_iso_xmls, compare_rtc_s1_products
 
 
 gdal.UseExceptions()
@@ -74,6 +74,13 @@ def get_opera_rtc_s1_info(granule_name: str) -> tuple[str, list[str]]:
     assert response_dict['hits'] == 1, 'More than one matching OPERA_L2_RTC-S1_V1 granule found'
     item = response_dict['items'][0]
     data_links = [str(x['URL']) for x in item['umm']['RelatedUrls'] if x['Type'] == 'GET DATA']
+    iso_xml_link = [
+        str(x['URL'])
+        for x in item['umm']['RelatedUrls']
+        if x['Type'] == 'EXTENDED METADATA' and x['Format'] == 'XML' and 'S3' not in x['Description']
+    ]
+    assert len(iso_xml_link) == 1, 'More than one matching ISO XML link found'
+    data_links.append(iso_xml_link[0])
     return str(item['meta']['native-id']), data_links
 
 
@@ -92,5 +99,10 @@ def test_golden_opera_rtc_s1(comparison_environments, develop_jobs_info, keep):
             main_h5 = list(main_file_dir.glob('*h5'))[0]
             develop_h5 = list(develop_file_dir.glob('*h5'))[0]
             compare_rtc_hdf5_files(main_h5, develop_h5)
+
+            main_xml = list(main_file_dir.glob('*iso.xml'))[0]
+            develop_xml = list(develop_file_dir.glob('*iso.xml'))[0]
+            compare_rtc_iso_xmls(main_xml, develop_xml)
+
             for main_tif, develop_tif in zip(main_tifs, develop_tifs):
                 compare_rtc_s1_products(main_tif, develop_tif)
