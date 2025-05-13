@@ -1,5 +1,5 @@
-"""Modified from the OPERA RTC comparison script created by JPL OPERA RTC team.
-Source: https://github.com/opera-adt/RTC/blob/main/app/rtc_compare.py
+"""Adapted from the OPERA RTC comparison script created by JPL OPERA RTC team:
+https://github.com/opera-adt/RTC/blob/main/app/rtc_compare.py
 """
 
 import itertools

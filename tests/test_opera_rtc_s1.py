@@ -22,7 +22,7 @@ def test_golden_submission(comparison_environments):
     job_name = util.generate_job_name()
     print(f'Job name: {job_name}')
 
-    testing_parameters = util.render_template('opera_s1_rtc_golden.json.j2', name=job_name)
+    testing_parameters = util.render_template('opera_rtc_s1_golden.json.j2', name=job_name)
     submission_payload = [{k: item[k] for k in ['name', 'job_parameters', 'job_type']} for item in testing_parameters]
 
     for dir_, api in comparison_environments:
@@ -62,7 +62,7 @@ def test_golden_job_succeeds(develop_jobs_info):
     assert develop_succeeds != 0
 
 
-def get_opera_s1_rtc_info(granule_name: str) -> tuple[str, list[str]]:
+def get_opera_rtc_s1_info(granule_name: str) -> tuple[str, list[str]]:
     granule_prefix = '_'.join(granule_name.split('_')[:5])
     params = (
         ('short_name', 'OPERA_L2_RTC-S1_V1'),
@@ -72,17 +72,18 @@ def get_opera_s1_rtc_info(granule_name: str) -> tuple[str, list[str]]:
     response = requests.get(CMR_URL, params=params)
     response.raise_for_status()
     response_dict = response.json()
-    assert response_dict['hits'] != 0, 'No matching OPERA-S1-RTC granule found'
-    assert response_dict['hits'] == 1, 'More than one matching OPERA-S1-RTC granule found'
+    assert response_dict['hits'] != 0, 'No matching OPERA_L2_RTC-S1_V1 granule found'
+    assert response_dict['hits'] == 1, 'More than one matching OPERA_L2_RTC-S1_V1 granule found'
     item = response_dict['items'][0]
     data_links = [str(x['URL']) for x in item['umm']['RelatedUrls'] if x['Type'] == 'GET DATA']
     return str(item['meta']['native-id']), data_links
 
 
-def test_opera_s1_rtc(comparison_environments, develop_jobs_info, keep):
+@pytest.mark.dependency(depends=['test_golden_wait'])
+def test_golden_opera_rtc_s1(comparison_environments, develop_jobs_info, keep):
     (main_dir, _), (develop_dir, develop_api) = comparison_environments
     for job_info in develop_jobs_info.values():
-        product_id, urls = get_opera_s1_rtc_info(job_info['develop']['dir'])
+        product_id, urls = get_opera_rtc_s1_info(job_info['develop']['dir'])
         with (
             archive_tifs(product_id, urls, main_dir, keep) as main_tifs,
             job_tifs(job_info['develop']['job_id'], develop_api, develop_dir, keep) as develop_tifs,
