@@ -6,9 +6,8 @@ from zipfile import ZipFile
 
 from hyp3_sdk import Batch, HyP3, Job
 from hyp3_sdk.util import extract_zipped_product
-from remotezip import RemoteZip
-
 from hyp3lib.fetch import download_file, write_credentials_to_netrc_file
+from remotezip import RemoteZip
 
 
 def freeze_job_parameters(job: Job) -> tuple:
