@@ -7,7 +7,8 @@ from functools import singledispatch
 from os import listdir
 from pathlib import Path
 
-import cv2
+# cv2 is a .so file, so mypy can't find it
+import cv2  # type: ignore[import-not-found]
 import numpy as np
 import scipy
 import xarray as xr
@@ -82,8 +83,7 @@ def _assert_within_offset_distance(
     mask = np.bitwise_or(data_main.mask, data_deve.mask)
     data_main.data[mask] = 0
     data_deve.data[mask] = 0
-    # cv2 is a .so file, so mypy can't find it
-    mgs_obj = cv2.reg_MapperGradShift()  # type: ignore[attr-defined]
+    mgs_obj = cv2.reg_MapperGradShift()
     result = mgs_obj.calculate(data_main.data, data_deve.data)
     x_shift, y_shift = cv2.reg.MapTypeCaster.toShift(result).getShift().flatten()
     distance_pixels = np.sqrt((x_shift**2) + (y_shift**2))
