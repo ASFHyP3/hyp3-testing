@@ -58,8 +58,7 @@ def test_golden_wait(comparison_environments, job_name, user_id):
 
 @pytest.mark.dependency(depends=['test_golden_wait'])
 def test_golden_job_succeeds(develop_jobs_info):
-    develop_succeeds = sum([value['develop']['succeeded'] for value in develop_jobs_info.values()])
-    assert develop_succeeds != 0
+    assert all(value['develop']['succeeded'] for value in develop_jobs_info.values())
 
 
 def get_opera_rtc_s1_info(granule_name: str) -> tuple[str, list[str]]:
