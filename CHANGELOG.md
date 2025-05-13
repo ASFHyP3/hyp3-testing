@@ -9,6 +9,7 @@ and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [unreleased]
 
 ### Added
+* Golden tests for `INSAR_ISCE_MULTI_BURST` jobs
 * Functions to compare.py for testing the coregistration, nodata masks, and information content of pairs
 * Add functionality to use file and pair specific tolerances for `INSAR_GAMMA` jobs
 * `insar_gamma_golden.json.j2` Add tolerance and allowable excedeances for each file and use new pairs
