@@ -54,7 +54,7 @@ ALL_CLOSE_ARGS: AllCloseArgs = dict(
 )
 
 
-def _unpack_array(val_in, hdf5_obj_in):
+def _unpack_array(val_in: np.ndarray, hdf5_obj_in: h5py.Group) -> np.ndarray:
     """
     Unpack the array of array into ordinary numpy array.
     Convert an HDF5 object reference into the path it is pointing to.
@@ -84,7 +84,7 @@ def _unpack_array(val_in, hdf5_obj_in):
 
 def get_list_dataset_attrs_keys(
     hdf_obj_1: h5py.Group, key_in: str = '/', list_dataset_so_far: list = [], list_attrs_so_far: list = []
-):
+) -> tuple[list, list]:
     """
     Recursively traverse the datasets and attributes within the input HDF5 group.
     Returns the list of keys for datasets and attributes.
@@ -118,12 +118,7 @@ def get_list_dataset_attrs_keys(
     return list_dataset_so_far, list_attrs_so_far
 
 
-def compare_hdf5_elements(
-    hdf5_obj_1,
-    hdf5_obj_2,
-    str_key,
-    is_attr=False,
-):
+def compare_hdf5_elements(hdf5_obj_1: h5py.Group, hdf5_obj_2: h5py.Group, str_key: str, is_attr=False) -> None:
     """
     Compare the dataset or attribute defined by `str_key`
     NOTE: For attributes, the path and the key are
@@ -208,7 +203,7 @@ def compare_hdf5_elements(
     )
 
 
-def compare_rtc_hdf5_files(file_1: Path, file_2: Path):
+def compare_rtc_hdf5_files(file_1: Path, file_2: Path) -> None:
     """
     Compare the two RTC products (in HDF5) if they are equivalent
     within acceptable difference
@@ -247,7 +242,7 @@ def compare_rtc_hdf5_files(file_1: Path, file_2: Path):
             compare_hdf5_elements(hdf5_in_1, hdf5_in_2, key_attr, is_attr=True)
 
 
-def elements_equal(root, e1, e2):
+def elements_equal(root: etree._Element, e1: etree._Element, e2: etree._Element) -> None:
     assert e1.tag == e2.tag, f'Tag mismatch at {e1.tag}: {e1.tag} != {e2.tag}'
     assert len(e1) == len(e2), f'Children count mismatch at {e1.tag}: {len(e1)} != {len(e2)}'
     assert e1.attrib == e2.attrib, f'Attribute mismatch at {e1.tag}: {e1.attrib} != {e2.attrib}'
@@ -264,13 +259,13 @@ def elements_equal(root, e1, e2):
         elements_equal(root, c1, c2)
 
 
-def compare_rtc_iso_xmls(file1, file2):
+def compare_rtc_iso_xmls(file1: Path, file2: Path) -> None:
     root1 = etree.parse(file1).getroot()
     root2 = etree.parse(file2).getroot()
     elements_equal(root1, root1, root2)
 
 
-def _compare_rtc_s1_metadata(metadata_1, metadata_2):
+def _compare_rtc_s1_metadata(metadata_1: dict, metadata_2: dict) -> None:
     set_1_m_2 = set(metadata_1.keys()) - set(metadata_2.keys())
     assert set_1_m_2 == set()
     set_2_m_1 = set(metadata_2.keys()) - set(metadata_1.keys())
@@ -282,7 +277,7 @@ def _compare_rtc_s1_metadata(metadata_1, metadata_2):
         assert v2 == v1, f'Values for key {k1} do not match ({v1} | {v2})'
 
 
-def compare_rtc_s1_products(file_1: Path, file_2: Path):
+def compare_rtc_s1_products(file_1: Path, file_2: Path) -> None:
     assert file_1.exists()
     assert file_2.exists()
 
