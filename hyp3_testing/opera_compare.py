@@ -201,7 +201,6 @@ def compare_hdf5_elements(
         assert np.allclose(val_1, val_2, **ALL_CLOSE_ARGS), f'Values for key {str_key} do not match ({val_1} | {val_2})'
         return
 
-    # Unexpected failure to compare `val_1` and `val_2`
     raise ValueError(
         f'Failed to compare the element: {str_message_data_location}'
         f'dataset shape in the 1st HDF5: {shape_val_1}'
@@ -249,7 +248,6 @@ def compare_rtc_hdf5_files(file_1: Path, file_2: Path):
 
 
 def elements_equal(root, e1, e2):
-    nested = ['{http://earthdata.nasa.gov/schema/eos}value']
     assert e1.tag == e2.tag, f'Tag mismatch at {e1.tag}: {e1.tag} != {e2.tag}'
     assert len(e1) == len(e2), f'Children count mismatch at {e1.tag}: {len(e1)} != {len(e2)}'
     assert e1.attrib == e2.attrib, f'Attribute mismatch at {e1.tag}: {e1.attrib} != {e2.attrib}'
@@ -257,7 +255,6 @@ def elements_equal(root, e1, e2):
 
     full_path = root.getroottree().getpath(e1)
     if full_path not in LIST_EXCLUDE_COMPARISON_XML:
-        # if not (e1.text or '').strip() == (e2.text or '').strip():
         assert (e1.text or '').strip() == (e2.text or '').strip(), (
             f'Text mismatch at {full_path}: {e1.text} != {e2.text}'
         )
@@ -289,7 +286,6 @@ def compare_rtc_s1_products(file_1: Path, file_2: Path):
     assert file_1.exists()
     assert file_2.exists()
 
-    # TODO: compare projections ds.GetProjection()
     layer_gdal_dataset_1 = gdal.Open(file_1, gdal.GA_ReadOnly)
     geotransform_1 = layer_gdal_dataset_1.GetGeoTransform()
     metadata_1 = layer_gdal_dataset_1.GetMetadata()
@@ -313,13 +309,3 @@ def compare_rtc_s1_products(file_1: Path, file_2: Path):
         assert image_1.shape == image_2.shape
         assert image_1.dtype == image_2.dtype
         assert np.allclose(image_1, image_2, **ALL_CLOSE_ARGS)
-
-
-if __name__ == '__main__':
-    file1 = Path(
-        'main2/OPERA_L2_RTC-S1_T035-073251-IW2_20220111T020806Z_20241218T153135Z_S1A_30_v1.0/OPERA_L2_RTC-S1_T035-073251-IW2_20220111T020806Z_20241218T153135Z_S1A_30_v1.0.iso.xml'
-    )
-    file2 = Path(
-        'dev2/OPERA_L2_RTC-S1_T035-073251-IW2_20220111T020806Z_20250513T175138Z_S1A_30_v1.0/OPERA_L2_RTC-S1_T035-073251-IW2_20220111T020806Z_20250513T175138Z_S1A_30_v1.0.iso.xml'
-    )
-    compare_rtc_iso_xmls(file1, file2)
