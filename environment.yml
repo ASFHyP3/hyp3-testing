@@ -6,10 +6,12 @@ dependencies:
   - python>=3.10
   - pip
   - gdal
+  - numpy
+  - h5py
+  - netCDF4  # provides xarray netCDF IO backend
+  - hyp3lib
   - hyp3_sdk>=2.1.1
   - jinja2
-  - numpy
-  - netCDF4  # provides xarray netCDF IO backend
   - setuptools
   - setuptools_scm
   - pytest
@@ -19,8 +21,8 @@ dependencies:
   - rasterio
   - wheel
   - xarray
-  - remotezip
   - rioxarray
+  - remotezip
   - opencv<4.9.0  # https://github.com/conda-forge/opencv-feedstock/issues/400
   - pip:
     - -r requirements-static.txt

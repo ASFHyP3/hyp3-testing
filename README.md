@@ -4,7 +4,7 @@ A package for automated system testing of HyP3 processes
 
 ## Available system tests
 
-System test post a set of jobs to both HyP3v2 production 
+System test post a set of jobs to both HyP3v2 production
 (`https://hyp3-api.asf.alaska.edu/jobs`) and test (`https://hyp3-test-api.asf.alaska.edu/jobs`)
 and compares them. It uses production HyP3v2 as the "golden" (aka baseline, reference) set for the comparison.
 All system test will check:
@@ -30,6 +30,12 @@ Currently, it additionally checks for each product:
 * that each data variable is close
 * that there is a spatial variable following [CF Conventions](https://cfconventions.org/)
   with WKT defining the reference system
+
+### Golden OPERA-RTC-S1 comparison
+
+The Golden OPERA-RTC-S1 checks work differently from most of the other checks in this repo.
+
+Since there is an existing archive of OPERA-RTC-S1 products that we want our HyP3-based workflows to produce similar products to, we use archived OPERA-RTC-S1 products as the "golden" products. This means that the OPERA-RTC-S1 golden tests only produce products via HyP3 in the development deployment. In addition, the thresholds for the comparison of products are much stricter than other tests because we want to be producing nearly-identical products.
 
 ## Quickstart -- Using the manual GitHub actions
 
@@ -64,8 +70,8 @@ cd hyp3-testing
 
 ### Setup a test environment
 
-A HyP3 Testing environment can be setup via 
-[Anaconda/Miniconda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/download.html#) 
+A HyP3 Testing environment can be setup via
+[Anaconda/Miniconda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/download.html#)
 using the provided `environment.yml`:
 
 ```
@@ -127,7 +133,7 @@ a couple options to pytest to help.
   pytest --golden-dirs [DIR1] [DIR2]
   ```
   which will use the products found inside those directories (with `DIR1` being considered the golden set)
-  or, if no products found, download the appropriate products to that directory (either from the 
+  or, if no products found, download the appropriate products to that directory (either from the
   submission or the specified name)
 
 * You can also specify an alternate `user_id`

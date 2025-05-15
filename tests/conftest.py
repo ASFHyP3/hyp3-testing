@@ -140,3 +140,29 @@ def jobs_info(comparison_environments, job_name, user_id):
         }
 
     return jobs_dict
+
+
+@pytest.fixture(scope='module')
+def develop_jobs_info(comparison_environments, job_name, user_id):
+    (_, _), (develop_dir, develop_api) = comparison_environments
+    if job_name is None:
+        submission_report = develop_dir / f'{develop_dir.name}_submission.json'
+        submission_details = json.loads(submission_report.read_text())
+        job_name = submission_details['name']
+
+    develop_jobs = helpers.get_jobs_in_environment(job_name, develop_api, user_id=user_id)
+
+    jobs_dict = {}
+    for develop_job in develop_jobs:
+        pair_name = '_'.join(sorted(develop_job.job_parameters['granules']))
+        job_develop_dir, develop_normalized_files = helpers.determine_product_files(develop_job)
+        jobs_dict[pair_name] = {
+            'develop': {
+                'job_id': develop_job.job_id,
+                'succeeded': develop_job.succeeded(),
+                'dir': job_develop_dir,
+                'normalized_files': develop_normalized_files,
+            },
+        }
+
+    return jobs_dict
