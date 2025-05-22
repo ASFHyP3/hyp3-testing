@@ -65,7 +65,10 @@ def _assert_within_statistic(reference: np.ndarray, secondary: np.ndarray, confi
     )
 
     if results.pvalue < confidence_level:
-        raise AssertionError(f'Two data are not similar with confidence level {confidence_level * 100} %')
+        pct_p = int(results.pvalue * 100)
+        raise AssertionError(
+            f'Two data are not similar with confidence level {confidence_level * 100}% (actual {pct_p}%)'
+        )
 
 
 def values_are_within_statistic(reference: np.ndarray, secondary: np.ndarray, confidence_level: float = 0.95):

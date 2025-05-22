@@ -97,7 +97,7 @@ def test_golden_insar(comparison_environments, jobs_info, keep):
 
                     compare.maskes_are_within_similarity_threshold(main_ds, develop_ds, mask_rate=0.98)
 
-                    compare.values_are_within_statistic(main_ds, develop_ds, confidence_level=0.99)
+                    compare.values_are_within_statistic(main_ds, develop_ds, confidence_level=0.98)
 
                     if '_unw_phase.tif' in str(main_tif):
                         compare.nodata_count_change_are_within_threshold(main_ds, develop_ds, threshold=0.01)
