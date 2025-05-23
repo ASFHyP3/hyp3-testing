@@ -119,7 +119,16 @@ def jobs_info(comparison_environments, job_name, user_id):
 
     jobs_dict = {}
     for main_job, develop_job in zip(main_jobs, develop_jobs):
-        pair_name = '_'.join(sorted(main_job.job_parameters['granules']))
+        if 'granules' in main_job.job_parameters:
+            pair_name = '_'.join(sorted(main_job.job_parameters['granules']))
+        elif 'reference' in main_job.job_parameters and 'secondary' in main_job.job_parameters:
+            refs = main_job.job_parameters['reference']
+            secs = main_job.job_parameters['secondary']
+            pair_name = f'{refs[0]}n{len(refs)}_{secs[0]}n{len(secs)}'
+        else:
+            raise ValueError(
+                '"granules" and "reference"/"secondary" not in job parameters. Cannot create pair name from job parameters.'
+            )
 
         job_main_dir, main_normalized_files = helpers.determine_product_files(main_job)
         job_develop_dir, develop_normalized_files = helpers.determine_product_files(develop_job)
