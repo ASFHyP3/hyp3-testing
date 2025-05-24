@@ -77,6 +77,7 @@ def clarify_xr_message(message: str, left: str = 'reference', right: str = 'seco
 
 
 def determine_product_files(job_instance):
+    assert job_instance.succeeded(), 'Job must be successful to determine product files'
     product_archive = job_instance.files[0]['url']
 
     with RemoteZip(product_archive) as z:
