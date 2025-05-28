@@ -18,7 +18,7 @@ def test_golden_submission(its_live_environments):
     job_name = util.generate_job_name()
     print(f'Job name: {job_name}')
 
-    submission_payload = util.render_template('autorift_golden.json.j2', name=job_name)
+    submission_payload = util.render_template('autorift_edc_golden.json.j2', name=job_name)
 
     for dir_, api in its_live_environments:
         dir_.mkdir(parents=True, exist_ok=True)
