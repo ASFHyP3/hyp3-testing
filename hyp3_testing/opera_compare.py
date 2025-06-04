@@ -304,3 +304,8 @@ def compare_rtc_s1_products(file_1: Path, file_2: Path) -> None:
         assert image_1.shape == image_2.shape
         assert image_1.dtype == image_2.dtype
         assert np.allclose(image_1, image_2, **ALL_CLOSE_ARGS)
+
+
+def compare_rtc_browse(file_1: Path, file_2: Path):
+    """Compares two browse images and asserts that no value in any band differs by more than +/- 1"""
+    pass

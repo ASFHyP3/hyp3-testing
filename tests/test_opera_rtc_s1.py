@@ -8,7 +8,12 @@ from osgeo import gdal
 
 from hyp3_testing import util
 from hyp3_testing.helpers import archive_tifs, job_tifs
-from hyp3_testing.opera_compare import compare_rtc_hdf5_files, compare_rtc_iso_xmls, compare_rtc_s1_products
+from hyp3_testing.opera_compare import (
+    compare_rtc_browse,
+    compare_rtc_hdf5_files,
+    compare_rtc_iso_xmls,
+    compare_rtc_s1_products,
+)
 
 
 gdal.UseExceptions()
@@ -103,6 +108,10 @@ def test_golden_opera_rtc_s1(comparison_environments, develop_jobs_info, keep):
             main_xml = list(main_file_dir.glob('*iso.xml'))[0]
             develop_xml = list(develop_file_dir.glob('*iso.xml'))[0]
             compare_rtc_iso_xmls(main_xml, develop_xml)
+
+            main_browse = list(main_file_dir.glob('*.png'))[0]
+            develop_browse = list(develop_file_dir.glob('*png'))[0]
+            compare_rtc_browse(main_browse, develop_browse)
 
             for main_tif, develop_tif in zip(main_tifs, develop_tifs):
                 compare_rtc_s1_products(main_tif, develop_tif)
