@@ -18,7 +18,10 @@ def test_golden_submission(its_live_environments):
     job_name = util.generate_job_name()
     print(f'Job name: {job_name}')
 
-    submission_payload = util.render_template('autorift_golden.json.j2', name=job_name)
+    submission_template = os.environ.get('HYP3_TESTING_SUBMISSION_TEMPLATE', 'autorift_golden.json.j2')
+    print(f'Submission template: {submission_template}')
+
+    submission_payload = util.render_template(submission_template, name=job_name)
 
     for dir_, api in its_live_environments:
         dir_.mkdir(parents=True, exist_ok=True)

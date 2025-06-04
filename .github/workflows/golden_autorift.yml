@@ -1,6 +1,15 @@
 name: Golden autoRIFT
 
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+    inputs:
+      submission_template:
+        description: 'Name of the submission template to use'
+        required: true
+        type: choice
+        options:
+          - autorift_golden.json.j2
+          - autorift_its_live_golden.json.j2
 
 jobs:
   golden:
@@ -16,6 +25,7 @@ jobs:
         env:
           EARTHDATA_LOGIN_USER: ${{ secrets.EARTHDATA_LOGIN_USER }}
           EARTHDATA_LOGIN_PASSWORD: ${{ secrets.EARTHDATA_LOGIN_PASSWORD }}
+          HYP3_TESTING_SUBMISSION_TEMPLATE: ${{ inputs.submission_template }}
         shell: bash -l {0}
         run: |
           python -m pip install .[develop]
