@@ -3,6 +3,7 @@ https://github.com/opera-adt/RTC/blob/main/app/rtc_compare.py
 """
 
 import itertools
+import re
 from pathlib import Path
 from typing import TypedDict
 
@@ -17,27 +18,26 @@ gdal.UseExceptions()
 
 RTC_S1_PRODUCTS_ERROR_REL_TOLERANCE = 1e-03
 RTC_S1_PRODUCTS_ERROR_ABS_TOLERANCE = 1e-04
-LIST_EXCLUDE_COMPARISON_HDF5 = [
-    '//identification/productID',
-    '//identification/processingDateTime',
+LIST_EXCLUDE_COMPARISON_HDF5 = ['//identification/processingDateTime']
+LIST_NAME_COMPARISON_XML = [
+    '/gmi:MI_Metadata/gmd:fileIdentifier/gco:CharacterString',
+    '/gmi:MI_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification/gmd:citation/gmd:CI_Citation/gmd:title/gmx:FileName',
+    '/gmi:MI_Metadata/gmd:dataQualityInfo/gmd:DQ_DataQuality/gmd:lineage/gmd:LI_Lineage/gmd:processStep[1]/gmi:LE_ProcessStep/gmi:output/gmd:LI_Source/gmd:description/gco:CharacterString',
+    '/gmi:MI_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification/gmd:citation/gmd:CI_Citation/gmd:identifier[1]/gmd:MD_Identifier/gmd:code/gco:CharacterString',
 ]
 LIST_EXCLUDE_COMPARISON_XML = [
-    '/gmi:MI_Metadata/gmd:fileIdentifier/gco:CharacterString',
     '/gmi:MI_Metadata/gmd:dateStamp/gco:DateTime',
-    '/gmi:MI_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification/gmd:citation/gmd:CI_Citation/gmd:title/gmx:FileName',
     '/gmi:MI_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification/gmd:citation/gmd:CI_Citation/gmd:date/gmd:CI_Date/gmd:date/gco:DateTime',
     '/gmi:MI_Metadata/gmd:contentInfo/gmd:MD_CoverageDescription/gmd:dimension/gmd:MD_Band/gmd:otherProperty/gco:Record/eos:AdditionalAttributes/eos:AdditionalAttribute[24]/eos:value/gco:CharacterString',
-    '/gmi:MI_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification/gmd:citation/gmd:CI_Citation/gmd:identifier[1]/gmd:MD_Identifier/gmd:code/gco:CharacterString',
     '/gmi:MI_Metadata/gmd:dataQualityInfo/gmd:DQ_DataQuality/gmd:lineage/gmd:LI_Lineage/gmd:processStep[2]/gmi:LE_ProcessStep/gmd:dateTime/gco:DateTime',
     '/gmi:MI_Metadata/gmd:dataQualityInfo/gmd:DQ_DataQuality/gmd:lineage/gmd:LI_Lineage/gmd:source[2]/gmd:LI_Source/gmd:description/gco:CharacterString',
-    '/gmi:MI_Metadata/gmd:dataQualityInfo/gmd:DQ_DataQuality/gmd:lineage/gmd:LI_Lineage/gmd:source[4]/gmd:LI_Source/gmd:description/gco:CharacterString'
-    '/gmi:MI_Metadata/gmd:dataQualityInfo/gmd:DQ_DataQuality/gmd:lineage/gmd:LI_Lineage/gmd:processStep[1]/gmi:LE_ProcessStep/gmi:output/gmd:LI_Source/gmd:description/gco:CharacterString',
-    '/gmi:MI_Metadata/gmd:dataQualityInfo/gmd:DQ_DataQuality/gmd:lineage/gmd:LI_Lineage/gmd:processStep[1]/gmi:LE_ProcessStep/gmi:output/gmd:LI_Source/gmd:description/gco:CharacterString',
     '/gmi:MI_Metadata/gmd:dataQualityInfo/gmd:DQ_DataQuality/gmd:lineage/gmd:LI_Lineage/gmd:source[4]/gmd:LI_Source/gmd:description/gco:CharacterString',
 ]
-LIST_EXCLUDE_COMPARISON_IMAGE = [
+LIST_NAME_COMPARISON_IMAGE = [
     'FILENAME',
     'PRODUCT_ID',
+]
+LIST_EXCLUDE_COMPARISON_IMAGE = [
     'INPUTS_CONFIG_FILES',
     'PROCESSING_DATETIME',
 ]
@@ -80,6 +80,27 @@ def _unpack_array(val_in: np.ndarray, hdf5_obj_in: h5py.Group) -> np.ndarray:
     assert 'placeholder' not in list_val_out, 'Unpacking failed'
     val_out = np.array(list_val_out)
     return val_out
+
+
+def check_name(val_1, val_2):
+    """Check that the names of the two files match, excluding the date part.
+    The date part is expected to be in the format YYYYMMDDTHHMMSSZ and is checked separately.
+
+    Args:
+        val_1: Name of the first file
+        val_2: Name of the second file
+    """
+    name1_parts = Path(val_1).name.split('_')
+    name1_date = name1_parts.pop(3)
+    name2_parts = Path(val_2).name.split('_')
+    name2_date = name2_parts.pop(3)
+
+    name1_no_date = '_'.join(name1_parts)
+    name2_no_date = '_'.join(name2_parts)
+    assert name1_no_date == name2_no_date, f'Names do not match: {name1_no_date} != {name2_no_date}'
+
+    assert bool(re.match(r'^\d{8}T\d{6}Z$', name1_date)), f'Invalid date format in {val_1}: {name1_date}'
+    assert bool(re.match(r'^\d{8}T\d{6}Z$', name2_date)), f'Invalid date format in {val_2}: {name2_date}'
 
 
 def get_list_dataset_attrs_keys(
@@ -249,7 +270,9 @@ def elements_equal(root: etree._Element, e1: etree._Element, e2: etree._Element)
     assert e1.nsmap == e2.nsmap, f'Namespace mismatch at {e1.tag}: {e1.nsmap} != {e2.nsmap}'
 
     full_path = root.getroottree().getpath(e1)
-    if full_path not in LIST_EXCLUDE_COMPARISON_XML:
+    if full_path in LIST_NAME_COMPARISON_XML:
+        check_name(e1.text, e2.text)
+    elif full_path not in LIST_EXCLUDE_COMPARISON_XML:
         assert (e1.text or '').strip() == (e2.text or '').strip(), (
             f'Text mismatch at {full_path}: {e1.text} != {e2.text}'
         )
@@ -271,9 +294,13 @@ def _compare_rtc_s1_metadata(metadata_1: dict, metadata_2: dict) -> None:
     set_2_m_1 = set(metadata_2.keys()) - set(metadata_1.keys())
     assert set_2_m_1 == set()
     for k1, v1 in metadata_1.items():
-        if k1 in LIST_EXCLUDE_COMPARISON_IMAGE:
-            continue
         v2 = metadata_2[k1]
+        if k1 in LIST_NAME_COMPARISON_IMAGE:
+            check_name(v1, v2)
+            continue
+        elif k1 in LIST_EXCLUDE_COMPARISON_IMAGE:
+            print(v1)
+            continue
         assert v2 == v1, f'Values for key {k1} do not match ({v1} | {v2})'
 
 
