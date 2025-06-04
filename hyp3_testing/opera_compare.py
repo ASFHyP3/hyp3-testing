@@ -82,7 +82,7 @@ def _unpack_array(val_in: np.ndarray, hdf5_obj_in: h5py.Group) -> np.ndarray:
     return val_out
 
 
-def check_name(val_1, val_2):
+def check_product_id(val_1: str, val_2: str):
     """Check that the names of the two files match, excluding the date part.
     The date part is expected to be in the format YYYYMMDDTHHMMSSZ and is checked separately.
 
@@ -271,7 +271,8 @@ def elements_equal(root: etree._Element, e1: etree._Element, e2: etree._Element)
 
     full_path = root.getroottree().getpath(e1)
     if full_path in LIST_NAME_COMPARISON_XML:
-        check_name(e1.text, e2.text)
+        assert e1.text is not None and e2.text is not None
+        check_product_id(e1.text, e2.text)
     elif full_path not in LIST_EXCLUDE_COMPARISON_XML:
         assert (e1.text or '').strip() == (e2.text or '').strip(), (
             f'Text mismatch at {full_path}: {e1.text} != {e2.text}'
@@ -296,7 +297,7 @@ def _compare_rtc_s1_metadata(metadata_1: dict, metadata_2: dict) -> None:
     for k1, v1 in metadata_1.items():
         v2 = metadata_2[k1]
         if k1 in LIST_NAME_COMPARISON_IMAGE:
-            check_name(v1, v2)
+            check_product_id(v1, v2)
             continue
         elif k1 in LIST_EXCLUDE_COMPARISON_IMAGE:
             print(v1)
