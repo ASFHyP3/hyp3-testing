@@ -3,6 +3,8 @@ from random import sample
 
 import requests
 
+session = requests.Session()
+
 
 def get_corresponding_burst_granule_name(opera_granule: dict) -> str:
     start = opera_granule['umm']['TemporalExtent']['RangeDateTime']['BeginningDateTime']
@@ -17,9 +19,10 @@ def get_corresponding_burst_granule_name(opera_granule: dict) -> str:
             f'string,POLARIZATION,{polarization}',
         ],
     }
-    response = requests.get('https://cmr.earthdata.nasa.gov/search/granules.umm_json', params=params)
+    response = session.get('https://cmr.earthdata.nasa.gov/search/granules.umm_json', params=params)
     response.raise_for_status()
-    assert response.json()['hits'] == 1
+    if not response.json()['hits'] == 1:
+        raise ValueError(f'{response.json()["hits"]} burst results found for {opera_granule["meta"]["native-id"]}')
     return response.json()['items'][0]['meta']['native-id']
 
 
@@ -35,6 +38,16 @@ def choose_sample(candidates: list) -> None:
         print(f'{granule["meta"]["native-id"]},{get_corresponding_burst_granule_name(granule)}')
 
 
+def over_antimeridian(granule: dict) -> bool:
+    longitudes = [point['Longitude'] for poly in granule['umm']['SpatialExtent']['HorizontalSpatialDomain']['Geometry']['GPolygons'] for point in poly['Boundary']['Points']]
+    return min(longitudes) < -160 and 160 < max(longitudes)
+
+
+def over_prime_meridian(granule: dict) -> bool:
+    longitudes = [point['Longitude'] for poly in granule['umm']['SpatialExtent']['HorizontalSpatialDomain']['Geometry']['GPolygons'] for point in poly['Boundary']['Points']]
+    return min(longitudes) < 0 < max(longitudes)
+
+
 with open('rtc_granules.json') as f:
     granules = json.load(f)
 
@@ -43,7 +56,7 @@ def main():
     print('S1A')
     choose_sample([g for g in granules if g['umm']['Platforms'][0]['ShortName'] == 'Sentinel-1A'])
     print('S1B')
-    # choose_sample([g for g in granules if g['umm']['Platforms'][0]['ShortName'] == 'Sentinel-1B'], 10)
+    # choose_sample([g for g in granules if g['umm']['Platforms'][0]['ShortName'] == 'Sentinel-1B'])
     print('IW1')
     choose_sample([g for g in granules if 'IW1' in get_attribute_values(g, 'SUBSWATH_NAME')])
     print('IW2')
@@ -62,6 +75,10 @@ def main():
     choose_sample([g for g in granules if get_attribute_values(g, 'POLARIZATION') == ['VV']])
     print('VV+VH')
     choose_sample([g for g in granules if get_attribute_values(g, 'POLARIZATION') == ['VV', 'VH']])
+    print('prime meridian')
+    choose_sample([g for g in granules if over_prime_meridian(g)])
+    print('antimeridian')
+    choose_sample([g for g in granules if over_antimeridian(g)])
 
 
 if __name__ == '__main__':
