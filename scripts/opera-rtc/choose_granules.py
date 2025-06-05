@@ -1,11 +1,26 @@
 import json
-
 from random import sample
 
+import requests
 
-def get_burst_granule(opera_granule_name: str) -> str:
-    # TODO implement me
-    return ''
+
+def get_corresponding_burst_granule_name(opera_granule: dict) -> str:
+    start = opera_granule['umm']['TemporalExtent']['RangeDateTime']['BeginningDateTime']
+    end = opera_granule['umm']['TemporalExtent']['RangeDateTime']['EndingDateTime']
+    burst_id = get_attribute_values(opera_granule, 'OPERA_BURST_ID')[0][1:]
+    polarization = get_attribute_values(opera_granule, 'POLARIZATION')[0]
+    params = {
+        'short_name': 'SENTINEL-1_BURSTS',
+        'temporal': f'{start},{end}',
+        'attribute[]': [
+            f'string,BURST_ID_FULL,{burst_id}',
+            f'string,POLARIZATION,{polarization}',
+        ],
+    }
+    response = requests.get('https://cmr.earthdata.nasa.gov/search/granules.umm_json', params=params)
+    response.raise_for_status()
+    assert response.json()['hits'] == 1
+    return response.json()['items'][0]['meta']['native-id']
 
 
 def get_attribute_values(granule, attribute_name: str) -> list[str]:
@@ -15,34 +30,39 @@ def get_attribute_values(granule, attribute_name: str) -> list[str]:
     raise ValueError(f'Attribute {attribute_name} not found for granule {granule["meta"]["native-id"]}')
 
 
+def choose_sample(candidates: list) -> None:
+    for granule in sample(candidates, 10):
+        print(f'{granule["meta"]["native-id"]},{get_corresponding_burst_granule_name(granule)}')
+
+
 with open('rtc_granules.json') as f:
     granules = json.load(f)
 
 
-test_granules = []
+def main():
+    print('S1A')
+    choose_sample([g for g in granules if g['umm']['Platforms'][0]['ShortName'] == 'Sentinel-1A'])
+    print('S1B')
+    # choose_sample([g for g in granules if g['umm']['Platforms'][0]['ShortName'] == 'Sentinel-1B'], 10)
+    print('IW1')
+    choose_sample([g for g in granules if 'IW1' in get_attribute_values(g, 'SUBSWATH_NAME')])
+    print('IW2')
+    choose_sample([g for g in granules if 'IW2' in get_attribute_values(g, 'SUBSWATH_NAME')])
+    print('IW3')
+    choose_sample([g for g in granules if 'IW3' in get_attribute_values(g, 'SUBSWATH_NAME')])
+    print('ASCENDING')
+    choose_sample([g for g in granules if 'ASCENDING' in get_attribute_values(g, 'ASCENDING_DESCENDING')])
+    print('DESCENDING')
+    choose_sample([g for g in granules if 'DESCENDING' in get_attribute_values(g, 'ASCENDING_DESCENDING')])
+    print('HH')
+    choose_sample([g for g in granules if get_attribute_values(g, 'POLARIZATION') == ['HH']])
+    print('HH+HV')
+    choose_sample([g for g in granules if get_attribute_values(g, 'POLARIZATION') == ['HH', 'HV']])
+    print('VV')
+    choose_sample([g for g in granules if get_attribute_values(g, 'POLARIZATION') == ['VV']])
+    print('VV+VH')
+    choose_sample([g for g in granules if get_attribute_values(g, 'POLARIZATION') == ['VV', 'VH']])
 
-# S1A
-test_granules.extend(sample([g['meta']['native-id'] for g in granules if g['umm']['Platforms'][0]['ShortName'] == 'Sentinel-1A'], 10))
-# S1B
-# test_granules.extend([g['meta']['native-id'] for g in granules if g['umm']['Platforms'][0]['ShortName'] == 'Sentinel-1B'], 10))
-# IW1
-test_granules.extend(sample([g['meta']['native-id'] for g in granules if 'IW1' in get_attribute_values(g, 'SUBSWATH_NAME')], 10))
-# IW2
-test_granules.extend(sample([g['meta']['native-id'] for g in granules if 'IW2' in get_attribute_values(g, 'SUBSWATH_NAME')], 10))
-# IW3
-test_granules.extend(sample([g['meta']['native-id'] for g in granules if 'IW3' in get_attribute_values(g, 'SUBSWATH_NAME')], 10))
-# ASCENDING
-test_granules.extend(sample([g['meta']['native-id'] for g in granules if 'ASCENDING' in get_attribute_values(g, 'ASCENDING_DESCENDING')], 10))
-# DESCENDING
-test_granules.extend(sample([g['meta']['native-id'] for g in granules if 'DESCENDING' in get_attribute_values(g, 'ASCENDING_DESCENDING')], 10))
-# HH
-test_granules.extend(sample([g['meta']['native-id'] for g in granules if get_attribute_values(g, 'POLARIZATION') == ['HH']], 10))
-# HH+HV
-test_granules.extend(sample([g['meta']['native-id'] for g in granules if get_attribute_values(g, 'POLARIZATION') == ['HH', 'HV']], 10))
-# VV
-test_granules.extend(sample([g['meta']['native-id'] for g in granules if get_attribute_values(g, 'POLARIZATION') == ['VV']], 10))
-# VV+VH
-test_granules.extend(sample([g['meta']['native-id'] for g in granules if get_attribute_values(g, 'POLARIZATION') == ['VV', 'VH']], 10))
 
-for granule in test_granules:
-    print(granule)
+if __name__ == '__main__':
+    main()
