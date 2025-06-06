@@ -78,7 +78,6 @@ def get_opera_rtc_s1_info(granule_name: str) -> tuple[str, list[str]]:
     assert response_dict['hits'] != 0, 'No matching OPERA_L2_RTC-S1_V1 granule found'
     assert response_dict['hits'] == 1, 'More than one matching OPERA_L2_RTC-S1_V1 granule found'
     item = response_dict['items'][0]
-    #HERE
     data_links = [str(x['URL']) for x in item['umm']['RelatedUrls'] if x['Type'] == 'GET DATA']
     iso_xml_link = [
         str(x['URL'])
@@ -110,7 +109,6 @@ def test_golden_opera_rtc_s1(comparison_environments, develop_jobs_info, keep):
             develop_xml = list(develop_file_dir.glob('*iso.xml'))[0]
             compare_rtc_iso_xmls(main_xml, develop_xml)
 
-            # HERE
             main_browse = list(main_file_dir.glob('*.png'))[0]
             develop_browse = list(develop_file_dir.glob('*png'))[0]
             compare_rtc_browse(main_browse, develop_browse)
