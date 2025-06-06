@@ -120,7 +120,7 @@ def archive_tifs(product_name, product_urls, directory, keep=False):
         [download_file(url, product_dir) for url in product_urls]
     tif_paths = product_dir.glob('*.tif')
     browse_path = product_dir.glob('*BROWSE.png')
-    dir_paths = sorted(tif_paths + browse_path)
+    dir_paths = sorted(list(tif_paths) + list(browse_path))
     try:
         yield dir_paths
     finally:
