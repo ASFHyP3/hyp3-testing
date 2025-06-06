@@ -109,8 +109,8 @@ def test_golden_opera_rtc_s1(comparison_environments, develop_jobs_info, keep):
             develop_xml = list(develop_file_dir.glob('*iso.xml'))[0]
             compare_rtc_iso_xmls(main_xml, develop_xml)
 
-            main_browse = list(main_file_dir.glob('*.png'))[0]
-            develop_browse = list(develop_file_dir.glob('*png'))[0]
+            main_browse = list(main_file_dir.glob('*BROWSE.png'))[0]
+            develop_browse = list(develop_file_dir.glob('*BROWSE.png'))[0]
             compare_rtc_browse(main_browse, develop_browse)
 
             for main_tif, develop_tif in zip(main_tifs, develop_tifs):
