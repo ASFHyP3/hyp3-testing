@@ -25,7 +25,7 @@ def test_find_files_in_products(tmp_path):
     develop_dir = tmp_path / 'develop' / 'product_DEV'
     develop_dir.mkdir(parents=True)
 
-    product_tifs = ['a.tif', 'b.tif', 'c.tif']
+    product_tifs = ['a.tif', 'b.tif', 'c.tif', 'd_BROWSE.png']
     for f in product_tifs:
         (main_dir / f).touch()
         (develop_dir / f).touch()
@@ -35,4 +35,5 @@ def test_find_files_in_products(tmp_path):
         (main_dir / 'a.tif', develop_dir / 'a.tif'),
         (main_dir / 'b.tif', develop_dir / 'b.tif'),
         (main_dir / 'c.tif', develop_dir / 'c.tif'),
+        (main_dir / 'd_BROWSE.png', develop_dir / 'd_BROWSE.png'),
     ]

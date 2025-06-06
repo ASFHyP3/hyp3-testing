@@ -306,6 +306,19 @@ def compare_rtc_s1_products(file_1: Path, file_2: Path) -> None:
         assert np.allclose(image_1, image_2, **ALL_CLOSE_ARGS)
 
 
-def compare_rtc_browse(file_1: Path, file_2: Path):
+def compare_rtc_browse(file_1: Path, file_2: Path, threshold: float = 1.0):
     """Compares two browse images and asserts that no value in any band differs by more than +/- 1"""
-    pass
+    png1 = gdal.Open(file_1, gdal.GA_ReadOnly)
+    png2 = gdal.Open(file_2, gdal.GA_ReadOnly)
+
+    for band in range(1, len(png1.RasterCount)):
+        band1 = png1.GetRasterBand(band)
+        band1_array = band1.ReadAsArray()
+
+        band2 = png2.GetRasterBand(band)
+        band2_array = band2.ReadAsArray()
+
+        diff = np.abs(band1_array - band2_array)
+
+        if np.any(diff > threshold):
+            raise ValueError(f'Browse images have pixel values that differ more that {threshold}.')

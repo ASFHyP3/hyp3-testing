@@ -118,9 +118,11 @@ def archive_tifs(product_name, product_urls, directory, keep=False):
     if not product_dir.exists():
         product_dir.mkdir(parents=True)
         [download_file(url, product_dir) for url in product_urls]
-    tif_paths = sorted(product_dir.glob('*.tif'))
+    tif_paths = product_dir.glob('*.tif')
+    browse_path = product_dir.glob('*BROWSE.png')
+    dir_paths = sorted(tif_paths + browse_path)
     try:
-        yield tif_paths
+        yield dir_paths
     finally:
         if not keep:
             for ff in product_dir.rglob('*'):
