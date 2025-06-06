@@ -321,4 +321,4 @@ def compare_rtc_browse(file_1: Path, file_2: Path, threshold: float = 1.0):
         diff = np.abs(band1_array - band2_array)
 
         if np.any(diff > threshold):
-            raise ValueError(f'Browse images have pixel values that differ more that {threshold}.')
+            raise ValueError(f'Browse images have pixel values that differ more than {threshold}.')
