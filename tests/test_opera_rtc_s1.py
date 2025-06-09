@@ -8,7 +8,12 @@ from osgeo import gdal
 
 from hyp3_testing import util
 from hyp3_testing.helpers import archive_tifs, job_tifs
-from hyp3_testing.opera_compare import compare_rtc_hdf5_files, compare_rtc_iso_xmls, compare_rtc_s1_products
+from hyp3_testing.opera_compare import (
+    compare_rtc_browse,
+    compare_rtc_hdf5_files,
+    compare_rtc_iso_xmls,
+    compare_rtc_s1_products,
+)
 
 
 gdal.UseExceptions()
@@ -81,6 +86,16 @@ def get_opera_rtc_s1_info(granule_name: str) -> tuple[str, list[str]]:
     ]
     assert len(iso_xml_link) == 1, 'More than one matching ISO XML link found'
     data_links.append(iso_xml_link[0])
+    browse_link = [
+        str(x['URL'])
+        for x in item['umm']['RelatedUrls']
+        if x['Type'] == 'GET RELATED VISUALIZATION'
+        and x['Format'] == 'PNG'
+        and 'S3' not in x['Description']
+        and str(x['URL']).endswith('BROWSE.png')
+    ]
+    assert len(browse_link) == 1, 'More than one matching browse link found'
+    data_links.append(browse_link[0])
     return str(item['meta']['native-id']), data_links
 
 
@@ -103,6 +118,10 @@ def test_golden_opera_rtc_s1(comparison_environments, develop_jobs_info, keep):
             main_xml = list(main_file_dir.glob('*iso.xml'))[0]
             develop_xml = list(develop_file_dir.glob('*iso.xml'))[0]
             compare_rtc_iso_xmls(main_xml, develop_xml)
+
+            main_browse = list(main_file_dir.glob('*BROWSE.png'))[0]
+            develop_browse = list(develop_file_dir.glob('*BROWSE.png'))[0]
+            compare_rtc_browse(main_browse, develop_browse)
 
             for main_tif, develop_tif in zip(main_tifs, develop_tifs):
                 compare_rtc_s1_products(main_tif, develop_tif)
