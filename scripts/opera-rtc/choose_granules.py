@@ -64,6 +64,10 @@ with open('rtc_granules.json') as f:
 with open('GSHHS_c_L1.geojson') as f:
     land = shapely.from_geojson(f.read())
 
+with open('extreme_terrain.geojson') as f:
+    extreme_terrain = shapely.from_geojson(f.read())
+
+
 def main():
     print('S1A')
     choose_sample([g for g in granules if g['umm']['Platforms'][0]['ShortName'] == 'Sentinel-1A'])
@@ -95,6 +99,8 @@ def main():
     choose_sample([g for g in granules if 0.09 < percent_overlap(g, land) < 0.11])
     print('0% land')
     choose_sample([g for g in granules if percent_overlap(g, land) == 0.0])
+    print('extreme terrain')
+    choose_sample([g for g in granules if 0.8 <= percent_overlap(g, extreme_terrain)])
 
 
 if __name__ == '__main__':
