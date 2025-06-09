@@ -2,6 +2,7 @@ import json
 from random import sample
 
 import requests
+import shapely
 
 session = requests.Session()
 
@@ -48,9 +49,20 @@ def over_prime_meridian(granule: dict) -> bool:
     return min(longitudes) < 0 < max(longitudes)
 
 
+def percent_overlap(granule: dict, area: shapely.Geometry) -> float:
+    granule_shape = shapely.MultiPolygon(
+        shapely.Polygon(
+            [point['Longitude'], point['Latitude']] for point in poly['Boundary']['Points']
+        ) for poly in granule['umm']['SpatialExtent']['HorizontalSpatialDomain']['Geometry']['GPolygons']
+    )
+    return area.intersection(granule_shape).area / granule_shape.area
+
+
 with open('rtc_granules.json') as f:
     granules = json.load(f)
 
+with open('GSHHS_c_L1.geojson') as f:
+    land = shapely.from_geojson(f.read())
 
 def main():
     print('S1A')
@@ -79,6 +91,10 @@ def main():
     choose_sample([g for g in granules if over_prime_meridian(g)])
     print('antimeridian')
     choose_sample([g for g in granules if over_antimeridian(g)])
+    print('9-11% land')
+    choose_sample([g for g in granules if 0.09 < percent_overlap(g, land) < 0.11])
+    print('0% land')
+    choose_sample([g for g in granules if percent_overlap(g, land) == 0.0])
 
 
 if __name__ == '__main__':
