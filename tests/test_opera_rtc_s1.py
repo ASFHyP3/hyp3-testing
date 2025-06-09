@@ -86,6 +86,16 @@ def get_opera_rtc_s1_info(granule_name: str) -> tuple[str, list[str]]:
     ]
     assert len(iso_xml_link) == 1, 'More than one matching ISO XML link found'
     data_links.append(iso_xml_link[0])
+    browse_link = [
+        str(x['URL'])
+        for x in item['umm']['RelatedUrls']
+        if x['Type'] == 'GET RELATED VISUALIZATION'
+        and x['Format'] == 'PNG'
+        and 'S3' not in x['Description']
+        and str(x['URL']).endswith('BROWSE.png')
+    ]
+    assert len(browse_link) == 1, 'More than one matching browse link found'
+    data_links.append(browse_link[0])
     return str(item['meta']['native-id']), data_links
 
 
