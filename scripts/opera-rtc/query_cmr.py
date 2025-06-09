@@ -25,7 +25,7 @@ for dt in dates:
         'temporal': f'{start},{end}',
         'page_size': '2000',
     }
-    headers = {}
+    headers = dict()
 
     while True:
         response = requests.get(url, params=params, headers=headers)

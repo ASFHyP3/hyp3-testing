@@ -40,20 +40,27 @@ def choose_sample(candidates: list) -> None:
 
 
 def over_antimeridian(granule: dict) -> bool:
-    longitudes = [point['Longitude'] for poly in granule['umm']['SpatialExtent']['HorizontalSpatialDomain']['Geometry']['GPolygons'] for point in poly['Boundary']['Points']]
+    longitudes = [
+        point['Longitude']
+        for poly in granule['umm']['SpatialExtent']['HorizontalSpatialDomain']['Geometry']['GPolygons']
+        for point in poly['Boundary']['Points']
+    ]
     return min(longitudes) < -160 and 160 < max(longitudes)
 
 
 def over_prime_meridian(granule: dict) -> bool:
-    longitudes = [point['Longitude'] for poly in granule['umm']['SpatialExtent']['HorizontalSpatialDomain']['Geometry']['GPolygons'] for point in poly['Boundary']['Points']]
+    longitudes = [
+        point['Longitude']
+        for poly in granule['umm']['SpatialExtent']['HorizontalSpatialDomain']['Geometry']['GPolygons']
+        for point in poly['Boundary']['Points']
+    ]
     return min(longitudes) < 0 < max(longitudes)
 
 
 def percent_overlap(granule: dict, area: shapely.Geometry) -> float:
     granule_shape = shapely.MultiPolygon(
-        shapely.Polygon(
-            [point['Longitude'], point['Latitude']] for point in poly['Boundary']['Points']
-        ) for poly in granule['umm']['SpatialExtent']['HorizontalSpatialDomain']['Geometry']['GPolygons']
+        shapely.Polygon([point['Longitude'], point['Latitude']] for point in poly['Boundary']['Points'])
+        for poly in granule['umm']['SpatialExtent']['HorizontalSpatialDomain']['Geometry']['GPolygons']
     )
     return area.intersection(granule_shape).area / granule_shape.area
 
