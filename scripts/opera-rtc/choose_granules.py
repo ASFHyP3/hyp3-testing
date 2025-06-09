@@ -60,10 +60,12 @@ def over_prime_meridian(granule: dict) -> bool:
 
 def percent_overlap(granule: dict, area: shapely.Geometry) -> float:
     granule_shape = shapely.MultiPolygon(
-        shapely.Polygon([point['Longitude'], point['Latitude']] for point in poly['Boundary']['Points'])
-        for poly in granule['umm']['SpatialExtent']['HorizontalSpatialDomain']['Geometry']['GPolygons']
+        [
+            shapely.Polygon([point['Longitude'], point['Latitude']] for point in poly['Boundary']['Points'])
+            for poly in granule['umm']['SpatialExtent']['HorizontalSpatialDomain']['Geometry']['GPolygons']
+        ]
     )
-    return area.intersection(granule_shape).area / granule_shape.area
+    return shapely.intersection(granule_shape, area).area / granule_shape.area
 
 
 def main():
