@@ -1,7 +1,9 @@
 import json
-from random import sample
+import random
 
 import requests
+from shapely.geometry import Polygon, shape
+
 
 session = requests.Session()
 
@@ -34,17 +36,39 @@ def get_attribute_values(granule, attribute_name: str) -> list[str]:
 
 
 def choose_sample(candidates: list) -> None:
-    for granule in sample(candidates, 10):
+    random.seed(42)
+    for granule in random.sample(candidates, 10):
         print(f'{granule["meta"]["native-id"]},{get_corresponding_burst_granule_name(granule)}')
 
 
+def filter_extreme_terrain_sample(candidates: list) -> list:
+    with open('extreme_terrain.geojson') as f:
+        extreme_terrain = json.load(f)
+    geometries = [shape(feature['geometry']) for feature in extreme_terrain['features']]
+    filtered_candidates = []
+    for granule in candidates:
+        boundary = granule['umm']['SpatialExtent']['HorizontalSpatialDomain']['Geometry']['GPolygons'][0]['Boundary']
+        granule_geometry = Polygon([(pt['Longitude'], pt['Latitude']) for pt in boundary['Points']])
+        if any(geom.intersects(granule_geometry) for geom in geometries):
+            filtered_candidates.append(granule)
+    return filtered_candidates
+
+
 def over_antimeridian(granule: dict) -> bool:
-    longitudes = [point['Longitude'] for poly in granule['umm']['SpatialExtent']['HorizontalSpatialDomain']['Geometry']['GPolygons'] for point in poly['Boundary']['Points']]
+    longitudes = [
+        point['Longitude']
+        for poly in granule['umm']['SpatialExtent']['HorizontalSpatialDomain']['Geometry']['GPolygons']
+        for point in poly['Boundary']['Points']
+    ]
     return min(longitudes) < -160 and 160 < max(longitudes)
 
 
 def over_prime_meridian(granule: dict) -> bool:
-    longitudes = [point['Longitude'] for poly in granule['umm']['SpatialExtent']['HorizontalSpatialDomain']['Geometry']['GPolygons'] for point in poly['Boundary']['Points']]
+    longitudes = [
+        point['Longitude']
+        for poly in granule['umm']['SpatialExtent']['HorizontalSpatialDomain']['Geometry']['GPolygons']
+        for point in poly['Boundary']['Points']
+    ]
     return min(longitudes) < 0 < max(longitudes)
 
 
@@ -56,7 +80,7 @@ def main():
     print('S1A')
     choose_sample([g for g in granules if g['umm']['Platforms'][0]['ShortName'] == 'Sentinel-1A'])
     print('S1B')
-    # choose_sample([g for g in granules if g['umm']['Platforms'][0]['ShortName'] == 'Sentinel-1B'])
+    choose_sample([g for g in granules if g['umm']['Platforms'][0]['ShortName'] == 'Sentinel-1B'])
     print('IW1')
     choose_sample([g for g in granules if 'IW1' in get_attribute_values(g, 'SUBSWATH_NAME')])
     print('IW2')
@@ -79,6 +103,8 @@ def main():
     choose_sample([g for g in granules if over_prime_meridian(g)])
     print('antimeridian')
     choose_sample([g for g in granules if over_antimeridian(g)])
+    print('extreme terrain')
+    choose_sample(filter_extreme_terrain_sample(granules))
 
 
 if __name__ == '__main__':
