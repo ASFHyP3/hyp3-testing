@@ -339,7 +339,7 @@ def compare_rtc_browse(file_1: Path, file_2: Path, threshold: float = 1.0):
     png1 = gdal.Open(file_1, gdal.GA_ReadOnly)
     png2 = gdal.Open(file_2, gdal.GA_ReadOnly)
 
-    for band in range(1, len(png1.RasterCount)):
+    for band in range(1, png1.RasterCount + 1):
         band1 = png1.GetRasterBand(band)
         band1_array = band1.ReadAsArray()
 
