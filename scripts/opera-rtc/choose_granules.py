@@ -4,6 +4,7 @@ import random
 import requests
 import shapely
 
+
 session = requests.Session()
 
 
@@ -65,17 +66,14 @@ def percent_overlap(granule: dict, area: shapely.Geometry) -> float:
     return area.intersection(granule_shape).area / granule_shape.area
 
 
-with open('rtc_granules.json') as f:
-    granules = json.load(f)
-
-with open('GSHHS_c_L1.geojson') as f:
-    land = shapely.from_geojson(f.read())
-
-with open('extreme_terrain.geojson') as f:
-    extreme_terrain = shapely.from_geojson(f.read())
-
-
 def main():
+    with open('rtc_granules.json') as f:
+        granules = json.load(f)
+    with open('GSHHS_c_L1.geojson') as f:
+        land = shapely.from_geojson(f.read())
+    with open('extreme_terrain.geojson') as f:
+        extreme_terrain = shapely.from_geojson(f.read())
+
     print('S1A')
     choose_sample([g for g in granules if g['umm']['Platforms'][0]['ShortName'] == 'Sentinel-1A'])
     print('S1B')
