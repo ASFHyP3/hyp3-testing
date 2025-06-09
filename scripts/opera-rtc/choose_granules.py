@@ -1,5 +1,5 @@
 import json
-from random import sample
+import random
 
 import requests
 import shapely
@@ -35,7 +35,7 @@ def get_attribute_values(granule, attribute_name: str) -> list[str]:
 
 
 def choose_sample(candidates: list) -> None:
-    for granule in sample(candidates, 10):
+    for granule in random.sample(candidates, 10):
         print(f'{granule["meta"]["native-id"]},{get_corresponding_burst_granule_name(granule)}')
 
 
@@ -104,4 +104,5 @@ def main():
 
 
 if __name__ == '__main__':
+    random.seed(42)
     main()
