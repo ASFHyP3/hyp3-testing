@@ -30,6 +30,7 @@ dependencies = [
     "h5py",
     "netCDF4",  # provides xarray netCDF IO backend
     "rasterio",
+    "shapely",
     "xarray",
 ]
 dynamic = ["version", "readme"]

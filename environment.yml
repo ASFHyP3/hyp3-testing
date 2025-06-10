@@ -19,6 +19,7 @@ dependencies:
   - pytest-dependency
   - pytest-timeout
   - rasterio
+  - shapely
   - wheel
   - xarray
   - rioxarray
