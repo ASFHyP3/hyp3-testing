@@ -6,11 +6,11 @@ import requests
 
 dates = [
     datetime.datetime(2022, 2, 1),
+    datetime.datetime(2022, 5, 1),
     datetime.datetime(2022, 8, 1),
     datetime.datetime(2023, 2, 1),
+    datetime.datetime(2023, 5, 1),
     datetime.datetime(2023, 8, 1),
-    datetime.datetime(2024, 2, 1),
-    datetime.datetime(2024, 8, 1),
 ]
 
 url = 'https://cmr.earthdata.nasa.gov/search/granules.umm_json'
