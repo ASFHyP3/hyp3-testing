@@ -9,6 +9,24 @@ from shapely.strtree import STRtree
 session = requests.Session()
 
 
+def has_opera_rtc_s1_static_coverage(granule_name: str) -> bool:
+    params = {
+        'short_name': 'OPERA_L2_RTC-S1-STATIC_V1',
+        'granule_ur': f'OPERA_L2_RTC-S1-STATIC_{granule_name.split("_")[3]}_*',
+        'options[granule_ur][pattern]': 'true',
+    }
+    response = requests.get('https://cmr.earthdata.nasa.gov/search/granules.json', params=params)
+    response.raise_for_status()
+    return bool(response.json()['feed']['entry'])
+
+
+def get_attribute_values(granule, attribute_name: str) -> list[str]:
+    for attribute in granule['umm']['AdditionalAttributes']:
+        if attribute['Name'] == attribute_name:
+            return attribute['Values']
+    raise ValueError(f'Attribute {attribute_name} not found for granule {granule["meta"]["native-id"]}')
+
+
 def get_corresponding_burst_granule_name(opera_granule: dict) -> str:
     start = opera_granule['umm']['TemporalExtent']['RangeDateTime']['BeginningDateTime']
     end = opera_granule['umm']['TemporalExtent']['RangeDateTime']['EndingDateTime']
@@ -29,17 +47,18 @@ def get_corresponding_burst_granule_name(opera_granule: dict) -> str:
     return response.json()['items'][0]['meta']['native-id']
 
 
-def get_attribute_values(granule, attribute_name: str) -> list[str]:
-    for attribute in granule['umm']['AdditionalAttributes']:
-        if attribute['Name'] == attribute_name:
-            return attribute['Values']
-    raise ValueError(f'Attribute {attribute_name} not found for granule {granule["meta"]["native-id"]}')
-
-
-def choose_sample(candidates: list) -> None:
+def choose_sample(candidates: list, n=10) -> None:
     print(f'Provided {len(candidates)} candidates')
-    for granule in random.sample(candidates, 10):
-        print(f'{granule["meta"]["native-id"]},{get_corresponding_burst_granule_name(granule)}')
+    n_selected = 0
+    for granule in random.sample(candidates, len(candidates)):
+        granule_name = granule['meta']['native-id']
+        if has_opera_rtc_s1_static_coverage(granule_name):
+            print(f'{granule_name},{get_corresponding_burst_granule_name(granule)}')
+            n_selected += 1
+
+        if n_selected >= n:
+            break
+    assert n_selected >= n, 'Not enough granules selected'
 
 
 def over_antimeridian(granule: dict) -> bool:
@@ -84,8 +103,8 @@ def main():
 
     print('S1A')
     choose_sample([g for g in granules if g['umm']['Platforms'][0]['ShortName'] == 'Sentinel-1A'])
-    print('S1B')
-    choose_sample([g for g in granules if g['umm']['Platforms'][0]['ShortName'] == 'Sentinel-1B'])
+    # print('S1B')
+    # choose_sample([g for g in granules if g['umm']['Platforms'][0]['ShortName'] == 'Sentinel-1B'])
     print('IW1')
     choose_sample([g for g in granules if 'IW1' in get_attribute_values(g, 'SUBSWATH_NAME')])
     print('IW2')
@@ -106,15 +125,15 @@ def main():
     choose_sample([g for g in granules if get_attribute_values(g, 'POLARIZATION') == ['VV', 'VH']])
     print('prime meridian')
     choose_sample([g for g in granules if over_prime_meridian(g)])
-    print('antimeridian')
-    choose_sample([g for g in granules if over_antimeridian(g)])
-    print('extreme terrain')
-    choose_sample([g for g in granules if 0.8 <= percent_overlap(g, extreme_terrain, STRtree(extreme_terrain.geoms))])
     pct_lands = [percent_overlap(g, land, STRtree(land.geoms)) for g in granules]
     print('9-11% land')
     choose_sample([g for g, pct_land in zip(granules, pct_lands) if 0.09 < pct_land < 0.11])
     print('0% land')
     choose_sample([g for g, pct_land in zip(granules, pct_lands) if pct_land == 0.0])
+    print('extreme terrain')
+    choose_sample([g for g in granules if 0.8 <= percent_overlap(g, extreme_terrain, STRtree(extreme_terrain.geoms))])
+    print('antimeridian')
+    choose_sample([g for g in granules if over_antimeridian(g)])
 
 
 if __name__ == '__main__':
