@@ -99,6 +99,7 @@ def get_opera_rtc_s1_info(granule_name: str) -> tuple[str, list[str]]:
     data_links.append(browse_link[0])
     return str(item['meta']['native-id']), data_links
 
+
 @pytest.mark.dependency(depends=['test_golden_wait'])
 def test_golden_opera_rtc_s1(comparison_environments, develop_jobs_info, keep):
     (main_dir, _), (develop_dir, develop_api) = comparison_environments
