@@ -21,7 +21,6 @@ RTC_S1_PRODUCTS_ERROR_ABS_TOLERANCE = 1e-04
 LIST_EXCLUDE_COMPARISON_HDF5 = [
     '//identification/processingDateTime',
     # TODO: figure out why these don't exist
-    '//metadata/qa/rfi',
     '//metadata/qa/rfi/frequencyDomainRfiBurstReport',
     '//metadata/qa/rfi/timeDomainRfiReport',
 ]
