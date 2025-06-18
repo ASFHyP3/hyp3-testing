@@ -26,8 +26,7 @@ def test_golden_submission(comparison_environments):
     job_name = util.generate_job_name()
     print(f'Job name: {job_name}')
 
-    # FIXME change back to opera_rtc_s1_golden.json.j2 before merging to develop!
-    testing_parameters = util.render_template('opera_rtc_s1_validation.json.j2', name=job_name)
+    testing_parameters = util.render_template('opera_rtc_s1_golden.json.j2', name=job_name)
     submission_payload = [{k: item[k] for k in ['name', 'job_parameters', 'job_type']} for item in testing_parameters]
 
     dir_, api = comparison_environments[1]
