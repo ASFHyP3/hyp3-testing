@@ -9,17 +9,6 @@ from shapely.strtree import STRtree
 session = requests.Session()
 
 
-def has_opera_rtc_s1_static_coverage(granule_name: str) -> bool:
-    params = {
-        'short_name': 'OPERA_L2_RTC-S1-STATIC_V1',
-        'granule_ur': f'OPERA_L2_RTC-S1-STATIC_{granule_name.split("_")[3]}_*',
-        'options[granule_ur][pattern]': 'true',
-    }
-    response = requests.get('https://cmr.earthdata.nasa.gov/search/granules.json', params=params)
-    response.raise_for_status()
-    return bool(response.json()['feed']['entry'])
-
-
 def get_attribute_values(granule, attribute_name: str) -> list[str]:
     for attribute in granule['umm']['AdditionalAttributes']:
         if attribute['Name'] == attribute_name:
@@ -49,16 +38,9 @@ def get_corresponding_burst_granule_name(opera_granule: dict) -> str:
 
 def choose_sample(candidates: list, n=10) -> None:
     print(f'Provided {len(candidates)} candidates')
-    n_selected = 0
-    for granule in random.sample(candidates, len(candidates)):
+    for granule in random.sample(candidates, 10):
         granule_name = granule['meta']['native-id']
-        if has_opera_rtc_s1_static_coverage(granule_name):
-            print(f'{granule_name},{get_corresponding_burst_granule_name(granule)}')
-            n_selected += 1
-
-        if n_selected >= n:
-            break
-    assert n_selected >= n, 'Not enough granules selected'
+        print(f'{granule_name},{get_corresponding_burst_granule_name(granule)}')
 
 
 def over_antimeridian(granule: dict) -> bool:
