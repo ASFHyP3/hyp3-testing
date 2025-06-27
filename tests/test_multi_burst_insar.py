@@ -82,7 +82,7 @@ def test_golden_multi_burst_insar(comparison_environments, jobs_info, keep):
 
     failure_count = 0
     messages = []
-    for pair, pair_information in jobs_info.items():
+    for pair_information in jobs_info:
         with (
             job_tifs(pair_information['main']['job_id'], main_api, main_dir, keep) as main_tifs,
             job_tifs(pair_information['develop']['job_id'], develop_api, develop_dir, keep) as develop_tifs,

@@ -62,7 +62,7 @@ def test_golden_wait(comparison_environments, job_name, user_id):
 
 @pytest.mark.dependency(depends=['test_golden_wait'])
 def test_golden_job_succeeds(develop_jobs_info):
-    assert all(value['develop']['succeeded'] for value in develop_jobs_info.values())
+    assert all(job['succeeded'] for job in develop_jobs_info)
 
 
 def get_opera_rtc_s1_info(granule_name: str) -> tuple[str, list[str]]:
@@ -102,14 +102,14 @@ def get_opera_rtc_s1_info(granule_name: str) -> tuple[str, list[str]]:
 @pytest.mark.dependency(depends=['test_golden_wait'])
 def test_golden_opera_rtc_s1(comparison_environments, develop_jobs_info, keep):
     (main_dir, _), (develop_dir, develop_api) = comparison_environments
-    for job_info in develop_jobs_info.values():
-        product_id, urls = get_opera_rtc_s1_info(job_info['develop']['dir'])
+    for job in develop_jobs_info:
+        product_id, urls = get_opera_rtc_s1_info(job['dir'])
         with (
             archive_tifs(product_id, urls, main_dir, keep) as main_tifs,
-            job_tifs(job_info['develop']['job_id'], develop_api, develop_dir, keep) as develop_tifs,
+            job_tifs(job['job_id'], develop_api, develop_dir, keep) as develop_tifs,
         ):
             main_file_dir = main_dir / product_id
-            develop_file_dir = develop_dir / job_info['develop']['dir']
+            develop_file_dir = develop_dir / job['dir']
 
             main_h5 = list(main_file_dir.glob('*h5'))[0]
             develop_h5 = list(develop_file_dir.glob('*h5'))[0]
