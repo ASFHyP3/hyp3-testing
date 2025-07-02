@@ -104,7 +104,8 @@ def check_product_id(val_1: str, val_2: str):
 
 
 def get_list_dataset_attrs_keys(
-    hdf_obj_1: h5py.Group, key_in: str = '/',
+    hdf_obj_1: h5py.Group,
+    key_in: str = '/',
     list_dataset_so_far: list[str] | None = None,
     list_attrs_so_far: list[str] | None = None,
 ) -> tuple[list, list]:
