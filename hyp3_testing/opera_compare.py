@@ -21,8 +21,8 @@ RTC_S1_PRODUCTS_ERROR_ABS_TOLERANCE = 1e-04
 LIST_EXCLUDE_COMPARISON_HDF5 = [
     '//identification/processingDateTime',
     # TODO: figure out why these don't exist
-    '//metadata/qa/rfi/frequencyDomainRfiBurstReport',
-    '//metadata/qa/rfi/timeDomainRfiReport',
+    # '//metadata/qa/rfi/frequencyDomainRfiBurstReport',
+    # '//metadata/qa/rfi/timeDomainRfiReport',
 ]
 LIST_NAME_COMPARISON_XML = [
     '/gmi:MI_Metadata/gmd:fileIdentifier/gco:CharacterString',
@@ -305,7 +305,6 @@ def _compare_rtc_s1_metadata(metadata_1: dict, metadata_2: dict) -> None:
             check_product_id(v1, v2)
             continue
         elif k1 in LIST_EXCLUDE_COMPARISON_IMAGE:
-            print(v1)
             continue
         assert v2 == v1, f'Values for key {k1} do not match ({v1} | {v2})'
 
