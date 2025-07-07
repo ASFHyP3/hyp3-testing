@@ -5,7 +5,7 @@ from pathlib import Path
 import hyp3_sdk
 import pytest
 
-from hyp3_testing import helpers, util
+from hyp3_testing import helpers
 
 
 def pytest_addoption(parser):
@@ -91,9 +91,7 @@ def test_data_dir():
 
 
 @pytest.fixture(scope='module')
-def rtc_tolerances(job_name):
-    testing_parameters = util.render_template('rtc_gamma_golden.json.j2', name=job_name)
-    tolerance_names = ['_'.join(sorted(item['job_parameters']['granules'])) for item in testing_parameters]
+def rtc_tolerances() -> dict[str, dict[str, float]]:
     backscatter_types = ['VV', 'VH', 'HH', 'HV']
     other_types = ['inc_map', 'ls_map', 'dem']
 
@@ -102,8 +100,7 @@ def rtc_tolerances(job_name):
     specific_tolerances = {'area': {'rtol': 2e-05, 'atol': 0.0}, 'rgb': {'rtol': 0.0, 'atol': 1.0}}
 
     tolerances = {**backscatter_tolerances, **specific_tolerances, **other_tolerances}
-    tolerance_dict = {k: tolerances for k in tolerance_names}
-    return tolerance_dict
+    return tolerances
 
 
 @pytest.fixture(scope='module')
@@ -117,38 +114,29 @@ def jobs_info(comparison_environments, job_name, user_id):
     main_jobs = helpers.get_jobs_in_environment(job_name, main_api, user_id=user_id)
     develop_jobs = helpers.get_jobs_in_environment(job_name, develop_api, user_id=user_id)
 
-    jobs_dict = {}
+    jobs = []
     for main_job, develop_job in zip(main_jobs, develop_jobs):
-        if 'granules' in main_job.job_parameters:
-            pair_name = '_'.join(sorted(main_job.job_parameters['granules']))
-        elif 'reference' in main_job.job_parameters and 'secondary' in main_job.job_parameters:
-            refs = main_job.job_parameters['reference']
-            secs = main_job.job_parameters['secondary']
-            pair_name = f'{refs[0]}n{len(refs)}_{secs[0]}n{len(secs)}'
-        else:
-            raise ValueError(
-                '"granules" and "reference"/"secondary" not in job parameters. Cannot create pair name from job parameters.'
-            )
-
         job_main_dir, main_normalized_files = helpers.determine_product_files(main_job)
         job_develop_dir, develop_normalized_files = helpers.determine_product_files(develop_job)
 
-        jobs_dict[pair_name] = {
-            'main': {
-                'job_id': main_job.job_id,
-                'succeeded': main_job.succeeded(),
-                'dir': job_main_dir,
-                'normalized_files': main_normalized_files,
-            },
-            'develop': {
-                'job_id': develop_job.job_id,
-                'succeeded': develop_job.succeeded(),
-                'dir': job_develop_dir,
-                'normalized_files': develop_normalized_files,
-            },
-        }
+        jobs.append(
+            {
+                'main': {
+                    'job_id': main_job.job_id,
+                    'succeeded': main_job.succeeded(),
+                    'dir': job_main_dir,
+                    'normalized_files': main_normalized_files,
+                },
+                'develop': {
+                    'job_id': develop_job.job_id,
+                    'succeeded': develop_job.succeeded(),
+                    'dir': job_develop_dir,
+                    'normalized_files': develop_normalized_files,
+                },
+            }
+        )
 
-    return jobs_dict
+    return jobs
 
 
 @pytest.fixture(scope='module')
@@ -161,17 +149,15 @@ def develop_jobs_info(comparison_environments, job_name, user_id):
 
     develop_jobs = helpers.get_jobs_in_environment(job_name, develop_api, user_id=user_id)
 
-    jobs_dict = {}
+    jobs = []
     for develop_job in develop_jobs:
-        pair_name = '_'.join(sorted(develop_job.job_parameters['granules']))
-        job_develop_dir, develop_normalized_files = helpers.determine_product_files(develop_job)
-        jobs_dict[pair_name] = {
-            'develop': {
+        job_develop_dir, _ = helpers.determine_product_files(develop_job)
+        jobs.append(
+            {
                 'job_id': develop_job.job_id,
                 'succeeded': develop_job.succeeded(),
                 'dir': job_develop_dir,
-                'normalized_files': develop_normalized_files,
-            },
-        }
+            }
+        )
 
-    return jobs_dict
+    return jobs

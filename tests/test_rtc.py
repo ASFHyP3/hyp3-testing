@@ -54,8 +54,8 @@ def test_golden_wait(comparison_environments, job_name, user_id):
 
 @pytest.mark.dependency(depends=['test_golden_wait'])
 def test_golden_job_succeeds(jobs_info):
-    main_succeeds = sum([value['main']['succeeded'] for value in jobs_info.values()])
-    develop_succeeds = sum([value['develop']['succeeded'] for value in jobs_info.values()])
+    main_succeeds = sum([value['main']['succeeded'] for value in jobs_info])
+    develop_succeeds = sum([value['develop']['succeeded'] for value in jobs_info])
     assert main_succeeds != 0
     assert develop_succeeds != 0
     assert main_succeeds == develop_succeeds
@@ -63,7 +63,7 @@ def test_golden_job_succeeds(jobs_info):
 
 @pytest.mark.dependency(depends=['test_golden_wait'])
 def test_golden_tif_names(jobs_info):
-    for pair_information in jobs_info.values():
+    for pair_information in jobs_info:
         main_normalized_files = pair_information['main']['normalized_files']
         develop_normalized_files = pair_information['develop']['normalized_files']
         assert main_normalized_files == develop_normalized_files
@@ -75,9 +75,7 @@ def test_golden_rtc(comparison_environments, jobs_info, rtc_tolerances, keep):
 
     failure_count = 0
     messages = []
-    for pair, pair_information in jobs_info.items():
-        pair_tolerances = rtc_tolerances[pair]
-
+    for pair_information in jobs_info:
         with (
             job_tifs(pair_information['main']['job_id'], main_api, main_dir, keep) as main_tifs,
             job_tifs(pair_information['develop']['job_id'], develop_api, develop_dir, keep) as develop_tifs,
@@ -85,7 +83,7 @@ def test_golden_rtc(comparison_environments, jobs_info, rtc_tolerances, keep):
             for main_tif, develop_tif in zip(main_tifs, develop_tifs):
                 file_type = '_'.join(Path(main_tif).name.split('_')[8:])[:-4]
 
-                file_tolerance = pair_tolerances[file_type]
+                file_tolerance = rtc_tolerances[file_type]
                 absolute_tolerance, relative_tolerance = file_tolerance['atol'], file_tolerance['rtol']
 
                 comparison_header = '\n'.join(['-' * 80, str(main_tif), str(develop_tif), '-' * 80])
