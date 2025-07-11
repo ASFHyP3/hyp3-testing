@@ -343,6 +343,12 @@ def compare_rtc_s1_products(file_1: Path, file_2: Path) -> None:
         image_2 = gdal_band_2.ReadAsArray()
         assert image_1.shape == image_2.shape
         assert image_1.dtype == image_2.dtype
+        # try:
+        #     assert np.allclose(image_1, image_2, **ALL_CLOSE_ARGS)
+        # except AssertionError:
+        #     diff = image_1 - image_2
+        #     is_diff = ~np.isclose(image_1, image_2, **ALL_CLOSE_ARGS)
+        #     n_diff = np.sum(is_diff)
         assert np.allclose(image_1, image_2, **ALL_CLOSE_ARGS)
 
 
