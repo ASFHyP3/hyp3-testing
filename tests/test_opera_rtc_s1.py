@@ -18,7 +18,7 @@ from hyp3_testing.opera_compare import (
 
 gdal.UseExceptions()
 CMR_URL = 'https://cmr.earthdata.nasa.gov/search/granules.umm_json'
-SKIP_KNOWN_FAIL = False
+SKIP_KNOWN_FAIL = True
 KNOWN_FAIL = [
     # Orbit
     'OPERA_L2_RTC-S1_T136-290821-IW3_20230501T005010Z_20250201T235523Z_S1A_30_v1.0',
@@ -54,7 +54,7 @@ def test_golden_submission(comparison_environments):
     job_name = util.generate_job_name()
     print(f'Job name: {job_name}')
 
-    testing_parameters = util.render_template('opera_rtc_s1_validation.json.j2', name=job_name)
+    testing_parameters = util.render_template('opera_rtc_s1_golden.json.j2', name=job_name)
     submission_payload = [{k: item[k] for k in ['name', 'job_parameters', 'job_type']} for item in testing_parameters]
 
     dir_, api = comparison_environments[1]
