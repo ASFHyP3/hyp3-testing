@@ -105,7 +105,10 @@ def check_product_id(val_1: str, val_2: str):
 
 
 def get_list_dataset_attrs_keys(
-    hdf_obj_1: h5py.Group, key_in: str = '/', list_dataset_so_far: list = [], list_attrs_so_far: list = []
+    hdf_obj_1: h5py.Group,
+    key_in: str = '/',
+    list_dataset_so_far: list[str] | None = None,
+    list_attrs_so_far: list[str] | None = None,
 ) -> tuple[list, list]:
     """
     Recursively traverse the datasets and attributes within the input HDF5 group.
@@ -124,6 +127,11 @@ def get_list_dataset_attrs_keys(
     Returns:
         Lists of dataset keys and attribute path/keys
     """
+    if list_attrs_so_far is None:
+        list_attrs_so_far = []
+    if list_dataset_so_far is None:
+        list_dataset_so_far = []
+
     if isinstance(hdf_obj_1[key_in], h5py.Group):
         # Append the attributes keys if there are any
         for key_attr_1 in hdf_obj_1[key_in].attrs:
