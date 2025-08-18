@@ -32,6 +32,7 @@ LIST_EXCLUDE_COMPARISON_XML = [
     '/gmi:MI_Metadata/gmd:dataQualityInfo/gmd:DQ_DataQuality/gmd:lineage/gmd:LI_Lineage/gmd:processStep[2]/gmi:LE_ProcessStep/gmd:dateTime/gco:DateTime',
     '/gmi:MI_Metadata/gmd:dataQualityInfo/gmd:DQ_DataQuality/gmd:lineage/gmd:LI_Lineage/gmd:source[2]/gmd:LI_Source/gmd:description/gco:CharacterString',
     '/gmi:MI_Metadata/gmd:dataQualityInfo/gmd:DQ_DataQuality/gmd:lineage/gmd:LI_Lineage/gmd:source[4]/gmd:LI_Source/gmd:description/gco:CharacterString',
+    '/gmi:MI_Metadata/gmd:dataQualityInfo/gmd:DQ_DataQuality/gmd:lineage/gmd:LI_Lineage/gmd:statement/gco:CharacterString',
 ]
 LIST_NAME_COMPARISON_IMAGE = [
     'FILENAME',
