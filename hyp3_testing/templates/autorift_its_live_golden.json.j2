@@ -2,6 +2,7 @@
   "validate_only": false,
   "jobs": [
     {
+      {# Malaspina; all opera bursts  #}
       "job_type": "AUTORIFT",
       "name": "{{ name }}",
       "job_parameters": {
@@ -68,6 +69,7 @@
       }
     },
     {
+      {# Outlet glaciers just north ofJakobshavn #}
       "job_type": "AUTORIFT",
       "name": "{{ name }}",
       "job_parameters": {
@@ -80,6 +82,7 @@
       }
     },
     {
+      {# Malaspina; just ice-intersecting bursts #}
       "job_type": "AUTORIFT",
       "name": "{{ name }}",
       "job_parameters": {
@@ -107,15 +110,43 @@
           "S1_105608_IW1_20240630T025544_VV_3D6E-BURST",
           "S1_105608_IW2_20240630T025545_VV_3D6E-BURST"
         ]
+      },
+      "frame_id": "13201"
+    },
+    {
+      {# Antarctica coast near Molodyozhnaya Station #}
+      "job_type": "AUTORIFT",
+      "name": "{{ name }}",
+      "job_parameters": {
+        "reference": [
+          "S1_353755_IW1_20250416T010159_VV_6252-BURST",
+          "S1_353756_IW1_20250416T010202_VV_6252-BURST",
+          "S1_353757_IW1_20250416T010205_VV_6252-BURST",
+          "S1_353758_IW1_20250416T010208_VV_6252-BURST",
+          "S1_353759_IW1_20250416T010210_VV_6252-BURST",
+          "S1_353760_IW1_20250416T010213_VV_6252-BURST",
+          "S1_353761_IW1_20250416T010216_VV_79E0-BURST"
+        ],
+        "secondary": [
+          "S1_353755_IW1_20250428T010200_VV_A7E2-BURST",
+          "S1_353756_IW1_20250428T010203_VV_A7E2-BURST",
+          "S1_353757_IW1_20250428T010206_VV_A7E2-BURST",
+          "S1_353758_IW1_20250428T010209_VV_A7E2-BURST",
+          "S1_353759_IW1_20250428T010211_VV_A7E2-BURST",
+          "S1_353760_IW1_20250428T010214_VV_A7E2-BURST",
+          "S1_353761_IW1_20250428T010217_VV_8453-BURST"
+        ],
+        "frame_id": "44220"
       }
     },
     {
+      {# Antarctica coast near Molodyozhnaya Station #}
       "job_type": "AUTORIFT",
       "name": "{{ name }}",
       "job_parameters": {
         "granules": [
-          "S1A_IW_SLC__1SSH_20170221T204710_20170221T204737_015387_0193F6_AB07",
-          "S1B_IW_SLC__1SSH_20170227T204628_20170227T204655_004491_007D11_6654"
+          "S1C_IW_SLC__1SDV_20250416T010214_20250416T010241_001911_003B60_79E0",
+          "S1C_IW_SLC__1SDV_20250428T010215_20250428T010242_002086_0045CC_8453"
         ]
       }
     }
