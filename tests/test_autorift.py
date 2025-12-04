@@ -18,13 +18,11 @@ def test_golden_submission(its_live_environments):
     job_name = util.generate_job_name()
     print(f'Job name: {job_name}')
 
-    submission_template = os.environ.get('HYP3_TESTING_SUBMISSION_TEMPLATE', 'autorift_golden.json.j2')
-    print(f'Submission template: {submission_template}')
 
-    submission_payload = util.render_template(submission_template, name=job_name)
-
-    for dir_, api in its_live_environments:
+    for dir_, api, publish_bucket in its_live_environments:
         dir_.mkdir(parents=True, exist_ok=True)
+
+        submission_payload = util.render_template('autorift_golden.json.j2', name=job_name, publish_bucket=publish_bucket)
 
         hyp3 = hyp3_sdk.HyP3(api, os.environ.get('EARTHDATA_LOGIN_USER'), os.environ.get('EARTHDATA_LOGIN_PASSWORD'))
         jobs = hyp3.submit_prepared_jobs(submission_payload)
@@ -39,7 +37,7 @@ def test_golden_submission(its_live_environments):
 @pytest.mark.timeout(10800)  # 3 hours
 @pytest.mark.dependency()
 def test_golden_wait(its_live_environments, job_name, user_id):
-    for dir_, api in its_live_environments:
+    for dir_, api, _ in its_live_environments:
         products = helpers.find_products(dir_, pattern='*.nc')
         if products:
             continue
@@ -59,7 +57,7 @@ def test_golden_wait(its_live_environments, job_name, user_id):
 
 @pytest.mark.dependency(depends=['test_golden_wait'])
 def test_golden_products(its_live_environments, job_name, user_id, keep):
-    (main_dir, main_api), (develop_dir, develop_api) = its_live_environments
+    (main_dir, main_api), (develop_dir, develop_api), _ = its_live_environments
     if job_name is None:
         submission_report = main_dir / f'{main_dir.name}_submission.json'
         submission_details = json.loads(submission_report.read_text())
