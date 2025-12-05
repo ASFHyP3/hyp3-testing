@@ -24,6 +24,6 @@ dependencies:
   - xarray
   - rioxarray
   - remotezip
-  - opencv<4.9.0  # https://github.com/conda-forge/opencv-feedstock/issues/400
+  - opencv
   - pip:
     - -r requirements-static.txt
