@@ -12,7 +12,16 @@ from remotezip import RemoteZip
 
 def freeze_job_parameters(job: Job) -> tuple:
     job_parameters = job.job_parameters
-    return tuple((key, job_parameters[key]) for key in sorted(job_parameters.keys()))
+    frozen_parameters = []
+    for key in sorted(job_parameters.keys()):
+        value = job_parameters[key]
+        if isinstance(value, list):
+            value = tuple(value)
+        if value is None:
+            continue
+        frozen_parameters.append((key, value))
+
+    return tuple(frozen_parameters)
 
 
 def sort_jobs_by_parameters(jobs: Batch) -> Batch:
