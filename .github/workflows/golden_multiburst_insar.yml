@@ -6,7 +6,7 @@ jobs:
   golden:
     runs-on: ubuntu-24.04-arm # TODO: revert to ubuntu-latest after fixing https://github.com/ASFHyP3/hyp3-testing/issues/128
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - uses: mamba-org/setup-micromamba@v2
         with:
