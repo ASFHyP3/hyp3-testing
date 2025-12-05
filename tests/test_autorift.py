@@ -18,11 +18,12 @@ def test_golden_submission(its_live_environments):
     job_name = util.generate_job_name()
     print(f'Job name: {job_name}')
 
-
     for dir_, api, publish_bucket in its_live_environments:
         dir_.mkdir(parents=True, exist_ok=True)
 
-        submission_payload = util.render_template('autorift_golden.json.j2', name=job_name, publish_bucket=publish_bucket)
+        submission_payload = util.render_template(
+            'autorift_golden.json.j2', name=job_name, publish_bucket=publish_bucket
+        )
 
         hyp3 = hyp3_sdk.HyP3(api, os.environ.get('EARTHDATA_LOGIN_USER'), os.environ.get('EARTHDATA_LOGIN_PASSWORD'))
         jobs = hyp3.submit_prepared_jobs(submission_payload)

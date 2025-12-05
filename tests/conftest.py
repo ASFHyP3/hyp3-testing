@@ -49,7 +49,7 @@ def comparison_environments(comparison_dirs):
 @pytest.fixture(scope='session')
 def its_live_environments(comparison_dirs):
     comparison_apis = ['https://hyp3-its-live.asf.alaska.edu', 'https://hyp3-its-live-test.asf.alaska.edu']
-    publish_buckets = [None, "its-live-data-test"]
+    publish_buckets = [None, 'its-live-data-test']
     return list(zip(comparison_dirs, comparison_apis, publish_buckets))
 
 
