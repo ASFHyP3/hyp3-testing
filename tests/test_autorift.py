@@ -58,7 +58,7 @@ def test_golden_wait(its_live_environments, job_name, user_id):
 
 @pytest.mark.dependency(depends=['test_golden_wait'])
 def test_golden_products(its_live_environments, job_name, user_id, keep):
-    (main_dir, main_api), (develop_dir, develop_api), _ = its_live_environments
+    (main_dir, main_api, _), (develop_dir, develop_api, _) = its_live_environments
     if job_name is None:
         submission_report = main_dir / f'{main_dir.name}_submission.json'
         submission_details = json.loads(submission_report.read_text())
