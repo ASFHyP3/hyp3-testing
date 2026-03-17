@@ -1,5 +1,33 @@
 [
   {
+    {# Standard Jakobshavn case #}
+    "name": "{{ name }}",
+    "job_parameters": {
+      "reference": [
+          "NISAR_L1_PR_RSLC_003_170_D_053_7700_SHNA_A_20251028T235201_20251028T235238_X05009_N_P_J_001"
+        ],
+        "secondary": [
+          "NISAR_L1_PR_RSLC_007_170_D_053_7700_SHNA_A_20251215T235203_20251215T235240_X05009_N_P_J_001"
+        ],
+      "publish_bucket": {{ '"' + publish_bucket + '"' if publish_bucket else 'null' }}
+    },
+    "job_type": "AUTORIFT"
+  },
+  {
+    {# Standard Jakobshavn case #}
+    "name": "{{ name }}",
+    "job_parameters": {
+      "reference": [
+          "NISAR_L2_PR_GSLC_003_170_D_053_7700_SHNA_A_20251028T235201_20251028T235238_X05009_N_P_J_001"
+        ],
+        "secondary": [
+          "NISAR_L2_PR_GSLC_007_170_D_053_7700_SHNA_A_20251215T235203_20251215T235240_X05009_N_P_J_001"
+        ],
+      "publish_bucket": {{ '"' + publish_bucket + '"' if publish_bucket else 'null' }}
+    },
+    "job_type": "AUTORIFT"
+  },
+  {
     {# Malaspina; all opera bursts #}
     "job_type": "AUTORIFT",
     "name": "{{ name }}",
