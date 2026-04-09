@@ -1,5 +1,33 @@
 [
   {
+    {# Standard Jakobshavn case #}
+    "name": "{{ name }}",
+    "job_parameters": {
+      "reference": [
+          "NISAR_L1_PR_RSLC_003_170_D_053_7700_SHNA_A_20251028T235201_20251028T235238_X05009_N_P_J_001"
+        ],
+        "secondary": [
+          "NISAR_L1_PR_RSLC_007_170_D_053_7700_SHNA_A_20251215T235203_20251215T235240_X05009_N_P_J_001"
+        ],
+      "publish_bucket": {{ '"' + publish_bucket + '"' if publish_bucket else 'null' }}
+    },
+    "job_type": "AUTORIFT"
+  },
+  {
+    {# Standard Jakobshavn case #}
+    "name": "{{ name }}",
+    "job_parameters": {
+      "reference": [
+          "NISAR_L2_PR_GSLC_003_170_D_053_7700_SHNA_A_20251028T235201_20251028T235238_X05009_N_P_J_001"
+        ],
+        "secondary": [
+          "NISAR_L2_PR_GSLC_007_170_D_053_7700_SHNA_A_20251215T235203_20251215T235240_X05009_N_P_J_001"
+        ],
+      "publish_bucket": {{ '"' + publish_bucket + '"' if publish_bucket else 'null' }}
+    },
+    "job_type": "AUTORIFT"
+  },
+  {
     {# Malaspina; all opera bursts #}
     "job_type": "AUTORIFT",
     "name": "{{ name }}",
@@ -123,8 +151,10 @@
     "job_type": "AUTORIFT",
     "name": "{{ name }}",
     "job_parameters": {
-      "granules": [
-        "S1C_IW_SLC__1SDV_20250416T010214_20250416T010241_001911_003B60_79E0",
+      "reference": [
+        "S1C_IW_SLC__1SDV_20250416T010214_20250416T010241_001911_003B60_79E0"
+      ],
+      "secondary": [
         "S1C_IW_SLC__1SDV_20250428T010215_20250428T010242_002086_0045CC_8453"
       ]
     }
@@ -133,8 +163,10 @@
     {# Outlet glaciers just north of Jakobshavn #}
     "name": "{{ name }}",
     "job_parameters": {
-      "granules": [
-        "S1A_IW_SLC__1SSH_20170221T204710_20170221T204737_015387_0193F6_AB07",
+      "reference": [
+        "S1A_IW_SLC__1SSH_20170221T204710_20170221T204737_015387_0193F6_AB07"
+      ],
+      "secondary": [
         "S1B_IW_SLC__1SSH_20170227T204628_20170227T204655_004491_007D11_6654"
       ]
     },
@@ -144,8 +176,10 @@
     {# Small portion of west Greenland #}
     "name": "{{ name }}",
     "job_parameters": {
-      "granules": [
-        "S1B_IW_SLC__1SDH_20180821T204618_20180821T204645_012366_016CC2_59A7",
+      "reference": [
+        "S1B_IW_SLC__1SDH_20180821T204618_20180821T204645_012366_016CC2_59A7"
+      ],
+      "secondary": [
         "S1B_IW_SLC__1SDH_20180809T204617_20180809T204644_012191_01674F_9345"
       ]
     },
@@ -155,8 +189,10 @@
     {# Antarctic peninsula w/ very little data #}
     "name": "{{ name }}",
     "job_parameters": {
-      "granules": [
-        "S1A_IW_SLC__1SSH_20151214T080202_20151214T080229_009035_00CF68_780C",
+      "reference": [
+        "S1A_IW_SLC__1SSH_20151214T080202_20151214T080229_009035_00CF68_780C"
+      ],
+      "secondary": [
         "S1A_IW_SLC__1SSH_20151120T080202_20151120T080229_008685_00C5A7_105E"
       ]
     },
@@ -166,8 +202,10 @@
     {# Antarctica interior that's mostly noise #}
     "name": "{{ name }}",
     "job_parameters": {
-      "granules": [
-        "S1A_IW_SLC__1SSH_20150909T162413_20150909T162443_007640_00A97D_922B",
+      "reference": [
+        "S1A_IW_SLC__1SSH_20150909T162413_20150909T162443_007640_00A97D_922B"
+      ],
+      "secondary": [
         "S1A_IW_SLC__1SSH_20150828T162412_20150828T162431_007465_00A4AF_DC3E"
       ]
     },
@@ -177,8 +215,10 @@
     {# Malaspina #}
     "name": "{{ name }}",
     "job_parameters": {
-      "granules": [
-        "S2A_MSIL1C_20200626T204021_N0209_R014_T07VEG_20200626T235742",
+      "reference": [
+        "S2A_MSIL1C_20200626T204021_N0209_R014_T07VEG_20200626T235742"
+      ],
+      "secondary": [
         "S2B_MSIL1C_20200701T204019_N0209_R014_T07VEG_20200701T223901"
       ],
       "publish_bucket": {{ '"' + publish_bucket + '"' if publish_bucket else 'null' }}
@@ -189,8 +229,10 @@
     {# Standard Jakobshavn case #}
     "name": "{{ name }}",
     "job_parameters": {
-      "granules": [
-        "S2B_MSIL1C_20200612T150759_N0209_R025_T22WEB_20200612T184700",
+      "reference": [
+        "S2B_MSIL1C_20200612T150759_N0209_R025_T22WEB_20200612T184700"
+      ],
+      "secondary": [
         "S2A_MSIL1C_20200627T150921_N0209_R025_T22WEB_20200627T170912"
       ],
       "publish_bucket": {{ '"' + publish_bucket + '"' if publish_bucket else 'null' }}
@@ -201,8 +243,10 @@
     {# Standard Jakobshavn case #}
     "name": "{{ name }}",
     "job_parameters": {
-      "granules": [
-        "LC08_L1TP_009011_20200703_20200913_02_T1",
+      "reference": [
+        "LC08_L1TP_009011_20200703_20200913_02_T1"
+      ],
+      "secondary": [
         "LC08_L1TP_009011_20200820_20200905_02_T1"
       ],
       "publish_bucket": {{ '"' + publish_bucket + '"' if publish_bucket else 'null' }}
@@ -213,8 +257,10 @@
     {# East Greenland #}
     "name": "{{ name }}",
     "job_parameters": {
-      "granules": [
-        "LC08_L1TP_062018_20200823_20200905_02_T1",
+      "reference": [
+        "LC08_L1TP_062018_20200823_20200905_02_T1"
+      ],
+      "secondary": [
         "LC08_L1TP_062018_20201010_20201016_02_T1"
       ],
       "publish_bucket": {{ '"' + publish_bucket + '"' if publish_bucket else 'null' }}
@@ -225,8 +271,10 @@
     {# Antarctic peninsula #}
     "name": "{{ name }}",
     "job_parameters": {
-      "granules": [
-        "LC09_L1GT_215109_20220125_20230430_02_T2",
+      "reference": [
+        "LC09_L1GT_215109_20220125_20230430_02_T2"
+      ],
+      "secondary": [
         "LC09_L1GT_215109_20220210_20230428_02_T2"
       ],
         "publish_bucket": {{ '"' + publish_bucket + '"' if publish_bucket else 'null' }}
@@ -237,8 +285,10 @@
     {# Southeast Alaska west of Malaspina #}
     "name": "{{ name }}",
     "job_parameters": {
-      "granules": [
-        "LE07_L1TP_063018_20040911_20200915_02_T1",
+      "reference": [
+        "LE07_L1TP_063018_20040911_20200915_02_T1"
+      ],
+      "secondary": [
         "LE07_L1TP_063018_20040810_20200915_02_T1"
       ],
         "publish_bucket": {{ '"' + publish_bucket + '"' if publish_bucket else 'null' }}
@@ -249,8 +299,10 @@
     {# East Greenland #}
     "name": "{{ name }}",
     "job_parameters": {
-      "granules": [
-        "LT05_L1GS_001013_19920425_20200915_02_T2",
+      "reference": [
+        "LT05_L1GS_001013_19920425_20200915_02_T2"
+      ],
+      "secondary": [
         "LT05_L1GS_001013_19920628_20200914_02_T2"
       ],
         "publish_bucket": {{ '"' + publish_bucket + '"' if publish_bucket else 'null' }}
@@ -261,8 +313,10 @@
     {# Southeast Alaska west of Malaspina #}
     "name": "{{ name }}",
     "job_parameters": {
-      "granules": [
-        "LT04_L1TP_063018_19880611_20200917_02_T1",
+      "reference": [
+        "LT04_L1TP_063018_19880611_20200917_02_T1"
+      ],
+      "secondary": [
         "LT04_L1TP_063018_19880627_20200917_02_T1"
       ],
         "publish_bucket": {{ '"' + publish_bucket + '"' if publish_bucket else 'null' }}
@@ -273,8 +327,10 @@
     {# Southeast Alaska; needs to be reprojected #}
     "name": "{{ name }}",
     "job_parameters": {
-      "granules": [
-        "LT05_L1TP_060018_19851028_20200918_02_T1",
+      "reference": [
+        "LT05_L1TP_060018_19851028_20200918_02_T1"
+      ],
+      "secondary": [
         "LT05_L1GS_061018_19860123_20200918_02_T2"
       ],
         "publish_bucket": {{ '"' + publish_bucket + '"' if publish_bucket else 'null' }}
@@ -285,8 +341,10 @@
     {# Southeast Alaska; needs to be reprojected #}
     "name": "{{ name }}",
     "job_parameters": {
-      "granules": [
-        "LE07_L1TP_061018_20120428_20200909_02_T1",
+      "reference": [
+        "LE07_L1TP_061018_20120428_20200909_02_T1"
+      ],
+      "secondary": [
         "LE07_L1TP_060018_20120726_20200908_02_T1"
       ],
         "publish_bucket": {{ '"' + publish_bucket + '"' if publish_bucket else 'null' }}
@@ -297,8 +355,10 @@
     {# Southeast Alaska; needs to be reprojected #}
     "name": "{{ name }}",
     "job_parameters": {
-      "granules": [
-        "LC08_L1TP_060018_20130330_20200912_02_T1",
+      "reference": [
+        "LC08_L1TP_060018_20130330_20200912_02_T1"
+      ],
+      "secondary": [
         "LE07_L1TP_061018_20130415_20200907_02_T1"
       ],
         "publish_bucket": {{ '"' + publish_bucket + '"' if publish_bucket else 'null' }}
@@ -309,8 +369,10 @@
     {# Southeast Alaska; needs to be reprojected #}
     "name": "{{ name }}",
     "job_parameters": {
-      "granules": [
-        "LE07_L1TP_061018_20130314_20200908_02_T1",
+      "reference": [
+        "LE07_L1TP_061018_20130314_20200908_02_T1"
+      ],
+      "secondary": [
         "LC08_L1TP_060018_20130330_20200912_02_T1"
       ],
         "publish_bucket": {{ '"' + publish_bucket + '"' if publish_bucket else 'null' }}
