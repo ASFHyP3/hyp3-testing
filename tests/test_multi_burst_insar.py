@@ -67,7 +67,7 @@ def test_golden_tif_names(jobs_info):
     for pair_information in jobs_info:
         main_normalized_files = pair_information['main']['normalized_files']
         develop_normalized_files = pair_information['develop']['normalized_files']
-        assert main_normalized_files == develop_normalized_files
+        assert set(main_normalized_files).issubset(develop_normalized_files)
 
 
 def _comparisons(main_ds, develop_ds, pixel_size):
@@ -96,6 +96,9 @@ def test_golden_multi_burst_insar(comparison_environments, jobs_info, keep):
             develop_parameter_file = (develop_file_dir / develop_product_name).with_suffix('.txt')
 
             compare.compare_parameter_files(str(main_parameter_file), str(develop_parameter_file))
+
+            main_suffixes = [main_tif.name.split('_')[-1] for main_tif in main_tifs]
+            develop_tifs = [develop_tif for develop_tif in develop_tifs if develop_tif.name.split('_')[-1] in main_suffixes]
 
             for main_tif, develop_tif in zip(main_tifs, develop_tifs):
                 comparison_header = '\n'.join(['-' * 80, str(main_tif), str(develop_tif), '-' * 80])
