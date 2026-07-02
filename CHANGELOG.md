@@ -28,7 +28,8 @@ and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 * Burst InSAR now tests complex datasets by separating the real and imaginary components and then testing them separately.
 * InSAR Gamma tests so that they do not use per-image threshold and instead analyze metadata, coregistration, nodata coverage, and dataproduct quality
 * RTC and autoRIFT golden tests now sleep for 60 seconds between requests for job status
-* `conda-env.yml` has been renamed to `environment.yml` to follow standard naming conventions 
+* `conda-env.yml` has been renamed to `environment.yml` to follow standard naming conventions
+* `test_multi_burst_insar.py` now considers cases where new files are added to the final product.
 
 ## [0.1.0](https://github.com/ASFHyP3/hyp3-testing/compare/v0.0.0...v0.1.0)
 
