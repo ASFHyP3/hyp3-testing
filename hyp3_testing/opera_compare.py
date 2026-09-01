@@ -18,7 +18,12 @@ gdal.UseExceptions()
 
 RTC_S1_PRODUCTS_ERROR_REL_TOLERANCE = 1e-03
 RTC_S1_PRODUCTS_ERROR_ABS_TOLERANCE = 1e-04
-LIST_EXCLUDE_COMPARISON_HDF5 = ['//identification/processingDateTime']
+LIST_EXCLUDE_COMPARISON_HDF5 = [
+    '//identification/processingDateTime',
+    # TODO: figure out why these don't exist
+    # '//metadata/qa/rfi/frequencyDomainRfiBurstReport',
+    # '//metadata/qa/rfi/timeDomainRfiReport',
+]
 LIST_NAME_COMPARISON_XML = [
     '/gmi:MI_Metadata/gmd:fileIdentifier/gco:CharacterString',
     '/gmi:MI_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification/gmd:citation/gmd:CI_Citation/gmd:title/gmx:FileName',
@@ -160,6 +165,9 @@ def compare_hdf5_elements(hdf5_obj_1: h5py.Group, hdf5_obj_2: h5py.Group, str_ke
         str_key: Key to the dataset or attribute
         is_attr: Designate if `str_key` is for dataset or attribute
     """
+    if any([str_key.startswith(x) for x in LIST_EXCLUDE_COMPARISON_HDF5]):
+        return
+
     # Prepare to comapre the data in the HDF objects
     if is_attr:
         # str_key is for attribute
@@ -196,9 +204,6 @@ def compare_hdf5_elements(hdf5_obj_1: h5py.Group, hdf5_obj_2: h5py.Group, str_ke
         is_reference = (len(val_2[0].shape) == 1) and isinstance(val_2[0][0], h5py.h5r.Reference)
         if is_void or is_reference:
             val_2 = _unpack_array(val_2, hdf5_obj_2)
-
-    if str_key in LIST_EXCLUDE_COMPARISON_HDF5:
-        return
 
     shape_val_1 = val_1.shape
     shape_val_2 = val_2.shape
@@ -309,7 +314,6 @@ def _compare_rtc_s1_metadata(metadata_1: dict, metadata_2: dict) -> None:
             check_product_id(v1, v2)
             continue
         elif k1 in LIST_EXCLUDE_COMPARISON_IMAGE:
-            print(v1)
             continue
         assert v2 == v1, f'Values for key {k1} do not match ({v1} | {v2})'
 
@@ -340,6 +344,12 @@ def compare_rtc_s1_products(file_1: Path, file_2: Path) -> None:
         image_2 = gdal_band_2.ReadAsArray()
         assert image_1.shape == image_2.shape
         assert image_1.dtype == image_2.dtype
+        # try:
+        #     assert np.allclose(image_1, image_2, **ALL_CLOSE_ARGS)
+        # except AssertionError:
+        #     diff = image_1 - image_2
+        #     is_diff = ~np.isclose(image_1, image_2, **ALL_CLOSE_ARGS)
+        #     n_diff = np.sum(is_diff)
         assert np.allclose(image_1, image_2, **ALL_CLOSE_ARGS)
 
 

@@ -3,9 +3,17 @@ import random
 
 import requests
 import shapely
+from shapely.strtree import STRtree
 
 
 session = requests.Session()
+
+
+def get_attribute_values(granule, attribute_name: str) -> list[str]:
+    for attribute in granule['umm']['AdditionalAttributes']:
+        if attribute['Name'] == attribute_name:
+            return attribute['Values']
+    raise ValueError(f'Attribute {attribute_name} not found for granule {granule["meta"]["native-id"]}')
 
 
 def get_corresponding_burst_granule_name(opera_granule: dict) -> str:
@@ -28,16 +36,11 @@ def get_corresponding_burst_granule_name(opera_granule: dict) -> str:
     return response.json()['items'][0]['meta']['native-id']
 
 
-def get_attribute_values(granule, attribute_name: str) -> list[str]:
-    for attribute in granule['umm']['AdditionalAttributes']:
-        if attribute['Name'] == attribute_name:
-            return attribute['Values']
-    raise ValueError(f'Attribute {attribute_name} not found for granule {granule["meta"]["native-id"]}')
-
-
-def choose_sample(candidates: list) -> None:
+def choose_sample(candidates: list, n=10) -> None:
+    print(f'Provided {len(candidates)} candidates')
     for granule in random.sample(candidates, 10):
-        print(f'{granule["meta"]["native-id"]},{get_corresponding_burst_granule_name(granule)}')
+        granule_name = granule['meta']['native-id']
+        print(f'{granule_name},{get_corresponding_burst_granule_name(granule)}')
 
 
 def over_antimeridian(granule: dict) -> bool:
@@ -58,27 +61,31 @@ def over_prime_meridian(granule: dict) -> bool:
     return min(longitudes) < 0 < max(longitudes)
 
 
-def percent_overlap(granule: dict, area: shapely.Geometry) -> float:
+def percent_overlap(granule: dict, area: shapely.Geometry, area_strt) -> float:
     granule_shape = shapely.MultiPolygon(
         [
             shapely.Polygon([point['Longitude'], point['Latitude']] for point in poly['Boundary']['Points'])
             for poly in granule['umm']['SpatialExtent']['HorizontalSpatialDomain']['Geometry']['GPolygons']
         ]
     )
-    return shapely.intersection(granule_shape, area).area / granule_shape.area
+    indexes = list(area_strt.query(granule_shape))
+    if len(indexes) == 0:
+        return 0.0
+    intersecting_area = shapely.geometry.GeometryCollection([area.geoms[i] for i in indexes])
+    return shapely.intersection(granule_shape, intersecting_area).area / granule_shape.area
 
 
 def main():
-    with open('rtc_granules.json') as f:
-        granules = json.load(f)
     with open('GSHHS_c_L1.geojson') as f:
         land = shapely.from_geojson(f.read())
     with open('extreme_terrain.geojson') as f:
         extreme_terrain = shapely.from_geojson(f.read())
+    with open('rtc_granules.json') as f:
+        granules = json.load(f)
 
     print('S1A')
     choose_sample([g for g in granules if g['umm']['Platforms'][0]['ShortName'] == 'Sentinel-1A'])
-    print('S1B')
+    # print('S1B')
     # choose_sample([g for g in granules if g['umm']['Platforms'][0]['ShortName'] == 'Sentinel-1B'])
     print('IW1')
     choose_sample([g for g in granules if 'IW1' in get_attribute_values(g, 'SUBSWATH_NAME')])
@@ -100,14 +107,15 @@ def main():
     choose_sample([g for g in granules if get_attribute_values(g, 'POLARIZATION') == ['VV', 'VH']])
     print('prime meridian')
     choose_sample([g for g in granules if over_prime_meridian(g)])
+    pct_lands = [percent_overlap(g, land, STRtree(land.geoms)) for g in granules]
+    print('9-11% land')
+    choose_sample([g for g, pct_land in zip(granules, pct_lands) if 0.09 < pct_land < 0.11])
+    print('0% land')
+    choose_sample([g for g, pct_land in zip(granules, pct_lands) if pct_land == 0.0])
+    print('extreme terrain')
+    choose_sample([g for g in granules if 0.8 <= percent_overlap(g, extreme_terrain, STRtree(extreme_terrain.geoms))])
     print('antimeridian')
     choose_sample([g for g in granules if over_antimeridian(g)])
-    print('9-11% land')
-    choose_sample([g for g in granules if 0.09 < percent_overlap(g, land) < 0.11])
-    print('0% land')
-    choose_sample([g for g in granules if percent_overlap(g, land) == 0.0])
-    print('extreme terrain')
-    choose_sample([g for g in granules if 0.8 <= percent_overlap(g, extreme_terrain)])
 
 
 if __name__ == '__main__':

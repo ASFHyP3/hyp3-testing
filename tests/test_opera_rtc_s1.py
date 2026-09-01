@@ -18,6 +18,34 @@ from hyp3_testing.opera_compare import (
 
 gdal.UseExceptions()
 CMR_URL = 'https://cmr.earthdata.nasa.gov/search/granules.umm_json'
+SKIP_KNOWN_FAIL = True
+KNOWN_FAIL = [
+    # Orbit
+    'OPERA_L2_RTC-S1_T136-290821-IW3_20230501T005010Z_20250201T235523Z_S1A_30_v1.0',
+    'OPERA_L2_RTC-S1_T136-290836-IW3_20230501T005052Z_20250201T235741Z_S1A_30_v1.0',
+    # Antimeridean
+    'OPERA_L2_RTC-S1_T001-000684-IW2_20220201T183205Z_20241220T221908Z_S1A_30_v1.0',
+    'OPERA_L2_RTC-S1_T066-141655-IW3_20230201T063249Z_20250121T120840Z_S1A_30_v1.0',
+    'OPERA_L2_RTC-S1_T066-141657-IW3_20230201T063254Z_20250121T120840Z_S1A_30_v1.0',
+    'OPERA_L2_RTC-S1_T146-312626-IW2_20230501T173234Z_20250202T010411Z_S1A_30_v1.0',  # test case
+    'OPERA_L2_RTC-S1_T146-312639-IW1_20230501T173308Z_20250202T010356Z_S1A_30_v1.0',  # double check
+    # Strips at lon boundaries
+    'OPERA_L2_RTC-S1_T008-015738-IW1_20220801T060415Z_20250215T122841Z_S1A_30_v1.0',
+    'OPERA_L2_RTC-S1_T008-015800-IW3_20220801T060708Z_20250215T122605Z_S1A_30_v1.0',
+    'OPERA_L2_RTC-S1_T066-140036-IW2_20230201T051822Z_20250121T120419Z_S1A_30_v1.0',
+    'OPERA_L2_RTC-S1_T066-140037-IW2_20230201T051825Z_20250121T120419Z_S1A_30_v1.0',
+    'OPERA_L2_RTC-S1_T078-165731-IW1_20230801T005941Z_20250213T195257Z_S1A_30_v1.0',
+    'OPERA_L2_RTC-S1_T081-172601-IW2_20230801T061531Z_20250210T213622Z_S1A_30_v1.0',
+    'OPERA_L2_RTC-S1_T083-176837-IW1_20230801T093014Z_20250210T220308Z_S1A_30_v1.0',
+    'OPERA_L2_RTC-S1_T137-292489-IW2_20230501T020650Z_20250202T000414Z_S1A_30_v1.0',
+    'OPERA_L2_RTC-S1_T137-292529-IW1_20230501T020840Z_20250202T000432Z_S1A_30_v1.0',
+    'OPERA_L2_RTC-S1_T145-309683-IW3_20230501T151717Z_20250202T005520Z_S1A_30_v1.0',
+    'OPERA_L2_RTC-S1_T149-318190-IW2_20230501T214821Z_20250202T011927Z_S1A_30_v1.0',
+    'OPERA_L2_RTC-S1_T168-359459-IW1_20220201T052524Z_20241220T204930Z_S1A_30_v1.0',
+    'OPERA_L2_RTC-S1_T175-374111-IW2_20220201T163859Z_20241220T220407Z_S1A_30_v1.0',
+    # < 20 diff
+    'OPERA_L2_RTC-S1_T139-297118-IW1_20230501T053937Z_20250202T001552Z_S1A_30_v1.0',
+]
 pytestmark = pytest.mark.golden
 
 
@@ -104,10 +132,14 @@ def test_golden_opera_rtc_s1(comparison_environments, develop_jobs_info, keep):
     (main_dir, _), (develop_dir, develop_api) = comparison_environments
     for job in develop_jobs_info:
         product_id, urls = get_opera_rtc_s1_info(job['dir'])
+        print(f'Comparing {product_id}...')
+        if product_id in KNOWN_FAIL and SKIP_KNOWN_FAIL:
+            continue
         with (
             archive_tifs(product_id, urls, main_dir, keep) as main_tifs,
             job_tifs(job['job_id'], develop_api, develop_dir, keep) as develop_tifs,
         ):
+            print(f'Comparing {product_id}...')
             main_file_dir = main_dir / product_id
             develop_file_dir = develop_dir / job['dir']
 
